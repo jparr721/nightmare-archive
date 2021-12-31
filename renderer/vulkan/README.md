@@ -1,3 +1,0 @@
-# Vulkan Renderer
-
-TODO
