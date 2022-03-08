@@ -1,0 +1,8 @@
+[submodule "third_party/glfw"]
+	path = third_party/glfw
+	url = https://github.com/glfw/glfw.git
+  branch = 3.3-stable
+[submodule "third_party/eigen3"]
+	path = third_party/eigen3
+	url = https://gitlab.com/libeigen/eigen.git
+  branch = 3.4
