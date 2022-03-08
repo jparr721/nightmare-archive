@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -euox pipefail
+
+rm -rf build && rm compile_commands.json
