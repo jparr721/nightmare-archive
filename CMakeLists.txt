@@ -17,6 +17,17 @@ set(EIGEN_BUILD_TESTING OFF)
 set(EIGEN_BUILD_DOC OFF)
 add_subdirectory(third_party/eigen3)
 
-add_executable(${PROJECT_NAME} main.cc)
-target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL imgui glad glfw Eigen3::Eigen)
+add_subdirectory(third_party/fast_obj)
+
+file(GLOB SOURCES src/*.cc)
+add_executable(${PROJECT_NAME} ${SOURCES})
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
+  OpenGL
+  imgui
+  glad
+  fast_obj
+  glfw
+  Eigen3::Eigen
+)
 

@@ -6,3 +6,7 @@
 	path = third_party/eigen3
 	url = https://gitlab.com/libeigen/eigen.git
   branch = 3.4
+[submodule "third_party/fast_obj"]
+	path = third_party/fast_obj
+	url = https://github.com/thisistherk/fast_obj.git
+  branch = 49c810ae1c4140afdab91987f2ec28d7500fbe50
