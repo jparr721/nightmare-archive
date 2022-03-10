@@ -22,7 +22,6 @@ namespace nm {
         real radiusmax = 1000.0;
         real aspect_ratio = 4.0 / 3.0;
 
-        Camera() = default;
         Camera(real near_plane = 0.1, real far_plane = 1000.0, real rotation_sensitivity = 0.01,
                real pan_sensitivity = 0.01, real zoom_sensitivity = 0.1, real fovmin = 10.0, real fovmax = 120.0,
                real fov = 65.0, real radiusmin = 0.1, real radiusmax = 1000.0, real aspect_ratio = 4.0 / 3.0)

@@ -1,5 +1,8 @@
+#include "camera.h"
 #include "opengl.h"
+#include "renderer_utils.h"
 #include <iostream>
+#include <memory>
 #include <stdio.h>
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
@@ -11,6 +14,10 @@ static void glfw_error_callback(int error, const char *description) {
 }
 
 int main(int argc, char **argv) {
+    const auto c = std::make_unique<nm::Camera>();
+    nm::vecXr vertices;
+    nm::vecXr colors;
+    nm::makeRenderableGrid(1, 10, vertices, colors);
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) return 1;
