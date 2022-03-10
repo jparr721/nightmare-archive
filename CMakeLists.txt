@@ -13,11 +13,20 @@ add_subdirectory(third_party/glad)
 set(GLFW_INSTALL OFF)
 add_subdirectory(third_party/glfw)
 
-set(EIGEN_BUILD_TESTING OFF)
-set(EIGEN_BUILD_DOC OFF)
+option(BUILD_TESTING OFF)
+option(EIGEN_BUILD_DOC OFF)
+# set(BUILD_TESTING OFF)
+# set(EIGEN_BUILD_DOC OFF)
 add_subdirectory(third_party/eigen3)
 
 add_subdirectory(third_party/fast_obj)
+
+option(NIGHTMARE_TESTS "Build the tests" ON)
+if (NIGHTMARE_TESTS)
+  enable_testing()
+  include(GoogleTest)
+  add_subdirectory(tests)
+endif()
 
 file(GLOB SOURCES src/*.cc)
 add_executable(${PROJECT_NAME} ${SOURCES})

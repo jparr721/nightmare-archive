@@ -87,4 +87,17 @@ namespace nm {
 
     template<typename T>
     using SparseMatrixX = Eigen::SparseMatrix<T>;
+
+    template<typename T>
+    inline auto matrixToVector(const matX<T> &in) -> vecX<T> {
+        const T *data = in.data();
+        const auto shape = in.rows() * in.cols();
+        return vecX<T>(Eigen::Map<const vecX<T>>(data, shape));
+    }
+
+    template<typename T>
+    inline auto vectorToMatrix(const vecX<T> &in, int rows, int cols) -> matX<T> {
+        const T *data = in.data();
+        return matX<T>(Eigen::Map<const matX<T>>(data, rows, cols));
+    }
 }// namespace nm

@@ -2,5 +2,4 @@
 
 set -euox pipefail
 
-cd build
-cmake --build . --target nightmare
+cmake --build build

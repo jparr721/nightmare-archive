@@ -2,7 +2,7 @@
 
 
 namespace nm {
-    vec3r spherical_to_catesian(real r, real theta, real phi) {
+    vec3r sphericalToCartesian(real r, real theta, real phi) {
         const auto sin_phi = std::sin(phi);
         const auto cos_phi = std::cos(phi);
         const auto sin_theta = std::sin(theta);
@@ -10,7 +10,7 @@ namespace nm {
         return vec3r(r * (cos_theta * sin_phi), r * cos_phi, r * (sin_theta * sin_phi));
     }
 
-    vec3r spherical_to_catesian_dphi(real r, real theta, real phi) {
+    vec3r sphericalToCartesianDPhi(real r, real theta, real phi) {
         const auto sin_phi = std::sin(phi);
         const auto cos_phi = std::cos(phi);
         const auto sin_theta = std::sin(theta);
@@ -18,7 +18,7 @@ namespace nm {
         return vec3r(r * (cos_phi * cos_theta), -r * sin_phi, r * (cos_phi * sin_theta));
     }
 
-    mat4r perspective_projection(real near, real far, real fov, real aspect) {
+    mat4r perspectiveProjection(real near, real far, real fov, real aspect) {
         const auto ymax = near * std::tan(fov * M_PI / 360.0);
         const auto xmax = ymax * aspect;
 
@@ -49,7 +49,7 @@ namespace nm {
         return ret;
     }
 
-    mat4r look_at(const vec3r &eye, const vec3r &at, const vec3r &up) {
+    mat4r lookAt(const vec3r &eye, const vec3r &at, const vec3r &up) {
         const vec3r forward = (at - eye).normalized();
         const vec3r side = forward.cross(up).normalized();
         const vec3r up_ = side.cross(forward).normalized();

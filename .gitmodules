@@ -10,3 +10,6 @@
 	path = third_party/fast_obj
 	url = https://github.com/thisistherk/fast_obj.git
   branch = 49c810ae1c4140afdab91987f2ec28d7500fbe50
+[submodule "third_party/googletest"]
+	path = third_party/googletest
+	url = https://github.com/google/googletest.git
