@@ -4,6 +4,8 @@
 #include <Eigen/Geometry>
 #include <Eigen/Sparse>
 #include <cstdint>
+#include <iostream>
+#include <vector>
 
 namespace nm {
 #ifdef NIGHTMARE_USE_FLOAT
@@ -88,11 +90,17 @@ namespace nm {
     template<typename T>
     using SparseMatrixX = Eigen::SparseMatrix<T>;
 
-    template<typename T>
-    inline auto matrixToVector(const matX<T> &in) -> vecX<T> {
-        const T *data = in.data();
+    template<typename Derived>
+    inline auto matrixToVector(const Eigen::PlainObjectBase<Derived> &in) -> vecX<typename Derived::Scalar> {
+        using Scalar = typename Derived::Scalar;
+        const Scalar *data = in.data();
         const auto shape = in.rows() * in.cols();
-        return vecX<T>(Eigen::Map<const vecX<T>>(data, shape));
+        return vecX<Scalar>(Eigen::Map<const vecX<Scalar>>(data, shape));
+    }
+
+    template<typename T>
+    inline auto matrixToVector(const std::vector<std::vector<T>> &in) -> vecX<T> {
+        return matrixToVector(stlMatrixToEigenMatrix(in));
     }
 
     template<typename T>
@@ -100,4 +108,31 @@ namespace nm {
         const T *data = in.data();
         return matX<T>(Eigen::Map<const matX<T>>(data, rows, cols));
     }
+
+    template<typename T>
+    inline auto stlMatrixToEigenMatrix(const std::vector<std::vector<T>> &in) -> matX<T> {
+        const auto rows = in.size();
+        const auto cols = in.at(0).size();
+
+        matX<T> mat(rows, cols);
+        for (int ii = 0; ii < rows; ii++) { mat.row(ii) = vecX<T>::Map(&in.at(ii)[0], in.at(ii).size()); }
+        return mat;
+    }
+
+    template<typename T>
+    inline auto stlVectorToEigenVector(const std::vector<T> &in) -> vecX<T> {
+        vecX<T> v(in.size());
+        for (int row = 0; row < in.size(); ++row) { v(row) = in.at(row); }
+        return v;
+    }
+
+    template<typename T>
+    inline auto eigenVectorToStlVector(const vecX<T> &in) -> std::vector<T> {
+        std::vector<T> v;
+        v.reserve(in.rows());
+        for (int row = 0; row < in.rows(); ++row) { v.push_back(in(row)); }
+
+        return v;
+    }
+
 }// namespace nm

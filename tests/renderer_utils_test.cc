@@ -10,8 +10,8 @@ TEST(Test_makeRenderableGrid, smallGrid) {
     vecXr colors;
     makeRenderableGrid(kGridScale, 2, vertices, colors);
 
-    std::cerr << vertices << std::endl;
-    std::cerr << colors << std::endl;
+    std::cerr << "vertices: " << vertices << std::endl;
+    std::cerr << "colors: " << colors << std::endl;
 
     EXPECT_EQ(true, true);
 }

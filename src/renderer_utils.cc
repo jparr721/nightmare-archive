@@ -1,21 +1,20 @@
 #include "renderer_utils.h"
+#include <vector>
 
 namespace nm {
-    void makeRenderableGrid(integer spacing_scale, integer uniform_grid_size, vecXr &vertices, vecXr &colors) {
-        const vec3r grid_color = vec3r(0.5, 0.5, 0.5);
-
-        matXr vertices_(uniform_grid_size * 2 * 4, 3);
-        matXr colors_(uniform_grid_size * 2 * 4, 3);
+    void makeRenderableGrid(real spacing_scale, integer uniform_grid_size, vecXr &vertices, vecXr &colors) {
+        std::vector<std::vector<real>> vertices_;
+        std::vector<std::vector<real>> colors_;
         for (int ii = -uniform_grid_size; ii < uniform_grid_size; ii += 4) {
-            vertices_.row(ii) << ii * spacing_scale, 0.0, -uniform_grid_size * spacing_scale;
-            vertices_.row(ii + 1) << ii * spacing_scale, 0.0, uniform_grid_size * spacing_scale;
-            vertices_.row(ii + 2) << -uniform_grid_size * spacing_scale, 0.0, ii * spacing_scale;
-            vertices_.row(ii + 3) << uniform_grid_size * spacing_scale, 0.0, ii * spacing_scale;
+            vertices_.push_back({ii * spacing_scale, 0.0, -uniform_grid_size * spacing_scale});
+            vertices_.push_back({ii * spacing_scale, 0.0, uniform_grid_size * spacing_scale});
+            vertices_.push_back({-uniform_grid_size * spacing_scale, 0.0, ii * spacing_scale});
+            vertices_.push_back({uniform_grid_size * spacing_scale, 0.0, ii * spacing_scale});
 
-            colors_.row(ii) << grid_color;
-            colors_.row(ii + 1) << grid_color;
-            colors_.row(ii + 2) << grid_color;
-            colors_.row(ii + 3) << grid_color;
+            colors_.push_back({0.5, 0.5, 0.5});
+            colors_.push_back({0.5, 0.5, 0.5});
+            colors_.push_back({0.5, 0.5, 0.5});
+            colors_.push_back({0.5, 0.5, 0.5});
         }
 
         vertices = matrixToVector(vertices_);

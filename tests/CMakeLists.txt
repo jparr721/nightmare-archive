@@ -30,3 +30,4 @@ macro(package_add_test TESTNAME)
 endmacro()
 
 package_add_test(renderer_utils_test renderer_utils_test.cc)
+package_add_test(math_test math_test.cc)
