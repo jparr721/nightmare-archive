@@ -13,9 +13,9 @@ namespace nm {
 #endif
 
 #ifdef NIGHTMARE_USE_32_BIT_INTEGER
-    using integer = uint64_t;
+    using integer = int64_t;
 #else
-    using integer = uint32_t;
+    using integer = int32_t;
 #endif
 
 
