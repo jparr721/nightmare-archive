@@ -7,12 +7,13 @@ set(PROJECT_LIB ${PROJECT_NAME}_lib)
 
 find_package(OpenGL REQUIRED)
 
-add_subdirectory(third_party/imgui)
-
-add_subdirectory(third_party/glad)
-
 set(GLFW_INSTALL OFF)
 add_subdirectory(third_party/glfw)
+
+add_subdirectory(third_party/imgui)
+target_link_libraries(imgui glfw)
+
+add_subdirectory(third_party/glad)
 
 option(BUILD_TESTING OFF)
 option(EIGEN_BUILD_DOC OFF)
@@ -35,11 +36,10 @@ add_library(${PROJECT_LIB}
 )
 target_link_libraries(${PROJECT_LIB}
   PUBLIC
-  OpenGL
+  glfw
   imgui
   glad
   fast_obj
-  glfw
   Eigen3::Eigen
   )
 add_executable(${PROJECT_NAME} src/nightmare.cc)

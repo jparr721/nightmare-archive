@@ -90,6 +90,16 @@ namespace nm {
     template<typename T>
     using SparseMatrixX = Eigen::SparseMatrix<T>;
 
+    template<typename T>
+    inline auto stlMatrixToEigenMatrix(const std::vector<std::vector<T>> &in) -> matX<T> {
+        const auto rows = in.size();
+        const auto cols = in.at(0).size();
+
+        matX<T> mat(rows, cols);
+        for (int ii = 0; ii < rows; ii++) { mat.row(ii) = vecX<T>::Map(&in.at(ii)[0], in.at(ii).size()); }
+        return mat;
+    }
+
     template<typename Derived>
     inline auto matrixToVector(const Eigen::PlainObjectBase<Derived> &in) -> vecX<typename Derived::Scalar> {
         using Scalar = typename Derived::Scalar;
@@ -107,16 +117,6 @@ namespace nm {
     inline auto vectorToMatrix(const vecX<T> &in, int rows, int cols) -> matX<T> {
         const T *data = in.data();
         return matX<T>(Eigen::Map<const matX<T>>(data, rows, cols));
-    }
-
-    template<typename T>
-    inline auto stlMatrixToEigenMatrix(const std::vector<std::vector<T>> &in) -> matX<T> {
-        const auto rows = in.size();
-        const auto cols = in.at(0).size();
-
-        matX<T> mat(rows, cols);
-        for (int ii = 0; ii < rows; ii++) { mat.row(ii) = vecX<T>::Map(&in.at(ii)[0], in.at(ii).size()); }
-        return mat;
     }
 
     template<typename T>
