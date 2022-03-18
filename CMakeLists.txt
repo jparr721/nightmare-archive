@@ -8,6 +8,9 @@ set(PROJECT_LIB ${PROJECT_NAME}_lib)
 find_package(OpenGL REQUIRED)
 
 set(GLFW_INSTALL OFF)
+set(GLFW_BUILD_EXAMPLES OFF)
+set(GLFW_BUILD_DOCS OFF)
+set(GLFW_BUILD_TESTS OFF)
 add_subdirectory(third_party/glfw)
 
 add_subdirectory(third_party/imgui)

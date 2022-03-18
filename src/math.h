@@ -113,10 +113,12 @@ namespace nm {
         return matrixToVector(stlMatrixToEigenMatrix(in));
     }
 
-    template<typename T>
-    inline auto vectorToMatrix(const vecX<T> &in, int rows, int cols) -> matX<T> {
-        const T *data = in.data();
-        return matX<T>(Eigen::Map<const matX<T>>(data, rows, cols));
+    template<typename Derived>
+    inline auto vectorToMatrix(const Eigen::PlainObjectBase<Derived> &in, int rows, int cols)
+            -> matX<typename Derived::Scalar> {
+        using scalar = typename Derived::Scalar;
+        const scalar *data = in.data();
+        return matX<scalar>(Eigen::Map<const matX<scalar>>(data, rows, cols));
     }
 
     template<typename T>
@@ -126,9 +128,11 @@ namespace nm {
         return v;
     }
 
-    template<typename T>
-    inline auto eigenVectorToStlVector(const vecX<T> &in) -> std::vector<T> {
-        std::vector<T> v;
+    template<typename Derived>
+    inline auto eigenVectorToStlVector(const Eigen::PlainObjectBase<Derived> &in)
+            -> std::vector<typename Derived::Scalar> {
+        using scalar = typename Derived::Scalar;
+        std::vector<scalar> v;
         v.reserve(in.rows());
         for (int row = 0; row < in.rows(); ++row) { v.push_back(in(row)); }
 

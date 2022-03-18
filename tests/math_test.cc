@@ -1,7 +1,7 @@
 #include "../src/math.h"
 #include <gtest/gtest.h>
 
-TEST(Test_matrixToVector, EigenMatrix) {
+TEST(Test_matrixToVector, doesConvert) {
     using namespace nm;
 
     mat2r m;
@@ -20,4 +20,31 @@ TEST(Test_matrixToVector, EigenMatrix) {
 
     EXPECT_EQ(v, compare);
     EXPECT_EQ(v, compare2);
+}
+
+TEST(Test_vectorToMatrix, doesConvert) {
+    using namespace nm;
+
+    mat2r m;
+    m << 1, 2, 3, 4;
+
+    vec4r v;
+    v << 1, 3, 2, 4;
+
+    mat2r mv = nm::vectorToMatrix(v, 2, 2);
+
+    EXPECT_EQ(m, mv);
+}
+
+TEST(Test_eigenVectorToStlVector, doesConvert) { using namespace nm;
+
+    vec4r v;
+    v << 1, 2, 3, 4;
+
+    const auto ov = eigenVectorToStlVector(v);
+
+    EXPECT_EQ(ov.at(0), 1);
+    EXPECT_EQ(ov.at(1), 2);
+    EXPECT_EQ(ov.at(2), 3);
+    EXPECT_EQ(ov.at(3), 4);
 }
