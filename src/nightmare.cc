@@ -14,10 +14,6 @@ static void glfw_error_callback(int error, const char *description) {
 }
 
 int main(int argc, char **argv) {
-    const auto c = std::make_unique<nm::Camera>();
-    nm::vecXr vertices;
-    nm::vecXr colors;
-    nm::makeRenderableGrid(1, 10, vertices, colors);
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) return 1;

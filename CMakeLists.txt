@@ -24,7 +24,7 @@ add_subdirectory(third_party/eigen3)
 
 add_subdirectory(third_party/fast_obj)
 
-option(NIGHTMARE_TESTS "Build the tests" ON)
+option(NIGHTMARE_TESTS "Build the tests" OFF)
 if (NIGHTMARE_TESTS)
   enable_testing()
   include(GoogleTest)
@@ -36,6 +36,8 @@ add_library(${PROJECT_LIB}
   src/geometry.cc
   src/renderer.cc
   src/renderer_utils.cc
+  src/shader_program.cc
+  src/shader.cc
 )
 target_link_libraries(${PROJECT_LIB}
   PUBLIC

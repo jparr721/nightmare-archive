@@ -8,10 +8,10 @@
 #include <vector>
 
 namespace nm {
-#ifdef NIGHTMARE_USE_FLOAT
-    using real = float;
-#else
+#ifdef NIGHTMARE_USE_DOUBLE
     using real = double;
+#else
+    using real = float;
 #endif
 
 #ifdef NIGHTMARE_USE_32_BIT_INTEGER

@@ -2,6 +2,7 @@
 
 #include "camera.h"
 #include "mesh.h"
+#include "opengl.h"
 
 namespace nm {
     class Renderer {
@@ -11,7 +12,7 @@ namespace nm {
 
         void bindBuffers();
         void reloadBuffers();
-        void resize();
+        void resize(integer width, integer height);
 
     private:
     };
