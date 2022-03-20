@@ -7,5 +7,6 @@ namespace nm {
         vecXr tetrahedra;
         vecXr normals;
         vecXr colors;
+        vecXr wireframe_colors;
     };
 }// namespace nm
