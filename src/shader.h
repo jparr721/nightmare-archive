@@ -5,9 +5,9 @@ namespace nm {
     struct Shader {
         bool is_init;
 
-        GLint id;
+        GLuint id = 0;
         GLenum type;
 
-        Shader(GLenum type, const char *&shader_src);
+        Shader(GLenum type, const char *shader_src);
     };
 }// namespace nm

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12...3.18)
 project(nightmare LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(PROJECT_LIB ${PROJECT_NAME}_lib)
 
@@ -38,6 +38,8 @@ add_library(${PROJECT_LIB}
   src/renderer_utils.cc
   src/shader_program.cc
   src/shader.cc
+  src/input.cc
+  src/window.cc
 )
 target_link_libraries(${PROJECT_LIB}
   PUBLIC

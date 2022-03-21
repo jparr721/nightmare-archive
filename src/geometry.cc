@@ -57,9 +57,9 @@ namespace nm {
         mat4r ret = mat4r::Zero();
 
         ret.row(0) << side(0), up_(0), -forward(0), 0.0;
-        ret.row(0) << side(1), up_(1), -forward(1), 0.0;
+        ret.row(1) << side(1), up_(1), -forward(1), 0.0;
         ret.row(2) << side(2), up_(2), -forward(2), 0.0;
-        ret.row(3) << -side.dot(eye), -up.dot(eye), forward.dot(eye);
+        ret.row(3) << -side.dot(eye), -up.dot(eye), forward.dot(eye), 1.0;
 
         return ret;
     }

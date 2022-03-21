@@ -12,7 +12,7 @@ namespace nm {
         real phi_ = M_PI / 2.0;
     }
 
-    void Camera::resize(real width, real height) {
+    void Camera::resize(int width, int height) {
         aspect_ratio = width / height;
         setPerspective();
         compile();

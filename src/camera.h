@@ -30,7 +30,7 @@ namespace nm {
               fov(fov), radiusmin(radiusmin), radiusmax(radiusmax), aspect_ratio(aspect_ratio) {}
 
         void reset();
-        void resize(real width, real height);
+        void resize(int width, int height);
         void zoom(real dr);
         void pan(real du, real dv);
         void rotate(real du, real dv);

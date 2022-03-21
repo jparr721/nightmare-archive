@@ -3,7 +3,7 @@
 #include <iostream>
 
 namespace nm {
-    Shader::Shader(GLenum type, const char *&shader_src) {
+    Shader::Shader(GLenum type, const char *shader_src) {
         id = glCreateShader(type);
 
         assert(id > 0);
