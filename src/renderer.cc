@@ -1,21 +1,22 @@
 #include "renderer.h"
+#include "renderer_utils.h"
 #include <utility>
 
 namespace nm {
-    Renderer::Renderer(const std::shared_ptr<ShaderProgram> &shader_program, const std::shared_ptr<Camera> &camera,
+    Renderer::Renderer(std::shared_ptr<ShaderProgram> shader_program, std::shared_ptr<Camera> camera,
                        const RenderMode render_mode)
         : shader_program_(std::move(shader_program)), camera_(std::move(camera)), render_mode(render_mode) {
         shader_program_->bind();
-        const auto light_pos = Uniform<vec3r>(shader_program_->uniformLocation("light_pos"));
-        const auto view = Uniform<mat4r>(shader_program_->uniformLocation("view"));
-        const auto projection = Uniform<mat4r>(shader_program_->uniformLocation("projection"));
-        const auto normal = Uniform<mat4r>(shader_program_->uniformLocation("normal"));
+
+        light_pos_ = Uniform<vec3r>(shader_program_->uniformLocation("light_pos"));
+        view_ = Uniform<mat4r>(shader_program_->uniformLocation("view"));
+        projection_ = Uniform<mat4r>(shader_program_->uniformLocation("projection"));
+        normal_ = Uniform<mat4r>(shader_program_->uniformLocation("normal"));
 
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
         bindBuffers();
         shader_program_->release();
-        reloadBuffers();
 
         // Default lighting
         lighting = Lighting();
@@ -24,7 +25,7 @@ namespace nm {
     }
 
     Renderer::~Renderer() {
-        for (const auto &[_, buffer_id] : buffers) {
+        for (const auto &buffer_id : buffers) {
             glDeleteBuffers(1, &buffer_id);
             glDeleteVertexArrays(1, &vao);
         }
@@ -41,13 +42,45 @@ namespace nm {
         glGenBuffers(1, &n_vbo);
         glGenBuffers(1, &f_vbo);
 
-        buffers["positions"] = p_vbo;
-        buffers["colors"] = c_vbo;
-        buffers["normals"] = n_vbo;
-        buffers["faces"] = f_vbo;
+        buffers.at(Buffer::kPosition) = p_vbo;
+        buffers.at(Buffer::kColor) = c_vbo;
+        buffers.at(Buffer::kNormal) = n_vbo;
+        buffers.at(Buffer::kFaces) = f_vbo;
     }
 
-    void Renderer::reloadBuffers() {}
+    void Renderer::reloadBuffers(const std::unique_ptr<Mesh> &mesh) {
+        buildVertexBuffer(Buffer::kPosition, buffers.at(Buffer::kPosition), 3, mesh->vertices);
+        buildVertexBuffer(Buffer::kColor, buffers.at(Buffer::kColor), 3, mesh->colors);
+
+        if (mesh->normals.rows() > 0) {
+            buildVertexBuffer(Buffer::kNormal, buffers.at(Buffer::kNormal), 3, mesh->normals);
+        }
+
+        buildIndexBuffer(buffers.at(Buffer::kFaces), mesh->faces);
+    }
+
+    void Renderer::render(const std::unique_ptr<Mesh> &mesh) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        shader_program_->bind();
+        // shader_program_->setMatrixUniform(view_.id, camera_->viewMatrix());
+        renderBaseGrid();
+
+        if (mesh != nullptr) {
+            switch (render_mode) {
+                case RenderMode::kLines:
+                    renderLines(mesh);
+                    break;
+                case RenderMode::kMesh:
+                    renderMesh(mesh);
+                    break;
+                case RenderMode::kMeshAndLines:
+                    renderMeshAndLines(mesh);
+                    break;
+            }
+        }
+
+        shader_program_->release();
+    }
 
     void Renderer::buildVertexBuffer(GLint location, GLint buffer, integer stride, const vecXr &data, integer offset,
                                      bool refresh) {
@@ -67,23 +100,32 @@ namespace nm {
 
     void Renderer::resize(integer width, integer height) { glViewport(0, 0, width, height); }
 
-    void Renderer::renderMesh(const Mesh &mesh) {
+    void Renderer::renderMesh(const std::unique_ptr<Mesh> &mesh) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glDrawElements(GL_TRIANGLES, mesh.faces.rows(), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, mesh->faces.rows(), GL_UNSIGNED_INT, nullptr);
     }
 
-    void Renderer::renderLines(const Mesh &mesh) {
-        buildVertexBuffer(2, buffers["color"], 3, mesh.wireframe_colors);
+    void Renderer::renderLines(const std::unique_ptr<Mesh> &mesh) {
+        buildVertexBuffer(Buffer::kColor, buffers.at(Buffer::kColor), 3, mesh->wireframe_colors);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glDrawElements(GL_TRIANGLES, mesh.faces.rows(), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, mesh->faces.rows(), GL_UNSIGNED_INT, nullptr);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
-    void Renderer::renderMeshAndLines(const Mesh &mesh) {
+    void Renderer::renderMeshAndLines(const std::unique_ptr<Mesh> &mesh) {
         glEnable(GL_POLYGON_OFFSET_LINE);
         glPolygonOffset(-1.0, -1.0);
         renderMesh(mesh);
         renderLines(mesh);
         glDisable(GL_POLYGON_OFFSET_LINE);
+    }
+
+    void Renderer::renderBaseGrid() {
+        vecXr vertices, colors;
+        makeRenderableGrid(grid_spacing_scale, uniform_grid_size, vertices, colors);
+
+        buildVertexBuffer(Buffer::kPosition, buffers.at(Buffer::kPosition), 3, vertices);
+        buildVertexBuffer(Buffer::kColor, buffers.at(Buffer::kColor), 3, colors);
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(vertices.rows() / 3));
     }
 }// namespace nm

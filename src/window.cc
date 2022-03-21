@@ -160,6 +160,8 @@ void main() {
         camera_->resize(window_width, window_height);
         renderer_->resize(window_width, window_height);
 
+        bool is_vis = true;
+
         while (!glfwWindowShouldClose(window_)) {
             glfwPollEvents();
 
@@ -167,10 +169,18 @@ void main() {
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
+            ImGui::Begin("Hey", &is_vis);
+            ImGui::Text("Sup");
+            ImGui::End();
+
             ImGui::Render();
 
+            glViewport(0, 0, window_width, window_height);
             glClearColor(background_color_(0), background_color_(1), background_color_(2), background_color_(3));
-            glClear(GL_COLOR_BUFFER_BIT);
+            renderer_->render(nullptr);
+
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
             glfwSwapBuffers(window_);
         }
 

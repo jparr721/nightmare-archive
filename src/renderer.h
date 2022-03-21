@@ -4,8 +4,8 @@
 #include "mesh.h"
 #include "opengl.h"
 #include "shader_program.h"
+#include <array>
 #include <memory>
-#include <unordered_map>
 
 namespace nm {
     struct Lighting {
@@ -24,32 +24,34 @@ namespace nm {
         GLint id;
         T data;
 
+        Uniform() = default;
         Uniform(GLint id) : id(id) {}
         Uniform(GLint id, const T &data) : id(id), data(data) {}
     };
 
-    enum class RenderMode {
-        kMesh = 0,
-        kLines,
-        kMeshAndLines,
-    };
+    enum class RenderMode { kMesh = 0, kLines, kMeshAndLines };
+    enum Buffer { kPosition = 0, kNormal = 1, kColor = 2, kFaces = 3 };
 
     class Renderer {
     public:
         GLuint vao;
+
+        real grid_spacing_scale = 1.0;
+        integer uniform_grid_size = 10.0;
+
         RenderMode render_mode;
 
         Lighting lighting;
 
-        std::unordered_map<std::string, GLuint> buffers;
+        std::array<GLuint, 4> buffers;
 
-        Renderer(const std::shared_ptr<ShaderProgram> &shader_program, const std::shared_ptr<Camera> &camera,
+        Renderer(std::shared_ptr<ShaderProgram> shader_program, std::shared_ptr<Camera> camera,
                  const RenderMode render_mode);
         ~Renderer();
 
         void bindBuffers();
-        void reloadBuffers();
-        void render();
+        void reloadBuffers(const std::unique_ptr<Mesh> &mesh);
+        void render(const std::unique_ptr<Mesh> &mesh);
 
         void resize(integer width, integer height);
 
@@ -59,11 +61,18 @@ namespace nm {
         void buildIndexBuffer(GLint buffer, const vecXi &data);
 
     private:
+        Uniform<vec3r> light_pos_;
+        Uniform<mat4r> view_;
+        Uniform<mat4r> projection_;
+        Uniform<mat4r> normal_;
+
         std::shared_ptr<ShaderProgram> shader_program_;
         std::shared_ptr<Camera> camera_;
 
-        void renderMesh(const Mesh &mesh);
-        void renderLines(const Mesh &mesh);
-        void renderMeshAndLines(const Mesh &mesh);
+        void renderMesh(const std::unique_ptr<Mesh> &mesh);
+        void renderLines(const std::unique_ptr<Mesh> &mesh);
+        void renderMeshAndLines(const std::unique_ptr<Mesh> &mesh);
+
+        void renderBaseGrid();
     };
 }// namespace nm
