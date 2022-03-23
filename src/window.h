@@ -9,32 +9,9 @@
 
 namespace nm {
 
-    class Window {
-    public:
-        bool is_init = false;
+    void destroy();
 
-        Window(const std::string &title) : title_(title) {}
-        ~Window();
+    auto initialize(const std::string &window_title) -> bool;
 
-        void initialize();
-        auto launch() -> int;
-
-        // Compelx setters ============
-        void setBackgroundColor();
-
-    private:
-        integer window_width = 600;
-        integer window_height = 400;
-
-        const std::string title_;
-
-        vec4r background_color_ = vec4r(0.16, 0.16, 0.16, 0.0);
-
-        GLFWwindow *window_;
-
-        std::shared_ptr<Camera> camera_;
-        std::shared_ptr<ShaderProgram> shader_program_;
-
-        std::unique_ptr<Renderer> renderer_;
-    };
+    auto launch() -> int;
 }// namespace nm

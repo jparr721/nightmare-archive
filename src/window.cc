@@ -1,4 +1,6 @@
 #include "window.h"
+#include "input.h"
+#include <igl/readOBJ.h>
 
 namespace nm {
     const std::string kVertexShader =
@@ -41,7 +43,7 @@ out vec4 frag_color;
 void main() {
   frag_color = ambient_color;
 
-	vec4 specular_color = vec4(1.0f, 1.0f, 1.0f, 0.5f);
+  vec4 specular_color = vec4(1.0f, 1.0f, 1.0f, 0.5f);
   vec4 diffuse_color = vec4(ambient_color.rgb, 0.5f);
 
   // Make this a var later.
@@ -62,27 +64,53 @@ void main() {
   }
 }
 )";
+
+    integer window_width = 600;
+    integer window_height = 400;
+
+    vec4r background_color = vec4r(0.16, 0.16, 0.16, 0.0);
+
+    GLFWwindow *window;
+
+    std::unique_ptr<Input> input = std::make_unique<Input>();
+
+    std::shared_ptr<Camera> camera = std::make_shared<Camera>();
+
+    std::shared_ptr<ShaderProgram> shader_program;
+    std::shared_ptr<Renderer> renderer;
+
     static void glfwErrorCallback(int error, const char *description) {
         std::cerr << "Glfw Broke (" << error << "): " << description << std::endl;
     }
 
-    Window::~Window() {
+    static void glfwMouseCursorCallback(GLFWwindow *window, real xoffset, real yoffset) {
+        input->handleScrollEvent(xoffset, yoffset, camera);
+    }
+
+    static void glfwMouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
+        input->handleMouseButtonPress(button, action, mods, camera);
+    }
+
+    static void glfwScrollCallback(GLFWwindow *window, real xoffset, real yoffset) {
+        input->handleScrollEvent(xoffset, yoffset, camera);
+    }
+
+    static void glfwResizeEvent(GLFWwindow *window, int width, int height) { camera->resize(width, height); }
+
+
+    void destroy() {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
-        glfwDestroyWindow(window_);
+        glfwDestroyWindow(window);
         glfwTerminate();
     }
 
-    void Window::initialize() {
-        camera_ = std::make_shared<Camera>();
-        shader_program_ = std::make_shared<ShaderProgram>();
+    auto initialize(const std::string &window_title) -> bool {
+        shader_program = std::make_shared<ShaderProgram>();
 
         glfwSetErrorCallback(glfwErrorCallback);
-        if (!glfwInit()) {
-            is_init = false;
-            return;
-        }
+        if (!glfwInit()) { return false; }
 
 #if defined(__APPLE__)
         constexpr auto kGlslVersion = "#version 150";
@@ -97,8 +125,7 @@ void main() {
         GLFWmonitor *monitor = glfwGetPrimaryMonitor();
         if (monitor == nullptr) {
             std::cerr << "Failed to get primary monitor" << std::endl;
-            is_init = false;
-            return;
+            return false;
         }
 
         const GLFWvidmode *mode = glfwGetVideoMode(monitor);
@@ -106,23 +133,21 @@ void main() {
         if (mode == nullptr) {
             std::cerr << "Failed to get monitor" << std::endl;
             std::cerr << "Initialization failed" << std::endl;
-            is_init = false;
-            return;
+            return false;
         }
 
         window_width = static_cast<integer>(mode->width * 0.75);
         window_height = static_cast<integer>(mode->height * 0.75);
-        camera_->resize(window_width, window_height);
+        camera->resize(window_width, window_height);
 
-        window_ = glfwCreateWindow(window_width, window_height, title_.c_str(), nullptr, nullptr);
+        window = glfwCreateWindow(window_width, window_height, window_title.c_str(), nullptr, nullptr);
 
-        if (window_ == nullptr) {
+        if (window == nullptr) {
             std::cerr << "Failed to create window" << std::endl;
-            is_init = false;
-            return;
+            return false;
         }
 
-        glfwMakeContextCurrent(window_);
+        glfwMakeContextCurrent(window);
 
         // Enable vsync
         glfwSwapInterval(1);
@@ -130,7 +155,7 @@ void main() {
         // Load all OpenGL function pointers
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
             std::cerr << "failed to initize GLAD" << std::endl;
-            return;
+            return false;
         }
 
         // Setup Imgui Context
@@ -140,29 +165,24 @@ void main() {
         ImGui::StyleColorsDark();
 
         // Setup imgui backends
-        ImGui_ImplGlfw_InitForOpenGL(window_, true);
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init(kGlslVersion);
 
-        shader_program_->addShader(GL_VERTEX_SHADER, kVertexShader.c_str());
-        shader_program_->addShader(GL_FRAGMENT_SHADER, kFragmentShader.c_str());
+        shader_program->addShader(GL_VERTEX_SHADER, kVertexShader.c_str());
+        shader_program->addShader(GL_FRAGMENT_SHADER, kFragmentShader.c_str());
 
-        renderer_ = std::make_unique<Renderer>(shader_program_, camera_, RenderMode::kMeshAndLines);
+        renderer = std::make_unique<Renderer>(shader_program, camera, RenderMode::kMeshAndLines);
 
-        is_init = true;
+        return true;
     }
 
-    auto Window::launch() -> int {
-        if (!is_init) {
-            std::cerr << "Window is not initialized" << std::endl;
-            return EXIT_FAILURE;
-        }
-
-        camera_->resize(window_width, window_height);
-        renderer_->resize(window_width, window_height);
+    auto launch() -> int {
+        camera->resize(window_width, window_height);
+        renderer->resize(window_width, window_height);
 
         bool is_vis = true;
 
-        while (!glfwWindowShouldClose(window_)) {
+        while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
 
             ImGui_ImplOpenGL3_NewFrame();
@@ -175,14 +195,16 @@ void main() {
 
             ImGui::Render();
 
-            glViewport(0, 0, window_width, window_height);
-            glClearColor(background_color_(0), background_color_(1), background_color_(2), background_color_(3));
-            renderer_->render(nullptr);
+            glClearColor(background_color(0), background_color(1), background_color(2), background_color(3));
+
+            renderer->render(nullptr);
 
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-            glfwSwapBuffers(window_);
+            glfwSwapBuffers(window);
         }
+
+        destroy();
 
         return EXIT_SUCCESS;
     }

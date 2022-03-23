@@ -5,6 +5,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(PROJECT_LIB ${PROJECT_NAME}_lib)
 
+list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+option(LIBIGL_COPYLEFT_TETGEN "Build target igl_copyleft::tetgen" ON)
+include(libigl)
+
 find_package(OpenGL REQUIRED)
 
 set(GLFW_INSTALL OFF)
@@ -48,6 +53,7 @@ target_link_libraries(${PROJECT_LIB}
   glad
   fast_obj
   Eigen3::Eigen
+  igl::core
   )
 add_executable(${PROJECT_NAME} src/nightmare.cc)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_LIB})

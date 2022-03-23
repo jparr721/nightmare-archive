@@ -12,10 +12,8 @@
 
 int main(int argc, char **argv) {
     using namespace nm;
-    const auto window = std::make_unique<Window>("Nightmare");
-
-    window->initialize();
-    return window->launch();
+    if (!initialize("Nightmare")) { return EXIT_FAILURE; }
+    return launch();
 }
 
 // static void glfw_error_callback(int error, const char *description) {

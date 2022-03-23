@@ -98,7 +98,9 @@ namespace nm {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(integer) * data.size(), data.data(), GL_STATIC_DRAW);
     }
 
-    void Renderer::resize(integer width, integer height) { glViewport(0, 0, width, height); }
+    void Renderer::resize(integer width, integer height) {
+        glViewport(0, 0, width, height);
+    }
 
     void Renderer::renderMesh(const std::unique_ptr<Mesh> &mesh) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
