@@ -5,4 +5,5 @@
 
 namespace nm {
     void buildVertexBuffer(GLuint buffer, GLint location, int stride, const vecXr &data);
+    void buildIndexBuffer(GLuint buffer, const vecXi& data);
 }

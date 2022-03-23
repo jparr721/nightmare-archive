@@ -5,7 +5,7 @@
 namespace nm {
     struct Mesh {
         vecXr vertices;
-        vecX<unsigned int> faces;
+        vecXi faces;
         vecXr tetrahedra;
         vecXr normals;
         vecXr colors;

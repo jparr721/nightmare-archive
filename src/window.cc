@@ -125,9 +125,9 @@ namespace nm {
 
     auto launch() -> int {
         camera->resize(window_width, window_height);
+        renderer->resize(window_width, window_height);
 
         bool is_vis = true;
-
 
         auto mesh = std::make_unique<Mesh>();
         mesh->vertices.resize(12);
@@ -138,21 +138,17 @@ namespace nm {
         mesh->colors << 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f;
 
 
-        GLuint c_vbo, vbo, vao, ibo;
-        glGenVertexArrays(1, &vao);
-        glGenBuffers(1, &vbo);
-        glGenBuffers(1, &c_vbo);
-        glGenBuffers(1, &ibo);
-
-        glBindVertexArray(vao);
-
-        buildVertexBuffer(vbo, 0, 3, mesh->vertices);
-        buildVertexBuffer(c_vbo, 2, 3, mesh->colors);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mesh->faces.size(), mesh->faces.data(),
-                     GL_STATIC_DRAW);
-
+//        GLuint c_vbo, vbo, vao, ibo;
+//        glGenVertexArrays(1, &vao);
+//        glGenBuffers(1, &vbo);
+//        glGenBuffers(1, &c_vbo);
+//        glGenBuffers(1, &ibo);
+//
+//        glBindVertexArray(vao);
+//
+//        buildVertexBuffer(vbo, 0, 3, mesh->vertices);
+//        buildVertexBuffer(c_vbo, 2, 3, mesh->colors);
+//        buildIndexBuffer(ibo, mesh->faces);
 
         while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
@@ -167,16 +163,17 @@ namespace nm {
 
             ImGui::Render();
 
-            shader_program->bind();
+//            shader_program->bind();
 
             glClearColor(background_color(0), background_color(1), background_color(2), background_color(3));
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+            renderer->render(mesh);
+//            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//
+//            glDrawElements(GL_TRIANGLES, mesh->faces.size(), GL_UNSIGNED_INT, nullptr);
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
             glfwSwapBuffers(window);
-            shader_program->release();
+//            shader_program->release();
         }
 
         destroy();

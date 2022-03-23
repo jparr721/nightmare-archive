@@ -45,10 +45,6 @@ namespace nm {
 
         void resize(integer width, integer height);
 
-        // Buffers
-        void buildVertexBuffer(GLint location, GLint buffer, integer stride, const vecXr &data, bool refresh = true);
-        void buildIndexBuffer(GLint buffer, const vecXi &data);
-
     private:
         GLint light_pos_;
         GLint view_;
