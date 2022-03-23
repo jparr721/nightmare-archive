@@ -10,134 +10,229 @@
 #endif
 
 
-int main(int argc, char **argv) {
-    using namespace nm;
-    if (!initialize("Nightmare")) { return EXIT_FAILURE; }
-    return launch();
+// int main(int argc, char **argv) {
+//     using namespace nm;
+//     if (!initialize("Nightmare")) { return EXIT_FAILURE; }
+//     return launch();
+// }
+
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void processInput(GLFWwindow *window);
+
+// settings
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+
+const char *kVertexShader =
+        R"(#version 330
+
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec3 normal;
+layout(location = 2) in vec3 color;
+
+uniform mat4 view;
+uniform mat4 projection;
+uniform vec3 light;
+uniform mat4 normal_matrix;
+
+out vec3 surface_normal;
+out vec4 ambient_color;
+out vec3 light_dir;
+
+void main() {
+  vec4 vertex_pos = vec4(position, 1.0);
+
+  light_dir = normalize(light - position);
+  surface_normal = normalize(normal_matrix * vec4(normal, 1.0f)).xyz;
+
+  // gl_Position = projection * view * vertex_pos;
+  gl_Position = vertex_pos;
+
+  ambient_color = vec4(color, 1.0f);
+}
+)";
+
+const char *kFragmentShader =
+        R"(#version 330
+
+in vec3 surface_normal;
+in vec4 ambient_color;
+in vec3 light_dir;
+
+out vec4 frag_color;
+
+void main() {
+  frag_color = ambient_color;
+
+  vec4 specular_color = vec4(1.0f, 1.0f, 1.0f, 0.5f);
+  vec4 diffuse_color = vec4(ambient_color.rgb, 0.5f);
+
+  // Make this a var later.
+  float shininess = 20.0f;
+
+  float diffuse = max(0.0f, dot(normalize(surface_normal), normalize(light_dir)));
+  vec4 diffuse_light = diffuse * diffuse_color;
+  frag_color += diffuse_light;
+
+  if (diffuse != 0.0f) {
+    vec3 reflection = normalize(reflect(-normalize(light_dir), normalize(surface_normal)));
+
+    float reflection_angle = max(0.0f, dot(normalize(surface_normal), reflection));
+
+    float specular_exp = pow(reflection_angle, shininess);
+    vec4 specular_light = specular_color * specular_exp;
+    frag_color += specular_light;
+  }
+}
+)";
+
+int main() {
+    // glfw: initialize and configure
+    // ------------------------------
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+    // glfw window creation
+    // --------------------
+    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    if (window == NULL) {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    // glad: load all OpenGL function pointers
+    // ---------------------------------------
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
+
+
+    // build and compile our shader program
+    // ------------------------------------
+    // vertex shader
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &kVertexShader, NULL);
+    glCompileShader(vertexShader);
+    // check for shader compile errors
+    int success;
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+    // fragment shader
+    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &kFragmentShader, NULL);
+    glCompileShader(fragmentShader);
+    // check for shader compile errors
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+    // link shaders
+    unsigned int shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+    // check for linking errors
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    }
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    // set up vertex data (and buffer(s)) and configure vertex attributes
+    // ------------------------------------------------------------------
+    float vertices[] = {
+            -0.5f, -0.5f, 0.0f,// left
+            0.5f,  -0.5f, 0.0f,// right
+            0.0f,  0.5f,  0.0f // top
+    };
+
+    unsigned int VBO, VAO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+    glEnableVertexAttribArray(0);
+
+    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
+    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
+    glBindVertexArray(0);
+
+
+    // uncomment this call to draw in wireframe polygons.
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    // render loop
+    // -----------
+    while (!glfwWindowShouldClose(window)) {
+        // input
+        // -----
+        processInput(window);
+
+        // render
+        // ------
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // draw our first triangle
+        glUseProgram(shaderProgram);
+        glBindVertexArray(
+                VAO);// seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glBindVertexArray(0); // no need to unbind it every time
+
+        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+        // -------------------------------------------------------------------------------
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // optional: de-allocate all resources once they've outlived their purpose:
+    // ------------------------------------------------------------------------
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(shaderProgram);
+
+    // glfw: terminate, clearing all previously allocated GLFW resources.
+    // ------------------------------------------------------------------
+    glfwTerminate();
+    return 0;
 }
 
-// static void glfw_error_callback(int error, const char *description) {
-//     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
-// }
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// ---------------------------------------------------------------------------------------------------------
+void processInput(GLFWwindow *window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
+}
 
-// int main(int argc, char **argv) {
-//     // Setup window
-//     glfwSetErrorCallback(glfw_error_callback);
-//     if (!glfwInit()) return 1;
-
-//         // Decide GL+GLSL versions
-// #if defined(IMGUI_IMPL_OPENGL_ES2)
-//     // GL ES 2.0 + GLSL 100
-//     const char *glsl_version = "#version 100";
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-//     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-// #elif defined(__APPLE__)
-//     // GL 3.2 + GLSL 150
-//     const char *glsl_version = "#version 150";
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-//     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-//     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-// #else
-//     // GL 3.0 + GLSL 130
-//     const char *glsl_version = "#version 130";
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-//     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-//     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-// #endif
-
-//     // Create window with graphics context
-//     GLFWwindow *window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
-//     if (window == NULL) { return EXIT_FAILURE; }
-
-//     glfwMakeContextCurrent(window);
-//     glfwSwapInterval(1);// Enable vsync
-
-//     // glad: load all OpenGL function pointers
-//     // ---------------------------------------
-//     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-//         std::cout << "Failed to initialize GLAD" << std::endl;
-//         return -1;
-//     }
-
-//     // Setup Dear ImGui context
-//     IMGUI_CHECKVERSION();
-//     ImGui::CreateContext();
-//     ImGuiIO &io = ImGui::GetIO();
-//     (void) io;
-
-//     ImGui::StyleColorsDark();
-
-//     // Setup Platform/Renderer backends
-//     ImGui_ImplGlfw_InitForOpenGL(window, true);
-//     ImGui_ImplOpenGL3_Init(glsl_version);
-
-//     // Our state
-//     bool show_demo_window = true;
-//     bool show_another_window = false;
-//     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-//     // Main loop
-//     while (!glfwWindowShouldClose(window)) {
-//         glfwPollEvents();
-
-//         ImGui_ImplOpenGL3_NewFrame();
-//         ImGui_ImplGlfw_NewFrame();
-//         ImGui::NewFrame();
-
-//         if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
-
-//         {
-//             static float f = 0.0f;
-//             static int counter = 0;
-
-//             ImGui::Begin("Hello, world!");
-
-//             ImGui::Text("This is some useful text.");
-//             ImGui::Checkbox("Demo Window", &show_demo_window);
-//             ImGui::Checkbox("Another Window", &show_another_window);
-
-//             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-//             ImGui::ColorEdit3("clear color", (float *) &clear_color);
-
-//             if (ImGui::Button("Button")) { counter++; }
-//             ImGui::SameLine();
-//             ImGui::Text("counter = %d", counter);
-
-//             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-//                         ImGui::GetIO().Framerate);
-//             ImGui::End();
-//         }
-
-//         if (show_another_window) {
-//             ImGui::Begin("Another Window", &show_another_window);
-//             ImGui::Text("Hello from another window!");
-//             if (ImGui::Button("Close Me")) show_another_window = false;
-//             ImGui::End();
-//         }
-
-//         // Rendering
-//         ImGui::Render();
-//         int display_w, display_h;
-//         glfwGetFramebufferSize(window, &display_w, &display_h);
-//         glViewport(0, 0, display_w, display_h);
-//         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w,
-//                      clear_color.w);
-//         glClear(GL_COLOR_BUFFER_BIT);
-//         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-//         glfwSwapBuffers(window);
-//     }
-
-//     // Cleanup
-//     ImGui_ImplOpenGL3_Shutdown();
-//     ImGui_ImplGlfw_Shutdown();
-//     ImGui::DestroyContext();
-
-//     glfwDestroyWindow(window);
-//     glfwTerminate();
-
-//     return EXIT_SUCCESS;
-// }
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+    // make sure the viewport matches the new window dimensions; note that width and
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+}

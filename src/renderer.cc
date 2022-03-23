@@ -62,7 +62,7 @@ namespace nm {
     void Renderer::render(const std::unique_ptr<Mesh> &mesh) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader_program_->bind();
-        // shader_program_->setMatrixUniform(view_.id, camera_->viewMatrix());
+        shader_program_->setMatrixUniform(view_.id, camera_->viewMatrix());
         renderBaseGrid();
 
         if (mesh != nullptr) {
@@ -100,6 +100,12 @@ namespace nm {
 
     void Renderer::resize(integer width, integer height) {
         glViewport(0, 0, width, height);
+        shader_program_->bind();
+        shader_program_->setMatrixUniform(projection_.id, camera_->projectionMatrix());
+        shader_program_->setMatrixUniform(view_.id, camera_->viewMatrix());
+        shader_program_->setVectorUniform(light_pos_.id, lighting.light_pos);
+        shader_program_->setMatrixUniform(normal_.id, camera_->viewMatrix().inverse().transpose());
+        shader_program_->release();
     }
 
     void Renderer::renderMesh(const std::unique_ptr<Mesh> &mesh) {

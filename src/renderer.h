@@ -1,6 +1,7 @@
 #pragma once
 
 #include "camera.h"
+#include "math.h"
 #include "mesh.h"
 #include "opengl.h"
 #include "shader_program.h"

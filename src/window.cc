@@ -1,6 +1,5 @@
 #include "window.h"
 #include "input.h"
-#include <igl/readOBJ.h>
 
 namespace nm {
     const std::string kVertexShader =
@@ -83,19 +82,24 @@ void main() {
         std::cerr << "Glfw Broke (" << error << "): " << description << std::endl;
     }
 
-    static void glfwMouseCursorCallback(GLFWwindow *window, real xoffset, real yoffset) {
-        input->handleScrollEvent(xoffset, yoffset, camera);
+    static void glfwCursorPosCallback(GLFWwindow *window, double xpos, double ypos) {
+        input->handleCursorPos(window, xpos, ypos, camera);
     }
 
     static void glfwMouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
-        input->handleMouseButtonPress(button, action, mods, camera);
+        input->handleMouseButtonPress(window, button, action, mods, camera);
     }
 
-    static void glfwScrollCallback(GLFWwindow *window, real xoffset, real yoffset) {
+    static void glfwScrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
         input->handleScrollEvent(xoffset, yoffset, camera);
     }
 
-    static void glfwResizeEvent(GLFWwindow *window, int width, int height) { camera->resize(width, height); }
+    static void glfwResizeEvent(GLFWwindow *window, int width, int height) {
+        camera->resize(width, height);
+        window_width = width;
+        window_height = height;
+        renderer->resize(window_width, window_height);
+    }
 
 
     void destroy() {
@@ -170,6 +174,11 @@ void main() {
 
         shader_program->addShader(GL_VERTEX_SHADER, kVertexShader.c_str());
         shader_program->addShader(GL_FRAGMENT_SHADER, kFragmentShader.c_str());
+
+        glfwSetMouseButtonCallback(window, glfwMouseButtonCallback);
+        glfwSetScrollCallback(window, glfwScrollCallback);
+        glfwSetCursorPosCallback(window, glfwCursorPosCallback);
+        glfwSetWindowSizeCallback(window, glfwResizeEvent);
 
         renderer = std::make_unique<Renderer>(shader_program, camera, RenderMode::kMeshAndLines);
 
