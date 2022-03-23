@@ -33,30 +33,31 @@ add_subdirectory(third_party/fast_obj)
 
 option(NIGHTMARE_TESTS "Build the tests" OFF)
 if (NIGHTMARE_TESTS)
-  enable_testing()
-  include(GoogleTest)
-  add_subdirectory(tests)
-endif()
+    enable_testing()
+    include(GoogleTest)
+    add_subdirectory(tests)
+endif ()
 
 add_library(${PROJECT_LIB}
-  src/camera.cc
-  src/geometry.cc
-  src/renderer.cc
-  src/renderer_utils.cc
-  src/shader_program.cc
-  src/shader.cc
-  src/input.cc
-  src/window.cc
-)
+        src/camera.cc
+        src/geometry.cc
+        src/renderer.cc
+        src/renderer_utils.cc
+        src/shader_program.cc
+        src/shader.cc
+        src/input.cc
+        src/window.cc
+        src/resources.cc
+        )
 target_link_libraries(${PROJECT_LIB}
-  PUBLIC
-  glfw
-  imgui
-  glad
-  fast_obj
-  Eigen3::Eigen
-  igl::core
-  )
+        PUBLIC
+        glfw
+        imgui
+        glad
+        fast_obj
+        Eigen3::Eigen
+        igl::core
+        )
 add_executable(${PROJECT_NAME} src/nightmare.cc)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_LIB})
 

@@ -8,10 +8,10 @@ namespace nm {
         : shader_program_(std::move(shader_program)), camera_(std::move(camera)), render_mode(render_mode) {
         shader_program_->bind();
 
-        light_pos_ = Uniform<vec3r>(shader_program_->uniformLocation("light_pos"));
-        view_ = Uniform<mat4r>(shader_program_->uniformLocation("view"));
-        projection_ = Uniform<mat4r>(shader_program_->uniformLocation("projection"));
-        normal_ = Uniform<mat4r>(shader_program_->uniformLocation("normal"));
+        light_pos_ = shader_program_->uniformLocation("light_pos");
+        view_ = shader_program_->uniformLocation("view");
+        projection_ = shader_program_->uniformLocation("projection");
+        normal_ = shader_program_->uniformLocation("normal");
 
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
@@ -58,16 +58,17 @@ namespace nm {
             buildVertexBuffer(Buffer::kNormal, buffers.at(Buffer::kNormal), 3, mesh->normals);
         }
 
-        buildIndexBuffer(buffers.at(Buffer::kFaces), mesh->faces);
+//        buildIndexBuffer(buffers.at(Buffer::kFaces), mesh->faces);
     }
 
     void Renderer::render(const std::unique_ptr<Mesh> &mesh) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader_program_->bind();
-        shader_program_->setMatrixUniform(view_.id, camera_->viewMatrix());
+        shader_program_->setMatrixUniform(view_, camera_->viewMatrix());
         renderBaseGrid();
 
         if (mesh != nullptr) {
+            reloadBuffers(mesh);
             switch (render_mode) {
                 case RenderMode::kLines:
                     renderLines(mesh);
@@ -84,8 +85,7 @@ namespace nm {
         shader_program_->release();
     }
 
-    void Renderer::buildVertexBuffer(GLint location, GLint buffer, integer stride, const vecXr &data, integer offset,
-                                     bool refresh) {
+    void Renderer::buildVertexBuffer(GLint location, GLint buffer, integer stride, const vecXr &data, bool refresh) {
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
         if (refresh) { glBufferData(GL_ARRAY_BUFFER, sizeof(real) * data.size(), data.data(), GL_DYNAMIC_DRAW); }
@@ -105,10 +105,10 @@ namespace nm {
     void Renderer::resize(integer width, integer height) {
         glViewport(0, 0, width, height);
         shader_program_->bind();
-        shader_program_->setMatrixUniform(projection_.id, camera_->projectionMatrix());
-        shader_program_->setMatrixUniform(view_.id, camera_->viewMatrix());
-        shader_program_->setVectorUniform(light_pos_.id, lighting.light_pos);
-        shader_program_->setMatrixUniform(normal_.id, camera_->viewMatrix().inverse().transpose());
+        shader_program_->setMatrixUniform(projection_, camera_->projectionMatrix());
+        shader_program_->setMatrixUniform(view_, camera_->viewMatrix());
+        shader_program_->setVectorUniform(light_pos_, lighting.light_pos);
+        shader_program_->setMatrixUniform(normal_, camera_->viewMatrix().inverse().transpose());
         shader_program_->release();
     }
 

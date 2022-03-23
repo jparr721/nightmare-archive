@@ -14,7 +14,7 @@ namespace nm {
     using real = float;
 #endif
 
-#ifdef NIGHTMARE_USE_32_BIT_INTEGER
+#ifdef NIGHTMARE_USE_64_BIT_INTEGER
     using integer = int64_t;
 #else
     using integer = int32_t;

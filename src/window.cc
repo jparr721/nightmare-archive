@@ -1,5 +1,6 @@
 #include "window.h"
 #include "input.h"
+//#include "resources.h"
 
 namespace nm {
     integer window_width = 600;
@@ -116,7 +117,7 @@ namespace nm {
         glfwSetCursorPosCallback(window, glfwCursorPosCallback);
         glfwSetWindowSizeCallback(window, glfwResizeEvent);
 
-        renderer = std::make_unique<Renderer>(shader_program, camera, RenderMode::kMeshAndLines);
+        renderer = std::make_unique<Renderer>(shader_program, camera, RenderMode::kMesh);
 
         shader_program->release();
         return true;
@@ -124,9 +125,41 @@ namespace nm {
 
     auto launch() -> int {
         camera->resize(window_width, window_height);
-        renderer->resize(window_width, window_height);
 
         bool is_vis = true;
+
+
+        auto mesh = std::make_unique<Mesh>();
+        mesh->vertices.resize(12);
+        mesh->vertices << 0.5f, 0.5f, 0.0f, 0.5f, -0.5f, 0.0f, -0.5f, -0.5f, 0.0f, -0.5f, 0.5f, 0.0f;
+        mesh->faces.resize(6);
+        mesh->faces << 0, 1, 3, 1, 2, 3;
+        mesh->colors.resize(12);
+        mesh->colors << 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f;
+
+
+        GLuint c_vbo, vbo, vao, ibo;
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+        glGenBuffers(1, &c_vbo);
+        glGenBuffers(1, &ibo);
+
+        glBindVertexArray(vao);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(real) * mesh->vertices.size(), mesh->vertices.data(), GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, c_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(real) * mesh->colors.size(), mesh->colors.data(), GL_DYNAMIC_DRAW);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(2);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mesh->faces.size(), mesh->faces.data(),
+                     GL_STATIC_DRAW);
+
 
         while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
@@ -141,19 +174,16 @@ namespace nm {
 
             ImGui::Render();
 
+            shader_program->bind();
+
             glClearColor(background_color(0), background_color(1), background_color(2), background_color(3));
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            auto mesh = std::make_unique<Mesh>();
-            mesh->vertices.resize(12);
-            mesh->vertices << 0.5f, 0.5f, 0.0f, 0.5f, -0.5f, 0.0f, -0.5f, -0.5f, 0.0f, -0.5f, 0.5f, 0.0f;
-            mesh->faces.resize(6);
-            mesh->faces << 0, 1, 3, 1, 2, 3;
-
-            renderer->render(nullptr);
-
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
             glfwSwapBuffers(window);
+            shader_program->release();
         }
 
         destroy();

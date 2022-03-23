@@ -1,8 +1,8 @@
 #pragma once
 
 #include "camera.h"
-#include "nm_math.h"
 #include "mesh.h"
+#include "nm_math.h"
 #include "opengl.h"
 #include "shader_program.h"
 #include <array>
@@ -15,19 +15,9 @@ namespace nm {
 
         vec3r light_pos;
 
-        Lighting(real phi = 0.0001, real r = 10.0) : phi(phi), r(r) {
+        explicit Lighting(real phi = 0.0001, real r = 10.0) : phi(phi), r(r) {
             light_pos = vec3r(std::cos(phi) * r, 5.0, std::sin(phi) * r);
         }
-    };
-
-    template<typename T>
-    struct Uniform {
-        GLint id;
-        T data;
-
-        Uniform() = default;
-        Uniform(GLint id) : id(id) {}
-        Uniform(GLint id, const T &data) : id(id), data(data) {}
     };
 
     enum class RenderMode { kMesh = 0, kLines, kMeshAndLines };
@@ -46,8 +36,7 @@ namespace nm {
 
         std::array<GLuint, 4> buffers;
 
-        Renderer(std::shared_ptr<ShaderProgram> shader_program, std::shared_ptr<Camera> camera,
-                 const RenderMode render_mode);
+        Renderer(std::shared_ptr<ShaderProgram> shader_program, std::shared_ptr<Camera> camera, RenderMode render_mode);
         ~Renderer();
 
         void bindBuffers();
@@ -57,15 +46,14 @@ namespace nm {
         void resize(integer width, integer height);
 
         // Buffers
-        void buildVertexBuffer(GLint location, GLint buffer, integer stride, const vecXr &data, integer offset = 0,
-                               bool refresh = true);
+        void buildVertexBuffer(GLint location, GLint buffer, integer stride, const vecXr &data, bool refresh = true);
         void buildIndexBuffer(GLint buffer, const vecXi &data);
 
     private:
-        Uniform<vec3r> light_pos_;
-        Uniform<mat4r> view_;
-        Uniform<mat4r> projection_;
-        Uniform<mat4r> normal_;
+        GLint light_pos_;
+        GLint view_;
+        GLint projection_;
+        GLint normal_;
 
         std::shared_ptr<ShaderProgram> shader_program_;
         std::shared_ptr<Camera> camera_;

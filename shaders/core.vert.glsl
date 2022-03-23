@@ -19,7 +19,7 @@ void main() {
   light_dir = normalize(light - position);
   surface_normal = normalize(normal_matrix * vec4(normal, 1.0f)).xyz;
 
-   gl_Position = projection * view * vertex_pos;
+  gl_Position = projection * view * vertex_pos;
 
   ambient_color = vec4(color, 1.0f);
 }
