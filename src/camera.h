@@ -1,7 +1,7 @@
 #pragma once
 
 #include "geometry.h"
-#include "math.h"
+#include "nm_math.h"
 
 namespace nm {
     class Camera {

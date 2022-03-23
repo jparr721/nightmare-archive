@@ -1,7 +1,7 @@
 #include "shader_program.h"
 
 namespace nm {
-    ShaderProgram::ShaderProgram() {}
+    ShaderProgram::ShaderProgram() { id = glCreateProgram(); }
 
     ShaderProgram::~ShaderProgram() {
         std::cout << "Deleting shaders" << std::endl;
@@ -9,13 +9,38 @@ namespace nm {
         glDeleteProgram(id);
     }
 
+    /**
+     * Calls glLinkProgram on the `id` member.
+     */
     void ShaderProgram::link() {
         glLinkProgram(id);
+        GLint is_linked;
+        glGetProgramiv(id, GL_LINK_STATUS, &is_linked);
+
+        if (is_linked == GL_FALSE) {
+            int max_length = 1024;
+            GLchar info_log[max_length];
+            glGetShaderInfoLog(id, max_length, &max_length, info_log);
+
+            // Log this error message
+            std::cerr << "Loading Shader Failed: " << info_log << std::endl;
+            assert(false && "LINKING SHADER FAILED");
+        }
+
         NM_LOG_GL_ERRORS();
     }
 
-    void ShaderProgram::bind() { glUseProgram(id); }
+    /**
+     * Calls glUseProgram on the `id` member.
+     */
+    void ShaderProgram::bind() {
+        glUseProgram(id);
+        NM_LOG_GL_ERRORS();
+    }
 
+    /**
+     * Unbinds the shader program.
+     */
     void ShaderProgram::release() { glUseProgram(0); }
 
     void ShaderProgram::setMatrixUniform(GLint location, const matXr &uniform) {
@@ -26,8 +51,8 @@ namespace nm {
         glUniform3fv(location, 1, uniform.data());
     }
 
-    void ShaderProgram::addShader(GLenum shader_type, const char *shader_src) {
-        const auto shader = Shader(shader_type, shader_src);
+    void ShaderProgram::addShader(GLenum shader_type, const std::string &shader_path) {
+        const auto shader = Shader(shader_type, shader_path);
         assert(shader.is_init);
         shaders.push_back(shader);
         glAttachShader(id, shader.id);

@@ -8,17 +8,8 @@ namespace nm {
     void Input::handleMouseButtonPress(GLFWwindow *window, int button, int action, int mods,
                                        std::shared_ptr<Camera> &camera_) {
 
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-            camera_->rotating = true;
-        } else {
-            camera_->rotating = false;
-        }
-
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-            camera_->panning = true;
-        } else {
-            camera_->panning = false;
-        }
+        camera_->rotating = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+        camera_->panning = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS);
     }
 
     void Input::handleCursorPos(GLFWwindow *window, int xpos, int ypos, std::shared_ptr<Camera> &camera_) {

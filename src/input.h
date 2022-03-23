@@ -1,7 +1,7 @@
 #pragma once
 
 #include "camera.h"
-#include "math.h"
+#include "nm_math.h"
 #include "opengl.h"
 
 namespace nm {

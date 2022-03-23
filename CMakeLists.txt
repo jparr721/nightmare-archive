@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(PROJECT_LIB ${PROJECT_NAME}_lib)
 
+set(CMAKE_BUILD_DIR ${CMAKE_SOURCE_DIR}/build)
+
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 option(LIBIGL_COPYLEFT_TETGEN "Build target igl_copyleft::tetgen" ON)
@@ -58,3 +60,4 @@ target_link_libraries(${PROJECT_LIB}
 add_executable(${PROJECT_NAME} src/nightmare.cc)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_LIB})
 
+file(COPY ${CMAKE_SOURCE_DIR}/shaders DESTINATION ${CMAKE_BUILD_DIR})

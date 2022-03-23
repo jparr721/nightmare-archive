@@ -16,6 +16,7 @@ namespace nm {
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
         bindBuffers();
+
         shader_program_->release();
 
         // Default lighting
@@ -46,6 +47,7 @@ namespace nm {
         buffers.at(Buffer::kColor) = c_vbo;
         buffers.at(Buffer::kNormal) = n_vbo;
         buffers.at(Buffer::kFaces) = f_vbo;
+        NM_LOG_GL_ERRORS();
     }
 
     void Renderer::reloadBuffers(const std::unique_ptr<Mesh> &mesh) {
@@ -91,11 +93,13 @@ namespace nm {
         glVertexAttribPointer(location, stride, GL_FLOAT, GL_FALSE, stride * sizeof(real), nullptr);
 
         glEnableVertexAttribArray(location);
+        NM_LOG_GL_ERRORS();
     }
 
     void Renderer::buildIndexBuffer(GLint buffer, const vecXi &data) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(integer) * data.size(), data.data(), GL_STATIC_DRAW);
+        NM_LOG_GL_ERRORS();
     }
 
     void Renderer::resize(integer width, integer height) {

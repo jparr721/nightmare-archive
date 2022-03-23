@@ -1,4 +1,4 @@
-#include "../src/math.h"
+#include "../src/nm_math.h"
 #include <gtest/gtest.h>
 
 TEST(Test_matrixToVector, doesConvert) {

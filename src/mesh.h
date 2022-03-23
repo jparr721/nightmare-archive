@@ -1,6 +1,6 @@
 #pragma once
 
-#include "math.h"
+#include "nm_math.h"
 
 namespace nm {
     struct Mesh {
