@@ -1,6 +1,6 @@
 #include "window.h"
 #include "input.h"
-//#include "resources.h"
+#include "resources.h"
 
 namespace nm {
     integer window_width = 600;
@@ -146,15 +146,8 @@ namespace nm {
 
         glBindVertexArray(vao);
 
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(real) * mesh->vertices.size(), mesh->vertices.data(), GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-        glEnableVertexAttribArray(0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, c_vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(real) * mesh->colors.size(), mesh->colors.data(), GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-        glEnableVertexAttribArray(2);
+        buildVertexBuffer(vbo, 0, 3, mesh->vertices);
+        buildVertexBuffer(c_vbo, 2, 3, mesh->colors);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mesh->faces.size(), mesh->faces.data(),
