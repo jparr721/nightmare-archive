@@ -34,9 +34,10 @@ namespace nm {
     }
 
     static void glfwResizeEvent(GLFWwindow *window, int width, int height) {
-        camera->resize(width, height);
         window_width = width;
         window_height = height;
+        glViewport(0, 0, window_width, window_height);
+        camera->resize(window_width, window_height);
         renderer->resize(window_width, window_height);
     }
 
@@ -107,15 +108,17 @@ namespace nm {
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init(kGlslVersion);
 
-        shader_program = std::make_shared<ShaderProgram>();
-        shader_program->addShader(GL_VERTEX_SHADER, "shaders/core.vert.glsl");
-        shader_program->addShader(GL_FRAGMENT_SHADER, "shaders/core.frag.glsl");
-        shader_program->link();
-
         glfwSetMouseButtonCallback(window, glfwMouseButtonCallback);
         glfwSetScrollCallback(window, glfwScrollCallback);
         glfwSetCursorPosCallback(window, glfwCursorPosCallback);
         glfwSetWindowSizeCallback(window, glfwResizeEvent);
+
+
+        shader_program = std::make_shared<ShaderProgram>();
+        shader_program->addShader(GL_VERTEX_SHADER, "shaders/core.vert.glsl");
+        shader_program->addShader(GL_FRAGMENT_SHADER, "shaders/core.frag.glsl");
+        shader_program->link();
+        shader_program->bind();
 
         renderer = std::make_unique<Renderer>(shader_program, camera, RenderMode::kMesh);
 
@@ -137,19 +140,6 @@ namespace nm {
         mesh->colors.resize(12);
         mesh->colors << 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f;
 
-
-//        GLuint c_vbo, vbo, vao, ibo;
-//        glGenVertexArrays(1, &vao);
-//        glGenBuffers(1, &vbo);
-//        glGenBuffers(1, &c_vbo);
-//        glGenBuffers(1, &ibo);
-//
-//        glBindVertexArray(vao);
-//
-//        buildVertexBuffer(vbo, 0, 3, mesh->vertices);
-//        buildVertexBuffer(c_vbo, 2, 3, mesh->colors);
-//        buildIndexBuffer(ibo, mesh->faces);
-
         while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
 
@@ -163,17 +153,14 @@ namespace nm {
 
             ImGui::Render();
 
-//            shader_program->bind();
-
             glClearColor(background_color(0), background_color(1), background_color(2), background_color(3));
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
             renderer->render(mesh);
-//            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-//            glDrawElements(GL_TRIANGLES, mesh->faces.size(), GL_UNSIGNED_INT, nullptr);
+
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
             glfwSwapBuffers(window);
-//            shader_program->release();
         }
 
         destroy();

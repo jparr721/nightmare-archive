@@ -20,4 +20,7 @@ namespace nm {
         vertices = matrixToVector(vertices_);
         colors = matrixToVector(colors_);
     }
+
+    void makeCentralAxes() {
+    }
 }// namespace nm

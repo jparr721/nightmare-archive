@@ -8,8 +8,8 @@ namespace nm {
         up_ = vec3r(0, 1, 0);
 
         r_ = 1.0;
-        real theta_ = M_PI / 2.0;
-        real phi_ = M_PI / 2.0;
+        theta_ = M_PI / 2.0;
+        phi_ = M_PI / 2.0;
     }
 
     void Camera::resize(int width, int height) {
@@ -39,7 +39,7 @@ namespace nm {
         const vec3r v_dir = downDirection();
 
         const vec3r u_disp = (du * pan_sensitivity) * u_dir;
-        const vec3r v_disp = (du * pan_sensitivity) * v_dir;
+        const vec3r v_disp = (dv * pan_sensitivity) * v_dir;
         const vec3r pan_disp = u_disp + v_disp;
 
         displacement_ += pan_disp;

@@ -36,7 +36,8 @@ namespace nm {
 
         std::array<GLuint, 4> buffers;
 
-        Renderer(std::shared_ptr<ShaderProgram> shader_program, std::shared_ptr<Camera> camera, RenderMode render_mode);
+        Renderer(const std::shared_ptr<ShaderProgram> &shader_program, const std::shared_ptr<Camera> &camera,
+                 RenderMode render_mode);
         ~Renderer();
 
         void bindBuffers();

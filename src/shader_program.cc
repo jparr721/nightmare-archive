@@ -14,6 +14,8 @@ namespace nm {
      */
     void ShaderProgram::link() {
         glLinkProgram(id);
+        NM_LOG_GL_ERRORS();
+
         GLint is_linked;
         glGetProgramiv(id, GL_LINK_STATUS, &is_linked);
 
@@ -26,8 +28,6 @@ namespace nm {
             std::cerr << "Loading Shader Failed: " << info_log << std::endl;
             assert(false && "LINKING SHADER FAILED");
         }
-
-        NM_LOG_GL_ERRORS();
     }
 
     /**
@@ -44,7 +44,7 @@ namespace nm {
     void ShaderProgram::release() { glUseProgram(0); }
 
     void ShaderProgram::setMatrixUniform(GLint location, const matXr &uniform) {
-        glUniformMatrix4fv(id, 1, GL_FALSE, uniform.data());
+        glUniformMatrix4fv(location, 1, GL_FALSE, uniform.data());
     }
 
     void ShaderProgram::setVectorUniform(GLint location, const vecXr &uniform) {

@@ -4,24 +4,26 @@
 #include <utility>
 
 namespace nm {
-    Renderer::Renderer(std::shared_ptr<ShaderProgram> shader_program, std::shared_ptr<Camera> camera,
+    Renderer::Renderer(const std::shared_ptr<ShaderProgram> &shader_program, const std::shared_ptr<Camera> &camera,
                        const RenderMode render_mode)
-        : shader_program_(std::move(shader_program)), camera_(std::move(camera)), render_mode(render_mode) {
-//        shader_program_->bind();
-
-//        light_pos_ = shader_program_->uniformLocation("light_pos");
-//        view_ = shader_program_->uniformLocation("view");
-//        projection_ = shader_program_->uniformLocation("projection");
-//        normal_ = shader_program_->uniformLocation("normal");
-
+        : shader_program_(shader_program), camera_(camera), render_mode(render_mode) {
+        shader_program->bind();
+        // Set up vao and vbos
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
         bindBuffers();
 
         // Default lighting
-//        lighting = Lighting();
+        lighting = Lighting();
 
-//        glEnable(GL_DEPTH_TEST);
+        // Configure uniforms
+        light_pos_ = shader_program_->uniformLocation("light");
+        view_ = shader_program_->uniformLocation("view");
+        projection_ = shader_program_->uniformLocation("projection");
+        normal_ = shader_program_->uniformLocation("normal_matrix");
+
+        shader_program->release();
+        glEnable(GL_DEPTH_TEST);
     }
 
     Renderer::~Renderer() {
@@ -32,10 +34,7 @@ namespace nm {
     }
 
     void Renderer::bindBuffers() {
-        GLuint p_vbo;
-        GLuint c_vbo;
-        GLuint n_vbo;
-        GLuint f_ibo;
+        GLuint p_vbo, c_vbo, n_vbo, f_ibo;
 
         glGenBuffers(1, &p_vbo);
         glGenBuffers(1, &c_vbo);
@@ -51,24 +50,24 @@ namespace nm {
     }
 
     void Renderer::reloadBuffers(const std::unique_ptr<Mesh> &mesh) {
-        buildVertexBuffer(buffers.at(Buffer::kPosition), 0, 3, mesh->vertices);
-        buildVertexBuffer(buffers.at(Buffer::kColor), 2, 3, mesh->colors);
+        buildVertexBuffer(buffers.at(Buffer::kPosition), Buffer::kPosition, 3, mesh->vertices);
+        buildVertexBuffer(buffers.at(Buffer::kColor), Buffer::kColor, 3, mesh->colors);
 
-//        if (mesh->normals.rows() > 0) {
-//            buildVertexBuffer(Buffer::kNormal, buffers.at(Buffer::kNormal), 3, mesh->normals);
-//        }
-//
+        if (mesh->normals.rows() > 0) {
+            buildVertexBuffer(buffers.at(Buffer::kNormal), Buffer::kNormal, 3, mesh->normals);
+        }
+
         buildIndexBuffer(buffers.at(Buffer::kFaces), mesh->faces);
     }
 
     void Renderer::render(const std::unique_ptr<Mesh> &mesh) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader_program_->bind();
-//        shader_program_->setMatrixUniform(view_, camera_->viewMatrix());
-//        renderBaseGrid();
+        shader_program_->setMatrixUniform(view_, camera_->viewMatrix());
 
         if (mesh != nullptr) {
             reloadBuffers(mesh);
+
             switch (render_mode) {
                 case RenderMode::kLines:
                     renderLines(mesh);
@@ -86,13 +85,14 @@ namespace nm {
     }
 
     void Renderer::resize(integer width, integer height) {
+        std::cout << "Resizing" << std::endl;
         glViewport(0, 0, width, height);
-//        shader_program_->bind();
-//        shader_program_->setMatrixUniform(projection_, camera_->projectionMatrix());
-//        shader_program_->setMatrixUniform(view_, camera_->viewMatrix());
-//        shader_program_->setVectorUniform(light_pos_, lighting.light_pos);
-//        shader_program_->setMatrixUniform(normal_, camera_->viewMatrix().inverse().transpose());
-//        shader_program_->release();
+        shader_program_->bind();
+        shader_program_->setMatrixUniform(projection_, camera_->projectionMatrix());
+        shader_program_->setMatrixUniform(view_, camera_->viewMatrix());
+        shader_program_->setVectorUniform(light_pos_, lighting.light_pos);
+        shader_program_->setMatrixUniform(normal_, camera_->viewMatrix().inverse().transpose());
+        shader_program_->release();
     }
 
     void Renderer::renderMesh(const std::unique_ptr<Mesh> &mesh) {
@@ -119,8 +119,8 @@ namespace nm {
         vecXr vertices, colors;
         makeRenderableGrid(grid_spacing_scale, uniform_grid_size, vertices, colors);
 
-        buildVertexBuffer(Buffer::kPosition, buffers.at(Buffer::kPosition), 3, vertices);
-        buildVertexBuffer(Buffer::kColor, buffers.at(Buffer::kColor), 3, colors);
+        buildVertexBuffer(buffers.at(Buffer::kPosition), Buffer::kPosition, 3, vertices);
+        buildVertexBuffer(buffers.at(Buffer::kColor), Buffer::kColor, 3, colors);
         glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(vertices.rows() / 3));
     }
 }// namespace nm

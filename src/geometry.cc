@@ -7,7 +7,7 @@ namespace nm {
         const auto cos_phi = std::cos(phi);
         const auto sin_theta = std::sin(theta);
         const auto cos_theta = std::cos(theta);
-        return vec3r(r * (cos_theta * sin_phi), r * cos_phi, r * (sin_theta * sin_phi));
+        return {r * (cos_theta * sin_phi), r * cos_phi, r * (sin_theta * sin_phi)};
     }
 
     vec3r sphericalToCartesianDPhi(real r, real theta, real phi) {
@@ -15,24 +15,24 @@ namespace nm {
         const auto cos_phi = std::cos(phi);
         const auto sin_theta = std::sin(theta);
         const auto cos_theta = std::cos(theta);
-        return vec3r(r * (cos_phi * cos_theta), -r * sin_phi, r * (cos_phi * sin_theta));
+        return {r * (cos_phi * cos_theta), -r * sin_phi, r * (cos_phi * sin_theta)};
     }
 
     mat4r perspectiveProjection(real near, real far, real fov, real aspect) {
-        const auto ymax = near * std::tan(fov * M_PI / 360.0);
-        const auto xmax = ymax * aspect;
+        const real ymax = near * std::tan(fov * M_PI / 360.0);
+        const real xmax = ymax * aspect;
 
-        const auto left = -xmax;
-        const auto right = xmax;
-        const auto bottom = -ymax;
-        const auto top = ymax;
+        const real left = -xmax;
+        const real right = xmax;
+        const real bottom = -ymax;
+        const real top = ymax;
 
-        const auto A = (right + left) / (right - left);
-        const auto B = (top + bottom) / (top - bottom);
-        const auto C = -(far + near) / (far - near);
-        const auto D = -2.0 * far * near / (far - near);
-        const auto E = 2.0 * near / (right - left);
-        const auto F = 2.0 * near / (top - bottom);
+        const real A = (right + left) / (right - left);
+        const real B = (top + bottom) / (top - bottom);
+        const real C = -(far + near) / (far - near);
+        const real D = -2.0 * far * near / (far - near);
+        const real E = 2.0 * near / (right - left);
+        const real F = 2.0 * near / (top - bottom);
 
         mat4r ret = mat4r::Zero();
 
