@@ -79,7 +79,11 @@ namespace nm {
 
     void releaseShaderProgram() { glUseProgram(0); }
 
-//    void setMatrixUniform(GLint location, const matXr &uniform) {
-//        glUniformMatrix4fv()
-//    }
+    void setMatrixUniform(GLint location, const matXr &uniform) {
+        glUniformMatrix4fv(location, 1, GL_FALSE, uniform.data());
+    }
+
+    void setVectorUniform(GLint location, const vecXr& uniform) {
+        glUniform3fv(location, 1, uniform.data());
+    }
 }// namespace nm

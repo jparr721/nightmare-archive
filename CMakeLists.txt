@@ -43,8 +43,6 @@ add_library(${PROJECT_LIB}
         src/geometry.cc
         src/renderer.cc
         src/renderer_utils.cc
-        src/shader_program.cc
-        src/shader.cc
         src/input.cc
         src/window.cc
         src/resources.cc

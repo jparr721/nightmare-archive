@@ -4,7 +4,6 @@
 #include "mesh.h"
 #include "nm_math.h"
 #include "opengl.h"
-#include "shader_program.h"
 #include <array>
 #include <memory>
 
@@ -36,8 +35,7 @@ namespace nm {
 
         std::array<GLuint, 4> buffers;
 
-        Renderer(const std::shared_ptr<ShaderProgram> &shader_program, const std::shared_ptr<Camera> &camera,
-                 RenderMode render_mode);
+        Renderer(GLuint shader_program, const std::shared_ptr<Camera> &camera, const RenderMode render_mode);
         ~Renderer();
 
         void bindBuffers();
@@ -52,7 +50,8 @@ namespace nm {
         GLint projection_;
         GLint normal_;
 
-        std::shared_ptr<ShaderProgram> shader_program_;
+        GLuint shader_program_;
+
         std::shared_ptr<Camera> camera_;
 
         void renderMesh(const std::unique_ptr<Mesh> &mesh);

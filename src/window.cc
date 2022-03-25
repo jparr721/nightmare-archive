@@ -6,6 +6,9 @@ namespace nm {
     integer window_width = 600;
     integer window_height = 400;
 
+    GLuint shader_program;
+    std::vector<GLuint> shader_ids;
+
     vec4r background_color = vec4r(0.16, 0.16, 0.16, 0.0);
 
     GLFWwindow *window;
@@ -14,7 +17,7 @@ namespace nm {
 
     std::shared_ptr<Camera> camera = std::make_shared<Camera>();
 
-    std::shared_ptr<ShaderProgram> shader_program;
+//    std::shared_ptr<ShaderProgram> shader_program;
     std::shared_ptr<Renderer> renderer;
 
     static void glfwErrorCallback(int error, const char *description) {
@@ -114,15 +117,13 @@ namespace nm {
         glfwSetWindowSizeCallback(window, glfwResizeEvent);
 
 
-        shader_program = std::make_shared<ShaderProgram>();
-        shader_program->addShader(GL_VERTEX_SHADER, "shaders/core.vert.glsl");
-        shader_program->addShader(GL_FRAGMENT_SHADER, "shaders/core.frag.glsl");
-        shader_program->link();
-        shader_program->bind();
+
+        shader_ids.push_back(compileShader(GL_VERTEX_SHADER, "shaders/core.vert.glsl"));
+        shader_ids.push_back(compileShader(GL_FRAGMENT_SHADER, "shaders/core.frag.glsl"));
+        shader_program = makeShaderProgram(shader_ids);
+        glLinkProgram(shader_program);
 
         renderer = std::make_unique<Renderer>(shader_program, camera, RenderMode::kMesh);
-
-        shader_program->release();
         return true;
     }
 

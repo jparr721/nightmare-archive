@@ -3,7 +3,6 @@
 #include "camera.h"
 #include "opengl.h"
 #include "renderer.h"
-#include "shader_program.h"
 #include <memory>
 #include <string>
 

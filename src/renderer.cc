@@ -4,10 +4,10 @@
 #include <utility>
 
 namespace nm {
-    Renderer::Renderer(const std::shared_ptr<ShaderProgram> &shader_program, const std::shared_ptr<Camera> &camera,
+    Renderer::Renderer(GLuint shader_program, const std::shared_ptr<Camera> &camera,
                        const RenderMode render_mode)
         : shader_program_(shader_program), camera_(camera), render_mode(render_mode) {
-        shader_program->bind();
+        glUseProgram(shader_program_);
         // Set up vao and vbos
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
@@ -17,12 +17,12 @@ namespace nm {
         lighting = Lighting();
 
         // Configure uniforms
-        light_pos_ = shader_program_->uniformLocation("light");
-        view_ = shader_program_->uniformLocation("view");
-        projection_ = shader_program_->uniformLocation("projection");
-        normal_ = shader_program_->uniformLocation("normal_matrix");
+        light_pos_ = glGetUniformLocation(shader_program_, "light");
+        view_ = glGetUniformLocation(shader_program_, "view");
+        projection_ = glGetUniformLocation(shader_program_, "projection");
+        normal_ = glGetUniformLocation(shader_program_, "normal_matrix");
 
-        shader_program->release();
+        releaseShaderProgram();
         glEnable(GL_DEPTH_TEST);
     }
 
@@ -62,8 +62,8 @@ namespace nm {
 
     void Renderer::render(const std::unique_ptr<Mesh> &mesh) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        shader_program_->bind();
-        shader_program_->setMatrixUniform(view_, camera_->viewMatrix());
+        glUseProgram(shader_program_);
+        setMatrixUniform(view_, camera_->viewMatrix());
 
         if (mesh != nullptr) {
             reloadBuffers(mesh);
@@ -81,18 +81,18 @@ namespace nm {
             }
         }
 
-        shader_program_->release();
+        releaseShaderProgram();
     }
 
     void Renderer::resize(integer width, integer height) {
         std::cout << "Resizing" << std::endl;
         glViewport(0, 0, width, height);
-        shader_program_->bind();
-        shader_program_->setMatrixUniform(projection_, camera_->projectionMatrix());
-        shader_program_->setMatrixUniform(view_, camera_->viewMatrix());
-        shader_program_->setVectorUniform(light_pos_, lighting.light_pos);
-        shader_program_->setMatrixUniform(normal_, camera_->viewMatrix().inverse().transpose());
-        shader_program_->release();
+        glUseProgram(shader_program_);
+        setMatrixUniform(projection_, camera_->projectionMatrix());
+        setMatrixUniform(view_, camera_->viewMatrix());
+        setVectorUniform(light_pos_, lighting.light_pos);
+        setMatrixUniform(normal_, camera_->viewMatrix().inverse().transpose());
+        releaseShaderProgram();
     }
 
     void Renderer::renderMesh(const std::unique_ptr<Mesh> &mesh) {
