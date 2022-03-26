@@ -22,12 +22,12 @@ if (NIGHTMARE_TESTS)
 endif ()
 
 add_library(${PROJECT_LIB}
-        #        src/geometry.cc
+        src/geometry.cc
         src/renderer_utils.cc
-        # src/mesh.cc
-        src/nm_math.h)
-#        src/nm_io.h
-#        src/nm_io.cc)
+        src/mesh.cc
+        src/nm_math.h
+        src/nm_io.h
+        src/nm_io.cc)
 
 target_link_libraries(${PROJECT_LIB}
         PUBLIC
