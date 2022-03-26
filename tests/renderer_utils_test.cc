@@ -28,7 +28,10 @@ TEST(Test_makeRenderableGrid, smallGrid) {
     vertices_compare.push_back({-2, 0, 1});
     vertices_compare.push_back({2, 0, 1});
 
-    vecXr vertices_compare_vec = matrixToVector(vertices_compare);
+    vecXr vertices_compare_vec(48);
+    vertices_compare_vec << -2, 0, -2, -2, 0, 2, -2, 0, -2, 2, 0, -2, -1, 0, -2, -1, 0, 2, -2, 0, -1, 2, 0, -1, 0, 0,
+            -2, 0, 0, 2, -2, 0, 0, 2, 0, 0, 1, 0, -2, 1, 0, 2, -2, 0, 1, 2, 0, 1;
+
 
     EXPECT_EQ(vertices_compare_vec, vertices);
 }

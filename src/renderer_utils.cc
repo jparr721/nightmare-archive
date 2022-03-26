@@ -17,8 +17,8 @@ namespace nm {
             colors_.push_back({0.5, 0.5, 0.5});
         }
 
-        vertices = matrixToVector(vertices_);
-        colors = matrixToVector(colors_);
+        vertices = stlVectorToEigenVector(flatten(vertices_));
+        colors = stlVectorToEigenVector(flatten(colors_));
     }
 
     void makeCentralAxes() {
