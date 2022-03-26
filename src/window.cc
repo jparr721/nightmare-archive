@@ -116,8 +116,6 @@ namespace nm {
         glfwSetCursorPosCallback(window, glfwCursorPosCallback);
         glfwSetWindowSizeCallback(window, glfwResizeEvent);
 
-
-
         shader_ids.push_back(compileShader(GL_VERTEX_SHADER, "shaders/core.vert.glsl"));
         shader_ids.push_back(compileShader(GL_FRAGMENT_SHADER, "shaders/core.frag.glsl"));
         shader_program = makeShaderProgram(shader_ids);

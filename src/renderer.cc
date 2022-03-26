@@ -1,7 +1,6 @@
 #include "renderer.h"
 #include "renderer_utils.h"
 #include "resources.h"
-#include <utility>
 
 namespace nm {
     Renderer::Renderer(GLuint shader_program, const std::shared_ptr<Camera> &camera,
@@ -65,6 +64,8 @@ namespace nm {
         glUseProgram(shader_program_);
         setMatrixUniform(view_, camera_->viewMatrix());
 
+        renderBaseGrid();
+
         if (mesh != nullptr) {
             reloadBuffers(mesh);
 
@@ -85,7 +86,6 @@ namespace nm {
     }
 
     void Renderer::resize(integer width, integer height) {
-        std::cout << "Resizing" << std::endl;
         glViewport(0, 0, width, height);
         glUseProgram(shader_program_);
         setMatrixUniform(projection_, camera_->projectionMatrix());

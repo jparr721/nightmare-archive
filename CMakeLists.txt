@@ -31,7 +31,7 @@ add_subdirectory(third_party/eigen3)
 
 add_subdirectory(third_party/fast_obj)
 
-option(NIGHTMARE_TESTS "Build the tests" OFF)
+option(NIGHTMARE_TESTS "Build the tests" ON)
 if (NIGHTMARE_TESTS)
     enable_testing()
     include(GoogleTest)

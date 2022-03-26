@@ -45,9 +45,9 @@ namespace nm {
         real phi_ = M_PI / 2.0;
 
         vec3r displacement_ = vec3r::Zero();
-        vec3r eye_ = vec3r::Zero();
+        vec3r eye_ = vec3r::UnitZ();
         vec3r center_ = vec3r::Zero();
-        vec3r up_ = vec3r(0, 1, 0);
+        vec3r up_ = vec3r::UnitY();
 
         mat4r view_matrix_ = mat4r::Identity();
         mat4r projection_matrix_ = mat4r::Identity();

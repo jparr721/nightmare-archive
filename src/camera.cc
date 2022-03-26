@@ -3,9 +3,9 @@
 namespace nm {
     void Camera::reset() {
         displacement_ = vec3r::Zero();
-        eye_ = vec3r::Zero();
+        eye_ = vec3r::UnitZ();
         center_ = vec3r::Zero();
-        up_ = vec3r(0, 1, 0);
+        up_ = vec3r::UnitY();
 
         r_ = 1.0;
         theta_ = M_PI / 2.0;
@@ -13,7 +13,7 @@ namespace nm {
     }
 
     void Camera::resize(int width, int height) {
-        aspect_ratio = width / height;
+        aspect_ratio = static_cast<real>(width) / static_cast<real>(height);
         setPerspective();
         compile();
     }

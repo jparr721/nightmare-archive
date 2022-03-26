@@ -18,34 +18,30 @@ namespace nm {
         return {r * (cos_phi * cos_theta), -r * sin_phi, r * (cos_phi * sin_theta)};
     }
 
-    mat4r perspectiveProjection(real near, real far, real fov, real aspect) {
-        const real ymax = near * std::tan(fov * M_PI / 360.0);
-        const real xmax = ymax * aspect;
+    mat4r perspectiveProjection(real near, real far, real fov, real aspect_ratio) {
+        const real ymax = near * std::tan(fov * M_PI / static_cast<real>(360.0));
+        const real xmax = ymax * aspect_ratio;
 
         const real left = -xmax;
         const real right = xmax;
         const real bottom = -ymax;
         const real top = ymax;
 
-        const real A = (right + left) / (right - left);
-        const real B = (top + bottom) / (top - bottom);
-        const real C = -(far + near) / (far - near);
-        const real D = -2.0 * far * near / (far - near);
-        const real E = 2.0 * near / (right - left);
-        const real F = 2.0 * near / (top - bottom);
+        const real t1 = static_cast<real>(2.0) * near;
+        const real t2 = right - left;
+        const real t3 = top - bottom;
+        const real t4 = far - near;
 
         mat4r ret = mat4r::Zero();
 
-        ret(0, 0) = E;
+        ret(0) = t1 / t2;
+        ret(5) = t1/t3;
+        ret(8) = (right + left) / t2;
+        ret(9) = (top + bottom) / t3;
+        ret(10) = (-far - near) / t4;
+        ret(11) = static_cast<real>(-1.0);
+        ret(14) = (-t1 * far) / t4;
 
-        ret(1, 1) = F;
-
-        ret(2, 0) = A;
-        ret(2, 1) = B;
-        ret(2, 2) = C;
-        ret(2, 3) = -1.0;
-
-        ret(3, 2) = D;
         return ret;
     }
 
@@ -61,6 +57,6 @@ namespace nm {
         ret.row(2) << side(2), up_(2), -forward(2), 0.0;
         ret.row(3) << -side.dot(eye), -up.dot(eye), forward.dot(eye), 1.0;
 
-        return ret;
+        return ret.transpose();
     }
 }// namespace nm
