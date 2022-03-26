@@ -3,8 +3,8 @@
 #include "resources.h"
 
 namespace nm {
-    integer window_width = 600;
-    integer window_height = 400;
+    int window_width = 1000;
+    int window_height = 800;
 
     GLuint shader_program;
     std::vector<GLuint> shader_ids;
@@ -13,30 +13,29 @@ namespace nm {
 
     GLFWwindow *window;
 
-    std::unique_ptr<Input> input = std::make_unique<Input>();
+    std::unique_ptr<Input> input;
 
-    std::shared_ptr<Camera> camera = std::make_shared<Camera>();
+    std::shared_ptr<Camera> camera;
 
-//    std::shared_ptr<ShaderProgram> shader_program;
     std::shared_ptr<Renderer> renderer;
 
     static void glfwErrorCallback(int error, const char *description) {
         std::cerr << "Glfw Broke (" << error << "): " << description << std::endl;
     }
 
-    static void glfwCursorPosCallback(GLFWwindow *window, double xpos, double ypos) {
-        input->handleCursorPos(window, xpos, ypos, camera);
+    static void glfwCursorPosCallback(GLFWwindow *window_, double xpos, double ypos) {
+        input->handleCursorPos(window_, xpos, ypos, camera);
     }
 
-    static void glfwMouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
-        input->handleMouseButtonPress(window, button, action, mods, camera);
+    static void glfwMouseButtonCallback(GLFWwindow *window_, int button, int action, int mods) {
+        input->handleMouseButtonPress(window_, button, action, mods, camera);
     }
 
-    static void glfwScrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
+    static void glfwScrollCallback(GLFWwindow *window_, double xoffset, double yoffset) {
         input->handleScrollEvent(xoffset, yoffset, camera);
     }
 
-    static void glfwResizeEvent(GLFWwindow *window, int width, int height) {
+    static void glfwResizeEvent(GLFWwindow *window_, int width, int height) {
         window_width = width;
         window_height = height;
         glViewport(0, 0, window_width, window_height);
@@ -54,6 +53,9 @@ namespace nm {
     }
 
     auto initialize(const std::string &window_title) -> bool {
+        camera = std::make_shared<Camera>();
+        input = std::make_unique<Input>();
+
         glfwSetErrorCallback(glfwErrorCallback);
         if (!glfwInit()) { return false; }
 
@@ -79,10 +81,8 @@ namespace nm {
             return false;
         }
 
-        window_width = static_cast<integer>(mode->width * 0.75);
-        window_height = static_cast<integer>(mode->height * 0.75);
-        camera->resize(window_width, window_height);
-
+        window_width = mode->width;
+        window_height = mode->height;
         window = glfwCreateWindow(window_width, window_height, window_title.c_str(), nullptr, nullptr);
 
         if (window == nullptr) {
@@ -91,6 +91,7 @@ namespace nm {
         }
 
         glfwMakeContextCurrent(window);
+
 
         // Enable vsync
         glfwSwapInterval(1);
@@ -122,13 +123,16 @@ namespace nm {
         glLinkProgram(shader_program);
 
         renderer = std::make_unique<Renderer>(shader_program, camera, RenderMode::kMesh);
+
+        // Perform initial resize event.
+        glViewport(0, 0, window_width, window_height);
+        camera->resize(window_width, window_height);
+        renderer->resize(window_width, window_height);
+
         return true;
     }
 
     auto launch() -> int {
-        camera->resize(window_width, window_height);
-        renderer->resize(window_width, window_height);
-
         bool is_vis = true;
 
         auto mesh = std::make_unique<Mesh>();

@@ -22,9 +22,10 @@ namespace nm {
         real radiusmax = 1000.0;
         real aspect_ratio = 4.0 / 3.0;
 
-        Camera(real near_plane = 0.1, real far_plane = 1000.0, real rotation_sensitivity = 0.01,
-               real pan_sensitivity = 0.01, real zoom_sensitivity = 0.1, real fovmin = 10.0, real fovmax = 120.0,
-               real fov = 65.0, real radiusmin = 0.1, real radiusmax = 1000.0, real aspect_ratio = 4.0 / 3.0)
+        explicit Camera(real near_plane = 0.1, real far_plane = 1000.0, real rotation_sensitivity = 0.01,
+                        real pan_sensitivity = 0.01, real zoom_sensitivity = 0.1, real fovmin = 10.0,
+                        real fovmax = 120.0, real fov = 65.0, real radiusmin = 0.1, real radiusmax = 1000.0,
+                        real aspect_ratio = 4.0 / 3.0)
             : near_plane(near_plane), far_plane(far_plane), rotation_sensitivity(rotation_sensitivity),
               pan_sensitivity(pan_sensitivity), zoom_sensitivity(zoom_sensitivity), fovmin(fovmin), fovmax(fovmax),
               fov(fov), radiusmin(radiusmin), radiusmax(radiusmax), aspect_ratio(aspect_ratio) {}
