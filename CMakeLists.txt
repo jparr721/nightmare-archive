@@ -9,27 +9,10 @@ set(CMAKE_BUILD_DIR ${CMAKE_SOURCE_DIR}/build)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-option(LIBIGL_COPYLEFT_TETGEN "Build target igl_copyleft::tetgen" ON)
+option(LIBIGL_GLFW "Build target igl::glfw" ON)
+option(LIBIGL_IMGUI "Build target igl::imgui" ON)
+option(LIBIGL_OPENGL "Build target igl::opengl" ON)
 include(libigl)
-
-find_package(OpenGL REQUIRED)
-
-set(GLFW_INSTALL OFF)
-set(GLFW_BUILD_EXAMPLES OFF)
-set(GLFW_BUILD_DOCS OFF)
-set(GLFW_BUILD_TESTS OFF)
-add_subdirectory(third_party/glfw)
-
-add_subdirectory(third_party/imgui)
-target_link_libraries(imgui glfw)
-
-add_subdirectory(third_party/glad)
-
-option(BUILD_TESTING OFF)
-option(EIGEN_BUILD_DOC OFF)
-add_subdirectory(third_party/eigen3)
-
-add_subdirectory(third_party/fast_obj)
 
 option(NIGHTMARE_TESTS "Build the tests" ON)
 if (NIGHTMARE_TESTS)
@@ -39,24 +22,20 @@ if (NIGHTMARE_TESTS)
 endif ()
 
 add_library(${PROJECT_LIB}
-        src/camera.cc
-        src/geometry.cc
-        src/renderer.cc
+        #        src/geometry.cc
         src/renderer_utils.cc
-        src/input.cc
-        src/window.cc
-        src/resources.cc
-        )
+        # src/mesh.cc
+        src/nm_math.h)
+#        src/nm_io.h
+#        src/nm_io.cc)
+
 target_link_libraries(${PROJECT_LIB}
         PUBLIC
-        glfw
-        imgui
-        glad
-        fast_obj
-        Eigen3::Eigen
-        igl::core
+        igl::glfw
+        igl::imgui
+        igl::opengl
         )
 add_executable(${PROJECT_NAME} src/nightmare.cc)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_LIB})
 
-file(COPY ${CMAKE_SOURCE_DIR}/shaders DESTINATION ${CMAKE_BUILD_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BUILD_DIR})

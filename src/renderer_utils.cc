@@ -1,8 +1,9 @@
 #include "renderer_utils.h"
 #include <vector>
+#include <igl/list_to_matrix.h>
 
 namespace nm {
-    void makeRenderableGrid(real spacing_scale, integer uniform_grid_size, vecXr &vertices, vecXr &colors) {
+    void makeRenderableGrid(real spacing_scale, int uniform_grid_size, rowMatXr &vertices, rowMatXr &colors) {
         std::vector<std::vector<real>> vertices_;
         std::vector<std::vector<real>> colors_;
         for (int ii = -uniform_grid_size; ii < uniform_grid_size; ++ii) {
@@ -17,10 +18,9 @@ namespace nm {
             colors_.push_back({0.5, 0.5, 0.5});
         }
 
-        vertices = stlVectorToEigenVector(flatten(vertices_));
-        colors = stlVectorToEigenVector(flatten(colors_));
+        igl::list_to_matrix(vertices_, vertices);
+        igl::list_to_matrix(colors_, colors);
     }
 
-    void makeCentralAxes() {
-    }
+    void makeCentralAxes() {}
 }// namespace nm

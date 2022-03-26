@@ -8,17 +8,7 @@
 #include <vector>
 
 namespace nm {
-#ifdef NIGHTMARE_USE_DOUBLE
     using real = double;
-#else
-    using real = float;
-#endif
-
-#ifdef NIGHTMARE_USE_64_BIT_INTEGER
-    using integer = int64_t;
-#else
-    using integer = int32_t;
-#endif
 
 
     // reals
@@ -42,28 +32,30 @@ namespace nm {
     using mat36r = Eigen::Matrix<real, 3, 6>;
     using mat12r = Eigen::Matrix<real, 12, 12>;
     using matXr = Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic>;
+    using rowMatXr = Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
-    // Integers
+    // ints
     // Dense vec Types
-    using vec2i = Eigen::Matrix<integer, 2, 1>;
-    using vec3i = Eigen::Matrix<integer, 3, 1>;
-    using vec4i = Eigen::Matrix<integer, 4, 1>;
-    using vec6i = Eigen::Matrix<integer, 6, 1>;
-    using vec12i = Eigen::Matrix<integer, 12, 1>;
-    using vecXi = Eigen::Matrix<integer, Eigen::Dynamic, 1>;
+    using vec2i = Eigen::Matrix<int, 2, 1>;
+    using vec3i = Eigen::Matrix<int, 3, 1>;
+    using vec4i = Eigen::Matrix<int, 4, 1>;
+    using vec6i = Eigen::Matrix<int, 6, 1>;
+    using vec12i = Eigen::Matrix<int, 12, 1>;
+    using vecXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
 
     // Dense Row vec Types
-    using Rowvec3i = Eigen::Matrix<integer, 1, 3>;
-    using RowvecXi = Eigen::Matrix<integer, 1, Eigen::Dynamic>;
+    using Rowvec3i = Eigen::Matrix<int, 1, 3>;
+    using RowvecXi = Eigen::Matrix<int, 1, Eigen::Dynamic>;
 
     // Dense Matrix Types
-    using mat2i = Eigen::Matrix<integer, 2, 2>;
-    using mat3i = Eigen::Matrix<integer, 3, 3>;
-    using mat4i = Eigen::Matrix<integer, 4, 4>;
-    using matXi = Eigen::Matrix<integer, Eigen::Dynamic, Eigen::Dynamic>;
+    using mat2i = Eigen::Matrix<int, 2, 2>;
+    using mat3i = Eigen::Matrix<int, 3, 3>;
+    using mat4i = Eigen::Matrix<int, 4, 4>;
+    using matXi = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
+    using rowMatXi = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
     // Sparse MatrixTypes
-    using spmatXi = Eigen::SparseMatrix<integer>;
+    using spmatXi = Eigen::SparseMatrix<int>;
 
     template<typename T>
     using vecX = Eigen::Matrix<T, Eigen::Dynamic, 1>;
@@ -80,6 +72,8 @@ namespace nm {
 
     template<typename T>
     using matX = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+    template<typename T>
+    using rowMatX = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
     template<typename T>
     using mat2 = Eigen::Matrix<T, 2, 2>;
     template<typename T>
@@ -102,10 +96,7 @@ namespace nm {
 
     template<typename Derived>
     inline auto matrixToVector(const Eigen::PlainObjectBase<Derived> &in) -> vecX<typename Derived::Scalar> {
-        using Scalar = typename Derived::Scalar;
-        const Scalar *data = in.data();
-        const auto shape = in.rows() * in.cols();
-        return vecX<Scalar>(Eigen::Map<const vecX<Scalar>>(data, shape));
+        return vecX<typename Derived::Scalar>(Eigen::Map<const vecX<typename Derived::Scalar>>(in.data(), in.size()));
     }
 
     template<typename T>
@@ -137,6 +128,15 @@ namespace nm {
         for (int row = 0; row < in.rows(); ++row) { v.push_back(in(row)); }
 
         return v;
+    }
+
+    template<typename T>
+    inline auto flatten(const std::vector<std::vector<T>> &matrix) -> std::vector<T> {
+        std::vector<T> out;
+        for (const auto &row : matrix) {
+            for (const auto &col : row) { out.push_back(col); }
+        }
+        return out;
     }
 
 }// namespace nm

@@ -1,15 +1,3 @@
-[submodule "third_party/glfw"]
-	path = third_party/glfw
-	url = https://github.com/glfw/glfw.git
-  branch = 3.3-stable
-[submodule "third_party/eigen3"]
-	path = third_party/eigen3
-	url = https://gitlab.com/libeigen/eigen.git
-  branch = 3.4
-[submodule "third_party/fast_obj"]
-	path = third_party/fast_obj
-	url = https://github.com/thisistherk/fast_obj.git
-  branch = 49c810ae1c4140afdab91987f2ec28d7500fbe50
 [submodule "third_party/googletest"]
 	path = third_party/googletest
 	url = https://github.com/google/googletest.git
