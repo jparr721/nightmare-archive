@@ -2,18 +2,16 @@
 
 #include "nm_math.h"
 #include <string>
+#include <utility>
 
 namespace nm {
     struct Mesh {
-        rowMatXr vertices;
-        rowMatXi faces;
-        rowMatXi tetrahedra;
-        rowMatXr normals;
-        rowMatXr colors;
+        matXr vertices;
+        matXi faces;
+        matXi tetrahedra;
 
         Mesh() = default;
         explicit Mesh(const std::string &mesh_file);
-//        Mesh(vecXr vertices, vecXr colors);
-//        Mesh(vecXr vertices, vecXr colors, vecXr normals = vecXr());
+        Mesh(matXr vertices, matXi faces) : vertices(std::move(vertices)), faces(std::move(faces)) {}
     };
 }// namespace nm

@@ -26,8 +26,7 @@ add_library(${PROJECT_LIB}
         src/renderer_utils.cc
         src/mesh.cc
         src/nm_math.h
-        src/nm_io.h
-        src/nm_io.cc)
+        src/visualization.cc src/visualization.h)
 
 target_link_libraries(${PROJECT_LIB}
         PUBLIC
