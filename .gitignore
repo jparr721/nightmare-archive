@@ -39,3 +39,6 @@ cmake-build-*
 # Clangd
 .cache
 compile_commands.json
+
+# Assets
+!assets/*
