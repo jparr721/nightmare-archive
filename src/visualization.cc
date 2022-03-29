@@ -90,13 +90,14 @@ namespace nm {
         spdlog::info("Initializing");
         matXr points;
         matXi edges;
-        nm::makeRenderableGrid(1.0, 10, points, edges, -1.0);
+        nm::makeRenderableGrid(1.0, 50, points, edges, -1.0);
         viewer().data().set_edges(points, edges, Rowvec3r(1.0, 1.0, 1.0));
         viewer().core().background_color = vec4<float>(0.15, 0.15, 0.15, 1.0);
 
         spdlog::info("Loading mesh");
         mesh_ = std::make_unique<Mesh>("assets/cube.obj");
         tetrahedralizeMesh(mesh_.get());
+        viewer().data().invert_normals = true;
 
         plugin().widgets.push_back(&menu());
         viewer().plugins.push_back(&plugin());

@@ -18,5 +18,5 @@ namespace nm::fem {
      * @param ref The reference space coordinates on which to compute.
      * @param phi The 4x1 values of the basis functions for phi.
      */
-    void phi_linear_tetrahedron(const matXr &vertices, const vec4i &tet, const vec3r &ref, vec4r &phi);
+    void phiLinearTetrahedron(const matXr &vertices, const vec4i &tet, const vec3r &ref, vec4r &phi);
 }

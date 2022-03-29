@@ -1,11 +1,11 @@
 #include "phi_linear_tetrahedron.h"
 
 namespace nm::fem {
-    void phi_linear_tetrahedron(const nm::matXr &vertices, const vec4i &tet, const nm::vec3r &ref, nm::vec4r &phi) {
-        const auto X0 = vertices.row(tet(0));
-        const auto X1 = vertices.row(tet(1));
-        const auto X2 = vertices.row(tet(2));
-        const auto X3 = vertices.row(tet(3));
+    void phiLinearTetrahedron(const nm::matXr &vertices, const vec4i &tet, const nm::vec3r &ref, nm::vec4r &phi) {
+        const vec3r X0 = vertices.row(tet(0));
+        const vec3r X1 = vertices.row(tet(1));
+        const vec3r X2 = vertices.row(tet(2));
+        const vec3r X3 = vertices.row(tet(3));
 
         // The matrix T represents the edge vectors from our source point X0 to each of the other X points in reference
         // space
