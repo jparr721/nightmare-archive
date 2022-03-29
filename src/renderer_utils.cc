@@ -1,26 +1,24 @@
 #include "renderer_utils.h"
-#include <vector>
 #include <igl/list_to_matrix.h>
+#include <vector>
 
 namespace nm {
-    void makeRenderableGrid(real spacing_scale, int uniform_grid_size, rowMatXr &vertices, rowMatXr &colors) {
-        std::vector<std::vector<real>> vertices_;
-        std::vector<std::vector<real>> colors_;
+    void makeRenderableGrid(real spacing_scale, int uniform_grid_size, matXr &points, matXi &edges, real y_value) {
+        std::vector<std::vector<real>> points_;
+        std::vector<std::vector<int>> edges_;
         for (int ii = -uniform_grid_size; ii < uniform_grid_size; ++ii) {
-            vertices_.push_back({ii * spacing_scale, 0.0, -uniform_grid_size * spacing_scale});
-            vertices_.push_back({ii * spacing_scale, 0.0, uniform_grid_size * spacing_scale});
-            vertices_.push_back({-uniform_grid_size * spacing_scale, 0.0, ii * spacing_scale});
-            vertices_.push_back({uniform_grid_size * spacing_scale, 0.0, ii * spacing_scale});
-
-            colors_.push_back({0.5, 0.5, 0.5});
-            colors_.push_back({0.5, 0.5, 0.5});
-            colors_.push_back({0.5, 0.5, 0.5});
-            colors_.push_back({0.5, 0.5, 0.5});
+            points_.push_back({ii * spacing_scale, y_value, -uniform_grid_size * spacing_scale});
+            points_.push_back({ii * spacing_scale, y_value, uniform_grid_size * spacing_scale});
+            points_.push_back({-uniform_grid_size * spacing_scale, y_value, ii * spacing_scale});
+            points_.push_back({uniform_grid_size * spacing_scale, y_value, ii * spacing_scale});
         }
 
-        igl::list_to_matrix(vertices_, vertices);
-        igl::list_to_matrix(colors_, colors);
-    }
+        for (int ii = 0; ii < points_.size(); ii += 2) {
+            edges_.push_back({ii, ii + 1});
+            edges_.push_back({ii + 1, ii});
+        }
 
-    void makeCentralAxes() {}
+        igl::list_to_matrix(points_, points);
+        igl::list_to_matrix(edges_, edges);
+    }
 }// namespace nm

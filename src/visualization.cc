@@ -1,4 +1,5 @@
 #include "visualization.h"
+#include "renderer_utils.h"
 
 namespace nm {
     // Menus and other non-exported stuff
@@ -85,6 +86,11 @@ namespace nm {
     auto mesh() -> std::unique_ptr<Mesh> & { return mesh_; }
 
     auto initialize() -> bool {
+        matXr points;
+        matXi edges;
+        nm::makeRenderableGrid(1.0, 10, points, edges, -1.0);
+        viewer().data().set_edges(points, edges, Rowvec3r(1.0, 1.0, 1.0));
+
         mesh_ = std::make_unique<Mesh>("assets/cube.obj");
         plugin().widgets.push_back(&menu());
         viewer().plugins.push_back(&plugin());
