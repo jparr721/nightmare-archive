@@ -1,7 +1,7 @@
 #include "phi_linear_tetrahedron.h"
 
 namespace nm::fem {
-    void phiLinearTetrahedron(const nm::matXr &vertices, const vec4i &tet, const nm::vec3r &ref, nm::vec4r &phi) {
+    void phiLinearTetrahedron(const matXr &vertices, const vec4i &tet, const vec3r &ref, vec4r &phi) {
         const vec3r X0 = vertices.row(tet(0));
         const vec3r X1 = vertices.row(tet(1));
         const vec3r X2 = vertices.row(tet(2));
