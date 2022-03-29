@@ -38,4 +38,10 @@ namespace nm {
         mesh->faces = TF;
         mesh->tetrahedra = TT;
     }
+
+    void translateMesh(Mesh *mesh, const vec3r &amount) {
+        for (int ii = 0; ii < amount.rows(); ++ii) {
+            (mesh->vertices.col(ii).array() += amount(ii)).matrix();
+        }
+    }
 }// namespace nm

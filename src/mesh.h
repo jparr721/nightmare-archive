@@ -24,5 +24,6 @@ namespace nm {
         Mesh(matXr vertices, matXi faces) : vertices(std::move(vertices)), faces(std::move(faces)) {}
     };
 
+    void translateMesh(Mesh* mesh, const vec3r &amount);
     void tetrahedralizeMesh(Mesh* mesh, const char* flags = kDefaultTetgenFlags);
 }// namespace nm
