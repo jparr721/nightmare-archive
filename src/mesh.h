@@ -5,7 +5,7 @@
 #include <utility>
 
 namespace nm {
-    constexpr const char* kDefaultTetgenFlags = "zpqa1e-1";
+    constexpr const char* kDefaultTetgenFlags = "zpqQa1e-1";
 
     enum TetgenResult {
         kTetgenFailedToConvert = -1,

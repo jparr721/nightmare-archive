@@ -15,6 +15,8 @@ option(LIBIGL_OPENGL "Build target igl::opengl" ON)
 option(LIBIGL_COPYLEFT_TETGEN "Build target igl_copyleft::tetgen" ON)
 include(libigl)
 
+add_subdirectory(third_party/spdlog)
+
 option(NIGHTMARE_TESTS "Build the tests" ON)
 if (NIGHTMARE_TESTS)
     enable_testing()
@@ -27,7 +29,8 @@ add_library(${PROJECT_LIB}
         src/renderer_utils.cc
         src/mesh.cc
         src/nm_math.h
-        src/visualization.cc src/visualization.h)
+        src/visualization.cc
+        src/visualization.h)
 
 target_link_libraries(${PROJECT_LIB}
         PUBLIC
@@ -35,6 +38,7 @@ target_link_libraries(${PROJECT_LIB}
         igl::imgui
         igl::opengl
         igl_copyleft::tetgen
+        spdlog
         )
 add_executable(${PROJECT_NAME} src/nightmare.cc)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_LIB})
