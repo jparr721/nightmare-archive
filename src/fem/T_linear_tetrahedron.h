@@ -1,0 +1,8 @@
+//
+// Created by Jarred Parr on 3/29/22.
+//
+
+#ifndef NIGHTMARE_T_LINEAR_TETRAHEDRON_H
+#define NIGHTMARE_T_LINEAR_TETRAHEDRON_H
+
+#endif//NIGHTMARE_T_LINEAR_TETRAHEDRON_H
