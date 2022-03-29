@@ -8,7 +8,7 @@ TEST(Test_makeRenderableGrid, smallGrid) {
 
     rowMatXr vertices;
     rowMatXr colors;
-    makeRenderableGrid(kGridScale, 2, vertices, colors);
+    makeRenderableGrid(kGridScale, 2, 0.0);
 
     rowMatXr vertices_compare(16, 3);
     vertices_compare << -2, 0, -2, -2, 0, 2, -2, 0, -2, 2, 0, -2, -1, 0, -2, -1, 0, 2, -2, 0, -1, 2, 0, -1, 0, 0,
