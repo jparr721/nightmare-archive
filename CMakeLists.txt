@@ -12,6 +12,7 @@ option(LIBIGL_GLFW /cmake)
 option(LIBIGL_GLFW "Build target igl::glfw" ON)
 option(LIBIGL_IMGUI "Build target igl::imgui" ON)
 option(LIBIGL_OPENGL "Build target igl::opengl" ON)
+option(LIBIGL_COPYLEFT_TETGEN "Build target igl_copyleft::tetgen" ON)
 include(libigl)
 
 option(NIGHTMARE_TESTS "Build the tests" ON)
@@ -33,6 +34,7 @@ target_link_libraries(${PROJECT_LIB}
         igl::glfw
         igl::imgui
         igl::opengl
+        igl_copyleft::tetgen
         )
 add_executable(${PROJECT_NAME} src/nightmare.cc)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_LIB})

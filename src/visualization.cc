@@ -92,6 +92,7 @@ namespace nm {
         viewer().data().set_edges(points, edges, Rowvec3r(1.0, 1.0, 1.0));
 
         mesh_ = std::make_unique<Mesh>("assets/cube.obj");
+        nm::tetrahedralizeMesh(mesh_.get());
         plugin().widgets.push_back(&menu());
         viewer().plugins.push_back(&plugin());
         menu().callback_draw_viewer_menu = &callbackDrawViewerMenu;
