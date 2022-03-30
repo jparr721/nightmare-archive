@@ -12,7 +12,7 @@ namespace nm::fem {
         for (int ii = 0; ii < 4; ++ii) { deformed.col(ii) = q.segment<3>(element(ii) * 3); }
 
         // Get the centroid of the deformed coordinates
-        const vec3r centroid = computeTetrahedralCentroid(element);
+        const vec3r centroid = computeTetrahedralCentroid(deformed);
 
         // Obtain the deformation gradient for this element dx/dX
         // Obtain dphi/dX, the right hand side of the expression
