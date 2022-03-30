@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../nm_math.h"
+
 namespace nm::fem {
     /**
      * Computes the gradient of the strain energy density with respect to F. This is a nightmare to do by hand, so the

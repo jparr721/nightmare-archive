@@ -20,5 +20,5 @@ namespace nm::fem {
      * @param ref The reference space tetrahedral where we're computing the energy density.
      * @param dphi The 4x3 gradient basis functions with respect to X. dPhi / dX.
      */
-    void dphiLinearTetrahedronDx(const matXr &vertices, const vec4i &tet, const vec3r &ref, mat43r &dphi);
+    auto dphiLinearTetrahedronDx(const matXr &vertices, const vec4i &tet, const vec3r &ref) -> mat43r;
 }// namespace nm::fem

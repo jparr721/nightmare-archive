@@ -1,6 +1,6 @@
 #include "dphi_linear_tetrahedron_dX.h"
 namespace nm::fem {
-    void dphiLinearTetrahedronDx(const matXr &vertices, const vec4i &tet, const vec3r &ref, mat43r &dphi) {
+    auto dphiLinearTetrahedronDx(const matXr &vertices, const vec4i &tet, const vec3r &ref) -> mat43r {
         // Get our reference space coordinates
         const vec3r X0 = vertices.row(tet(0));
         const vec3r X1 = vertices.row(tet(1));
@@ -16,7 +16,10 @@ namespace nm::fem {
         // Construct the 4x3 matrix of -1^T * TT and TT.
         mat3r TT = T.inverse();
         vec3r top_row = -vec3r::Ones().transpose() * TT;
+        mat43r dphi;
         dphi.row(0) = top_row;
         dphi.block<3, 3>(1, 0) = TT;
+
+        return dphi;
     }
 }// namespace nm::fem

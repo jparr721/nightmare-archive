@@ -1,8 +1,5 @@
-//
-// Created by Jarred Parr on 3/29/22.
-//
+#pragma once
 
-#ifndef NIGHTMARE_T_LINEAR_TETRAHEDRON_H
-#define NIGHTMARE_T_LINEAR_TETRAHEDRON_H
+namespace nm::fem {
 
-#endif//NIGHTMARE_T_LINEAR_TETRAHEDRON_H
+}
