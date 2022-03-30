@@ -30,7 +30,7 @@ add_library(${PROJECT_LIB}
         src/mesh.cc
         src/nm_math.h
         src/visualization.cc
-        src/visualization.h src/fem/phi_linear_tetrahedron.cc src/fem/phi_linear_tetrahedron.h src/fem/dphi_linear_tetrahedron_dX.cc src/fem/dphi_linear_tetrahedron_dX.h src/fem/psi_neo_hookean.cc src/fem/psi_neo_hookean.h src/fem/dpsi_neo_hookean_dF.cc src/fem/dpsi_neo_hookean_dF.h src/fem/d2psi_neo_hookean_dF2.cc src/fem/d2psi_neo_hookean_dF2.h src/fem/T_linear_tetrahedron.cc src/fem/T_linear_tetrahedron.h src/fem/quadrature_single_point.cc src/fem/quadrature_single_point.h src/fem/V_linear_tetrahedron.cc src/fem/V_linear_tetrahedron.h src/fem/dV_linear_tetrahedron_dq.cc src/fem/dV_linear_tetrahedron_dq.h src/fem/d2v_linear_tetrahedron_dq2.cc src/fem/d2v_linear_tetrahedron_dq2.h src/fem/integrators_implicit_euler.cc src/fem/integrators_implicit_euler.h src/fem/assemble.cc src/fem/assemble.h)
+        src/visualization.h src/fem/phi_linear_tetrahedron.cc src/fem/phi_linear_tetrahedron.h src/fem/dphi_linear_tetrahedron_dX.cc src/fem/dphi_linear_tetrahedron_dX.h src/fem/psi_neo_hookean.cc src/fem/psi_neo_hookean.h src/fem/dpsi_neo_hookean_dF.cc src/fem/dpsi_neo_hookean_dF.h src/fem/d2psi_neo_hookean_dF2.cc src/fem/d2psi_neo_hookean_dF2.h src/fem/T_linear_tetrahedron.cc src/fem/T_linear_tetrahedron.h src/fem/V_linear_tetrahedron.cc src/fem/V_linear_tetrahedron.h src/fem/dV_linear_tetrahedron_dq.cc src/fem/dV_linear_tetrahedron_dq.h src/fem/d2v_linear_tetrahedron_dq2.cc src/fem/d2v_linear_tetrahedron_dq2.h src/fem/integrators_implicit_euler.cc src/fem/integrators_implicit_euler.h src/fem/assemble.cc src/fem/assemble.h)
 
 target_link_libraries(${PROJECT_LIB}
         PUBLIC

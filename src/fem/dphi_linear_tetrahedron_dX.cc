@@ -1,11 +1,11 @@
 #include "dphi_linear_tetrahedron_dX.h"
 namespace nm::fem {
-    auto dphiLinearTetrahedronDx(const matXr &vertices, const vec4i &tet, const vec3r &ref) -> mat43r {
+    auto dphiLinearTetrahedronDx(const matXr &vertices, const vec4i &element, const vec3r &ref) -> mat43r {
         // Get our reference space coordinates
-        const vec3r X0 = vertices.row(tet(0));
-        const vec3r X1 = vertices.row(tet(1));
-        const vec3r X2 = vertices.row(tet(2));
-        const vec3r X3 = vertices.row(tet(3));
+        const vec3r X0 = vertices.row(element(0));
+        const vec3r X1 = vertices.row(element(1));
+        const vec3r X2 = vertices.row(element(2));
+        const vec3r X3 = vertices.row(element(3));
 
         // Construct T as the matrix of deltas
         mat3r T;

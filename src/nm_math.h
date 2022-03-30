@@ -28,6 +28,7 @@ namespace nm {
     using mat2r = Eigen::Matrix<real, 2, 2>;
     using mat3r = Eigen::Matrix<real, 3, 3>;
     using mat4r = Eigen::Matrix<real, 4, 4>;
+    using mat34r = Eigen::Matrix<real, 3, 4>;
     using mat43r = Eigen::Matrix<real, 4, 3>;
     using mat99r = Eigen::Matrix<real, 9, 9>;
     using mat1212r = Eigen::Matrix<real, 12, 12>;
