@@ -41,6 +41,5 @@ namespace nm::fem {
         v.segment<3>(6) = qdot.segment<3>(element(2) * 3);
         v.segment<3>(9) = qdot.segment<3>(element(3) * 3);
         return 0.5 * qdot.transpose() * M * qdot;
-
     }
 }// namespace nm::fem

@@ -28,25 +28,6 @@ namespace nm {
                 // Zoom
                 ImGui::PushItemWidth(80 * menu().menu_scaling());
                 ImGui::DragFloat("Zoom", &(viewer().core().camera_zoom), 0.05f, 0.1f, 20.0f);
-
-                // Select rotation type
-                int rotation_type = static_cast<int>(viewer().core().rotation_type);
-                static Eigen::Quaternionf trackball_angle = Eigen::Quaternionf::Identity();
-                static bool orthographic = true;
-                if (ImGui::Combo("Camera Type", &rotation_type, "Trackball\0Two Axes\0002D Mode\0\0")) {
-                    using RT = igl::opengl::ViewerCore::RotationType;
-                    auto new_type = static_cast<RT>(rotation_type);
-                    if (new_type != viewer().core().rotation_type) {
-                        if (new_type == RT::ROTATION_TYPE_NO_ROTATION) {
-                            viewer().core().trackball_angle = Eigen::Quaternionf::Identity();
-                            viewer().core().orthographic = true;
-                        } else if (viewer().core().rotation_type == RT::ROTATION_TYPE_NO_ROTATION) {
-                            viewer().core().trackball_angle = trackball_angle;
-                            viewer().core().orthographic = orthographic;
-                        }
-                        viewer().core().set_rotation_type(new_type);
-                    }
-                }
             }
             // Helper for setting viewport specific mesh options
             auto make_checkbox = [&](const char *label, unsigned int &option) {
@@ -59,19 +40,11 @@ namespace nm {
                 if (ImGui::Checkbox("Face-based", &(viewer().data().face_based))) {
                     viewer().data().dirty = igl::opengl::MeshGL::DIRTY_ALL;
                 }
-                make_checkbox("Show texture", viewer().data().show_texture);
                 if (ImGui::Checkbox("Invert normals", &(viewer().data().invert_normals))) {
                     viewer().data().dirty |= igl::opengl::MeshGL::DIRTY_NORMAL;
                 }
                 make_checkbox("Show overlay", viewer().data().show_overlay);
                 make_checkbox("Show overlay depth", viewer().data().show_overlay_depth);
-                ImGui::ColorEdit4("Background", viewer().core().background_color.data(),
-                                  ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueWheel);
-                ImGui::ColorEdit4("Line color", viewer().data().line_color.data(),
-                                  ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_PickerHueWheel);
-                ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.3f);
-                ImGui::DragFloat("Shininess", &(viewer().data().shininess), 0.05f, 0.0f, 100.0f);
-                ImGui::PopItemWidth();
             }
         }
     }// namespace
