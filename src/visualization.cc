@@ -14,6 +14,8 @@ namespace nm {
                     viewer().open_dialog_load_mesh();
                     mesh()->vertices = viewer().data().V;
                     mesh()->faces = viewer().data().F;
+                    tetrahedralizeMesh(mesh().get());
+                    viewer().data().set_mesh(mesh()->vertices, mesh()->faces);
                 }
                 ImGui::SameLine(0, p);
                 if (ImGui::Button("Save##Mesh", ImVec2((w - p) / 2.f, 0))) { viewer().open_dialog_save_mesh(); }

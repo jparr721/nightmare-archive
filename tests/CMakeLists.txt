@@ -31,3 +31,4 @@ endmacro()
 
 package_add_test(renderer_utils_test renderer_utils_test.cc)
 package_add_test(math_test math_test.cc)
+package_add_test(geometry_test geometry_test.cc)
