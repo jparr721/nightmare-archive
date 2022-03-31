@@ -4,8 +4,10 @@
 #include "psi_neo_hookean.h"
 
 namespace nm::fem {
-    auto singlePointQuadrature(const vecXr &q, const matXr &vertices, const vec4i &element, real mu, real lambda,
-                               real weight) -> real {
+    auto VlinearTetrahedron(const vecXr &q, const matXr &vertices, const vec4i &element, real mu, real lambda,
+                            real volume) -> real {
+        // Compute the potential energy via quadrature
+
         // Obtain the deformed space vertex position matrix for this element
         // x
         mat34r deformed;
@@ -25,12 +27,6 @@ namespace nm::fem {
         const real strain_energy_density = psiNeoHookean(F, mu, lambda);
 
         // Now, finish up by multiplying this value by the weight.
-        return strain_energy_density * weight;
-    }
-
-    auto VlinearTetrahedron(const vecXr &q, const matXr &vertices, const vec4i &element, real mu, real lambda,
-                            real volume) -> real {
-        // Compute the potential energy via the quadrature value
-        return singlePointQuadrature(q, vertices, element, mu, lambda, volume);
+        return strain_energy_density * volume;
     }
 }// namespace nm::fem
