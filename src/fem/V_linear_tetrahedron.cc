@@ -14,7 +14,7 @@ namespace nm::fem {
         // Get the centroid of the deformed coordinates
         const vec3r centroid = computeTetrahedralCentroid(deformed);
 
-        // Obtain the deformation gradient for this element dx/dX
+        // Obtain the shape function gradient matrix, D.
         // Obtain dphi/dX, the right hand side of the expression
         const mat43r dphi_dX = dphiLinearTetrahedronDx(vertices, element, centroid);
 
