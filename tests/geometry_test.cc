@@ -19,3 +19,13 @@ TEST(Test_computeTetrahedralCentroid, computesColwise) {
     const vec3r centroid_compare(4, -3, 2);
     EXPECT_EQ(centroid, centroid_compare);
 }
+
+
+TEST(Test_computeTetrahedralElementVolume, computesFromTetMatrix) {
+    using namespace nm;
+    mat43r points;
+    points << 0.680375, 0.823295, -0.444451, -0.211234, -0.604897, 0.10794, 0.566198, -0.329554, -0.0452059, 0.59688,
+            0.536459, 0.257742;
+    real compare = 0.0862827;
+    EXPECT_TRUE(computeTetrahedralElementVolume(points) - compare < 0.001);
+}

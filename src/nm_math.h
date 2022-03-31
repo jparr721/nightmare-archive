@@ -36,6 +36,9 @@ namespace nm {
     using matXr = Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic>;
     using rowMatXr = Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
+    // Sparse Matrix Types
+    using spmatXr = Eigen::SparseMatrix<real>;
+
     // ints
     // Dense vec Types
     using vec2i = Eigen::Matrix<int, 2, 1>;
