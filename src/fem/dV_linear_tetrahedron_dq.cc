@@ -4,8 +4,8 @@
 #include "dpsi_neo_hookean_dF.h"
 
 namespace nm::fem {
-    auto dVlinearTetrahedronDq(const nm::vecXr &q, const nm::matXr &vertices, const nm::vec4i &element, nm::real mu,
-                               nm::real lambda, nm::real volume) -> nm::vec12r {
+    auto dVlinearTetrahedronDq(const vecXr &q, const matXr &vertices, const vec4i &element, real mu, real lambda,
+                               real volume) -> vec12r {
         // Obtain the deformed space vertex position matrix for this element
         mat34r deformed;
         for (int ii = 0; ii < 4; ++ii) { deformed.col(ii) = q.segment<3>(element(ii) * 3); }
@@ -30,7 +30,6 @@ namespace nm::fem {
             B.block(6, 2 + 3 * ii, 3, 1) = dphi_dX.row(ii).transpose();
         }
 
-        // -volume might be wrong.
         return -volume * B.transpose() * dpsi;
     }
 

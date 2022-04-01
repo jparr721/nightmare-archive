@@ -3,10 +3,8 @@
 #include <igl/volume.h>
 
 namespace nm::fem {
-    auto massMatrixLinearTetmesh(const matXr &vertices, const matXi &tets, const vecXr &qdot, real density) -> spmatXr {
-        vecXr tet_volumes;
-        igl::volume(vertices, tets, tet_volumes);
-
+    auto massMatrixLinearTetmesh(const matXr &vertices, const matXi &tets, const vecXr &qdot, real density,
+                                 const vecXr &tet_volumes) -> spmatXr {
         using triplet = Eigen::Triplet<real>;
         std::vector<triplet> triplets;
         for (int ii = 0; ii < tets.rows(); ++ii) {
