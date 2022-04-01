@@ -1,4 +1,5 @@
 #include "assemble.h"
+#include "d2V_linear_tetrahedron_dq2.h"
 #include "dV_linear_tetrahedron_dq.h"
 
 namespace nm::fem {
@@ -24,4 +25,29 @@ namespace nm::fem {
 
         return f;
     }
-}
+
+    auto assembleStiffness(const vecXr &q, const matXr &vertices, const matXi &tets, const vecXr &tet_volumes, real mu,
+                           real lambda) -> spmatXr {
+        using triplet = Eigen::Triplet<real>;
+        std::vector<triplet> triplets;
+        for (int ii = 0; ii < tets.rows(); ++ii) {
+            const vec4i element = tets.row(ii);
+            const mat1212r d2V = d2VlinearTetrahedronDq2(q, vertices, element, mu, lambda, tet_volumes(ii));
+
+            for (int jj = 0; jj < 4; ++jj) {
+                for (int kk = 0; kk < 4; ++kk) {
+                    for (int row = 0; row < 3; ++row) {
+                        for (int col = 0; col < 3; ++col) {
+                            triplets.emplace_back(3 * element(jj) + row, 3 * element(kk) + col,
+                                                  d2V(3 * jj + row, 3 * kk + col));
+                        }
+                    }
+                }
+            }
+        }
+
+        spmatXr KK(q.rows(), q.rows());
+        KK.setFromTriplets(triplets.begin(), triplets.end());
+        return KK;
+    }
+}// namespace nm::fem

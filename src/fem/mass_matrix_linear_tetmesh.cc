@@ -1,6 +1,5 @@
 #include "mass_matrix_linear_tetmesh.h"
 #include "mass_matrix_linear_tetrahedron.h"
-#include <igl/volume.h>
 
 namespace nm::fem {
     auto massMatrixLinearTetmesh(const matXr &vertices, const matXi &tets, const vecXr &qdot, real density,
@@ -22,7 +21,7 @@ namespace nm::fem {
             }
         }
 
-        spmatXr MM(qdot.rows(), qdot.cols());
+        spmatXr MM(qdot.rows(), qdot.rows());
         MM.setFromTriplets(triplets.begin(), triplets.end());
         return MM;
     }

@@ -1,4 +1,4 @@
-#include "d2v_linear_tetrahedron_dq2.h"
+#include "d2V_linear_tetrahedron_dq2.h"
 #include "../geometry.h"
 #include "d2psi_neo_hookean_dF2.h"
 #include "dphi_linear_tetrahedron_dX.h"

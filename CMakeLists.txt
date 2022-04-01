@@ -50,8 +50,8 @@ add_library(${PROJECT_LIB}
         src/fem/V_linear_tetrahedron.h
         src/fem/dV_linear_tetrahedron_dq.cc
         src/fem/dV_linear_tetrahedron_dq.h
-        src/fem/d2v_linear_tetrahedron_dq2.cc
-        src/fem/d2v_linear_tetrahedron_dq2.h
+        src/fem/d2V_linear_tetrahedron_dq2.cc
+        src/fem/d2V_linear_tetrahedron_dq2.h
         src/fem/integrators_implicit_euler.cc
         src/fem/integrators_implicit_euler.h
         src/fem/assemble.cc
