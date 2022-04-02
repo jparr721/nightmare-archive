@@ -5,7 +5,7 @@ namespace nm::fem {
 
     /**
      * Computes the potential energy integral from the strain energy density function
-     * @param q The deformed space coordinate matrix.
+     * @param q The deformed space coordinate vector.
      * @param vertices The vertices of all tetrahedral elements.
      * @param element The coordinate vector of our elements.
      * @param mu The lame's mu parameter.
