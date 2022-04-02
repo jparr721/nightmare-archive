@@ -3,34 +3,67 @@
 #include "assemble.h"
 
 namespace nm::fem {
-    auto energyFunction(const vecXr &q, const vecXr &qdot, const vecXr &guess, const matXr &vertices,
-                        const spmatXr &mass_matrix, const matXi &tets, const vecXr &tet_volumes, real mu, real lambda,
-                        real dt) -> real {
+    auto NewtonsMethod::solve(unsigned int max_iterations, const vecXr &initial_guess) -> real {
+        // Copy the initial guess into x0 so we can update it.
+        vecXr x0 = initial_guess;
+
+        // Begin iterating newton's method.
+        for (int ii = 0; ii < max_iterations; ++ii) {
+            // First, check for convergence
+            const vecXr gradient = energyFunctionGradient(x0);
+
+            // Convergence reached! Woo!
+            if (gradient.squaredNorm() < std::numeric_limits<real>::epsilon()) { return 0.0; }
+
+            // Compute the search direction by solving for d in Hd = -g where H is the hessian and g is the gradient.
+            const spmatXr hessian = energyFunctionHessian(x0);
+
+            Eigen::SimplicialLDLT<spmatXr> solver;
+            solver.analyzePattern(hessian);
+            solver.factorize(hessian);
+
+            // Compute d to get our direction vector.
+            vecXr d = -solver.solve(gradient);
+
+            // Line search for optimum alpha value.
+            real alpha = 0.0;
+            real c = 1e-8;
+            real p = 0.5;
+
+            for (;;) {
+                if (energyFunction(x0 + alpha * d) <= energyFunction(x0) + c * d.transpose() * gradient) { break; }
+
+                alpha *= p;
+
+                if (alpha < std::numeric_limits<real>::epsilon()) { return 0.0; }
+            }
+
+            x0 += alpha * d;
+        }
+
+        return 0.0;
+    }
+
+    auto NewtonsMethod::energyFunction(const vecXr &guess) -> real {
         // This is the q + dt * v part of the expression.
-        const vecXr new_q = q + dt * guess;
+        const vecXr new_q = q_ + dt_ * guess;
         real E = 0;
-        for (int ii = 0; ii < tets.rows(); ++ii) {
-            E += VlinearTetrahedron(q, vertices, tets.row(ii), mu, lambda, tet_volumes(ii));
+        for (int ii = 0; ii < tets_.rows(); ++ii) {
+            E += VlinearTetrahedron(q_, vertices_, tets_.row(ii), mu_, lambda_, tet_volumes_(ii));
         }
 
         // Compute the rest of the energy function value.
-        E += 0.5 * (guess - qdot).transpose() * mass_matrix * (guess - qdot);
-
+        E += 0.5 * (guess - qdot_).transpose() * mass_matrix_ * (guess - qdot_);
         return E;
     }
 
-    auto energyFunctionGradient(const vecXr &q, const vecXr &qdot, const vecXr &guess, const matXr &vertices,
-                                const spmatXr &mass_matrix, const matXi &tets, const vecXr &tet_volumes, real mu,
-                                real lambda, real dt) -> vecXr {
-        const vecXr force = -assembleForces(q, vertices, tets, tet_volumes, mu, lambda);
-        return mass_matrix * (guess - qdot) + dt * force;
+    auto NewtonsMethod::energyFunctionGradient(const vecXr &guess) -> vecXr {
+        const vecXr force = -assembleForces(q_, vertices_, tets_, tet_volumes_, mu_, lambda_);
+        return mass_matrix_ * (guess - qdot_) + dt_ * force;
     }
 
-    auto energyFunctionHessian(const vecXr &q, const vecXr &qdot, const vecXr &guess, const matXr &vertices,
-                               const spmatXr &mass_matrix, const matXi &tets, const vecXr &tet_volumes, real mu,
-                               real lambda, real dt) -> spmatXr {
-        const spmatXr stiffness = -assembleStiffness(q, vertices, tets, tet_volumes, mu, lambda);
-        return mass_matrix + dt * dt * stiffness;
+    auto NewtonsMethod::energyFunctionHessian(const vecXr &guess) -> spmatXr {
+        const spmatXr stiffness = -assembleStiffness(q_, vertices_, tets_, tet_volumes_, mu_, lambda_);
+        return mass_matrix_ + dt_ * dt_ * stiffness;
     }
-
 }// namespace nm::fem
