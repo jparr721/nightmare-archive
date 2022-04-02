@@ -32,7 +32,7 @@ namespace nm {
                 ImGui::DragFloat("Zoom", &(viewer().core().camera_zoom), 0.05f, 0.1f, 20.0f);
             }
             // Helper for setting viewport specific mesh options
-            auto make_checkbox = [&](const char *label, unsigned int &option) {
+            auto makeCheckbox = [&](const char *label, unsigned int &option) {
                 return ImGui::Checkbox(
                         label, [&]() { return viewer().core().is_set(option); },
                         [&](bool value) { return viewer().core().set(option, value); });
@@ -45,8 +45,8 @@ namespace nm {
                 if (ImGui::Checkbox("Invert normals", &(viewer().data().invert_normals))) {
                     viewer().data().dirty |= igl::opengl::MeshGL::DIRTY_NORMAL;
                 }
-                make_checkbox("Show overlay", viewer().data().show_overlay);
-                make_checkbox("Show overlay depth", viewer().data().show_overlay_depth);
+                makeCheckbox("Show overlay", viewer().data().show_overlay);
+                makeCheckbox("Show overlay depth", viewer().data().show_overlay_depth);
             }
         }
     }// namespace

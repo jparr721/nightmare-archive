@@ -20,7 +20,7 @@ namespace nm {
         matXi tetrahedra;
 
         Mesh() = default;
-        explicit Mesh(const std::string &mesh_file);
+        explicit Mesh(const std::string &meshFile);
         Mesh(matXr vertices, matXi faces) : vertices(std::move(vertices)), faces(std::move(faces)) {}
     };
 

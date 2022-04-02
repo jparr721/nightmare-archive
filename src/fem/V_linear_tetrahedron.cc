@@ -18,10 +18,10 @@ namespace nm::fem {
 
         // Obtain the shape function gradient matrix, D.
         // Obtain dphi/dX, the right hand side of the expression
-        const mat43r dphi_dX = dphiLinearTetrahedronDx(vertices, element, centroid);
+        const mat43r dphiDX = dphiLinearTetrahedronDx(vertices, element, centroid);
 
         // Obtain the deformation gradient
-        const mat3r F = deformed * dphi_dX;
+        const mat3r F = deformed * dphiDX;
 
         // Compute psi with the deformation gradient.
         const real strain_energy_density = psiNeoHookean(F, mu, lambda);

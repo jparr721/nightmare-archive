@@ -7,8 +7,8 @@
 #include <utility>
 
 namespace nm {
-    Mesh::Mesh(const std::string &mesh_file) {
-        igl::read_triangle_mesh(mesh_file, vertices, faces);
+    Mesh::Mesh(const std::string &meshFile) {
+        igl::read_triangle_mesh(meshFile, vertices, faces);
     }
 
     void tetrahedralizeMesh(Mesh *mesh, const char* flags) {

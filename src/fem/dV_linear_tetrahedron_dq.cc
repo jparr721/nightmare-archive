@@ -14,10 +14,10 @@ namespace nm::fem {
         const vec3r centroid = computeTetrahedralCentroid(deformed);
 
         // Obtain the shape function gradient matrix, D.
-        const mat43r dphi_dX = dphiLinearTetrahedronDx(vertices, element, centroid);
+        const mat43r dphiDX = dphiLinearTetrahedronDx(vertices, element, centroid);
 
         // Obtain the deformation gradient
-        const mat3r F = deformed * dphi_dX;
+        const mat3r F = deformed * dphiDX;
 
         // Compute the gradient of the strain energy density with respect to F.
         const vec9r dpsi = dpsiNeoHookeanDf(F, mu, lambda);
@@ -25,9 +25,9 @@ namespace nm::fem {
         // Now, construct B_j from the shape function gradient matrix.
         mat912r B;
         for (int ii = 0; ii < 4; ++ii) {
-            B.block(0, 0 + 3 * ii, 3, 1) = dphi_dX.row(ii).transpose();
-            B.block(3, 1 + 3 * ii, 3, 1) = dphi_dX.row(ii).transpose();
-            B.block(6, 2 + 3 * ii, 3, 1) = dphi_dX.row(ii).transpose();
+            B.block(0, 0 + 3 * ii, 3, 1) = dphiDX.row(ii).transpose();
+            B.block(3, 1 + 3 * ii, 3, 1) = dphiDX.row(ii).transpose();
+            B.block(6, 2 + 3 * ii, 3, 1) = dphiDX.row(ii).transpose();
         }
 
         return -volume * B.transpose() * dpsi;

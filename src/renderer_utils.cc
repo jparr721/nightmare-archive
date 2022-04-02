@@ -3,14 +3,14 @@
 #include <vector>
 
 namespace nm {
-    void makeRenderableGrid(real spacing_scale, int uniform_grid_size, matXr &points, matXi &edges, real y_value) {
+    void makeRenderableGrid(real spacingScale, int uniformGridSize, matXr &points, matXi &edges, real yValue) {
         std::vector<std::vector<real>> points_;
         std::vector<std::vector<int>> edges_;
-        for (int ii = -uniform_grid_size; ii < uniform_grid_size; ++ii) {
-            points_.push_back({ii * spacing_scale, y_value, -uniform_grid_size * spacing_scale});
-            points_.push_back({ii * spacing_scale, y_value, uniform_grid_size * spacing_scale});
-            points_.push_back({-uniform_grid_size * spacing_scale, y_value, ii * spacing_scale});
-            points_.push_back({uniform_grid_size * spacing_scale, y_value, ii * spacing_scale});
+        for (int ii = -uniformGridSize; ii < uniformGridSize; ++ii) {
+            points_.push_back({ii * spacingScale, yValue, -uniformGridSize * spacingScale});
+            points_.push_back({ii * spacingScale, yValue, uniformGridSize * spacingScale});
+            points_.push_back({-uniformGridSize * spacingScale, yValue, ii * spacingScale});
+            points_.push_back({uniformGridSize * spacingScale, yValue, ii * spacingScale});
         }
 
         for (int ii = 0; ii < points_.size(); ii += 2) {

@@ -14,37 +14,37 @@ namespace nm::fem {
         const vec3r centroid = computeTetrahedralCentroid(deformed);
 
         // Obtain the shape function gradient matrix, D.
-        const mat43r dphi_dX = dphiLinearTetrahedronDx(vertices, element, centroid);
+        const mat43r dphiDX = dphiLinearTetrahedronDx(vertices, element, centroid);
 
         // Obtain the deformation gradient
-        const mat3r F = deformed * dphi_dX;
+        const mat3r F = deformed * dphiDX;
 
         // Obtain the hessian of the strain energy density function
-        const mat99r d2psi_df = d2PsiNeoHookeanDf2(F, mu, lambda);
+        const mat99r d2PsiDf = d2PsiNeoHookeanDf2(F, mu, lambda);
 
         // Now, construct B_j from the shape function gradient matrix.
         mat912r B;
         for (int ii = 0; ii < 4; ++ii) {
-            B.block(0, 0 + 3 * ii, 3, 1) = dphi_dX.row(ii).transpose();
-            B.block(3, 1 + 3 * ii, 3, 1) = dphi_dX.row(ii).transpose();
-            B.block(6, 2 + 3 * ii, 3, 1) = dphi_dX.row(ii).transpose();
+            B.block(0, 0 + 3 * ii, 3, 1) = dphiDX.row(ii).transpose();
+            B.block(3, 1 + 3 * ii, 3, 1) = dphiDX.row(ii).transpose();
+            B.block(6, 2 + 3 * ii, 3, 1) = dphiDX.row(ii).transpose();
         }
 
         // Finally, get the hessian.
-        mat1212r H = -volume * B.transpose() * d2psi_df * B;
+        mat1212r H = -volume * B.transpose() * d2PsiDf * B;
 
         // This code ensures that the hessian matrix is symmetric positive definite by projecting all
         // negative eigenvalues to small, positive values.
         Eigen::SelfAdjointEigenSolver<mat1212r> es(H);
 
-        Eigen::MatrixXd DiagEval = es.eigenvalues().real().asDiagonal();
-        Eigen::MatrixXd Evec = es.eigenvectors().real();
+        Eigen::MatrixXd diagEval = es.eigenvalues().real().asDiagonal();
+        Eigen::MatrixXd evec = es.eigenvectors().real();
 
         for (int i = 0; i < 12; ++i) {
-            if (es.eigenvalues()[i] < 1e-6) { DiagEval(i, i) = 1e-3; }
+            if (es.eigenvalues()[i] < 1e-6) { diagEval(i, i) = 1e-3; }
         }
 
-        H = Evec * DiagEval * Evec.transpose();
+        H = evec * diagEval * evec.transpose();
 
         return H;
     }

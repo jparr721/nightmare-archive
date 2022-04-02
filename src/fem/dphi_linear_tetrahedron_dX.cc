@@ -15,9 +15,9 @@ namespace nm::fem {
 
         // Construct the 4x3 matrix of -1^T * TT and TT.
         mat3r TT = T.inverse();
-        vec3r top_row = -vec3r::Ones().transpose() * TT;
+        vec3r topRow = -vec3r::Ones().transpose() * TT;
         mat43r dphi;
-        dphi.row(0) = top_row;
+        dphi.row(0) = topRow;
         dphi.block<3, 3>(1, 0) = TT;
 
         return dphi;

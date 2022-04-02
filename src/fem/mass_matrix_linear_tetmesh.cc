@@ -3,11 +3,11 @@
 
 namespace nm::fem {
     auto massMatrixLinearTetmesh(const matXr &vertices, const matXi &tets, const vecXr &qdot, real density,
-                                 const vecXr &tet_volumes) -> spmatXr {
+                                 const vecXr &tetVolumes) -> spmatXr {
         using triplet = Eigen::Triplet<real>;
         std::vector<triplet> triplets;
         for (int ii = 0; ii < tets.rows(); ++ii) {
-            const mat1212r M = massMatrixLinearTetrahedron(density, tet_volumes(ii));
+            const mat1212r M = massMatrixLinearTetrahedron(density, tetVolumes(ii));
             const vec4i element = tets.row(ii);
             for (int jj = 0; jj < 4; ++jj) {
                 for (int kk = 0; kk < 4; ++kk) {
