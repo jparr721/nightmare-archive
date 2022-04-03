@@ -23,6 +23,7 @@ namespace nm {
         vecXr q;
         vecXr qdot;
 
+        SimulationState() = default;
         SimulationState(real youngsModulus, real poissonsRatio, real dt, real density);
 
         void initializeSimRuntimeMembers(const matXr &vertices);

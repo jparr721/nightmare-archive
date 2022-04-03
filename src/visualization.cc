@@ -1,9 +1,22 @@
 #include "visualization.h"
 #include "renderer_utils.h"
-#include "simulation.h"
 #include <spdlog/spdlog.h>
+#include <thread>
 
 namespace nm {
+    constexpr real kYoungsModulus = 6e5;
+    constexpr real kPoissonsRatio = 0.4;
+    constexpr real kDensity = 0.1;
+    constexpr real kDt = 0.01;
+
+    bool kSimulating = true;
+
+    igl::opengl::glfw::Viewer viewer_;
+    igl::opengl::glfw::imgui::ImGuiMenu menu_;
+    igl::opengl::glfw::imgui::ImGuiPlugin plugin_;
+    std::unique_ptr<Mesh> mesh_;
+    SimulationState simulationState_;
+
     // Menus and other non-exported stuff
     namespace {
         auto callbackDrawViewerMenu() -> void {
@@ -52,40 +65,64 @@ namespace nm {
         }
     }// namespace
 
-    igl::opengl::glfw::Viewer viewer_;
-    igl::opengl::glfw::imgui::ImGuiMenu menu_;
-    igl::opengl::glfw::imgui::ImGuiPlugin plugin_;
-    std::unique_ptr<Mesh> mesh_;
-
-    auto viewer() -> igl::opengl::glfw::Viewer & { return viewer_; }
-    auto menu() -> igl::opengl::glfw::imgui::ImGuiMenu & { return menu_; }
-    auto plugin() -> igl::opengl::glfw::imgui::ImGuiPlugin & { return plugin_; }
-    auto mesh() -> std::unique_ptr<Mesh> & { return mesh_; }
-
-    constexpr real kYoungsModulus = 6e5;
-    constexpr real kPoissonsRatio = 0.4;
-    constexpr real kDensity = 0.1;
-    constexpr real kDt = 0.01;
-
-    auto initialize() -> bool {
-
-        spdlog::info("Initializing");
+    void drawGrid() {
+        spdlog::debug("Drawing grid");
         matXr points;
         matXi edges;
         nm::makeRenderableGrid(1.0, 50, points, edges, -1.0);
         viewer().data().set_edges(points, edges, Rowvec3r(1.0, 1.0, 1.0));
         viewer().core().background_color = vec4<float>(0.15, 0.15, 0.15, 1.0);
+    }
+
+    void updateVertexPositions(const vecXr &pos) {
+        //update vertex positions
+        for (unsigned int ii = 0; ii < mesh()->vertices.rows(); ++ii) {
+            mesh()->vertices.row(ii) = pos.segment<3>(3 * ii).transpose();
+        }
+
+        viewer().data_list[0].V = mesh()->vertices;
+
+        //tell viewer to update
+        viewer().data_list[0].dirty |= igl::opengl::MeshGL::DIRTY_POSITION;
+    }
+
+    auto simulationCallback() -> bool {
+        while (kSimulating) {
+            simulate(simulationState(), mesh()->vertices, mesh()->tetrahedra);
+        }
+        return false;
+    }
+
+    auto drawCallback(igl::opengl::glfw::Viewer &viewer) -> bool {
+        updateVertexPositions(simulationState().q);
+        return false;
+    }
+
+
+    auto viewer() -> igl::opengl::glfw::Viewer & { return viewer_; }
+    auto menu() -> igl::opengl::glfw::imgui::ImGuiMenu & { return menu_; }
+    auto plugin() -> igl::opengl::glfw::imgui::ImGuiPlugin & { return plugin_; }
+    auto mesh() -> std::unique_ptr<Mesh> & { return mesh_; }
+    auto simulationState() -> SimulationState & { return simulationState_; }
+
+    auto initialize() -> bool {
+        spdlog::info("Initializing");
+        drawGrid();
 
         spdlog::info("Loading mesh");
         mesh_ = std::make_unique<Mesh>("assets/cube.obj");
         tetrahedralizeMesh(mesh_.get());
         viewer().data().invert_normals = true;
 
-        auto simulationState = simulationStateFactory(mesh_->vertices, mesh_->tetrahedra, kYoungsModulus,
-                                                      kPoissonsRatio, kDt, kDensity);
+        simulationState_ = simulationStateFactory(mesh_->vertices, mesh_->tetrahedra, kYoungsModulus, kPoissonsRatio,
+                                                  kDt, kDensity);
+
+        auto simThread = std::thread(simulationCallback);
+        simThread.detach();
 
         plugin().widgets.push_back(&menu());
         viewer().plugins.push_back(&plugin());
+        viewer().callback_post_draw = &drawCallback;
         menu().callback_draw_viewer_menu = &callbackDrawViewerMenu;
         viewer().data().set_mesh(mesh()->vertices, mesh()->faces);
         return true;
