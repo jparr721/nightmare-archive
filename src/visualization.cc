@@ -1,5 +1,6 @@
 #include "visualization.h"
 #include "renderer_utils.h"
+#include "simulation.h"
 #include <spdlog/spdlog.h>
 
 namespace nm {
@@ -61,7 +62,13 @@ namespace nm {
     auto plugin() -> igl::opengl::glfw::imgui::ImGuiPlugin & { return plugin_; }
     auto mesh() -> std::unique_ptr<Mesh> & { return mesh_; }
 
+    constexpr real kYoungsModulus = 6e5;
+    constexpr real kPoissonsRatio = 0.4;
+    constexpr real kDensity = 0.1;
+    constexpr real kDt = 0.01;
+
     auto initialize() -> bool {
+
         spdlog::info("Initializing");
         matXr points;
         matXi edges;
@@ -73,6 +80,9 @@ namespace nm {
         mesh_ = std::make_unique<Mesh>("assets/cube.obj");
         tetrahedralizeMesh(mesh_.get());
         viewer().data().invert_normals = true;
+
+        auto simulationState = simulationStateFactory(mesh_->vertices, mesh_->tetrahedra, kYoungsModulus,
+                                                      kPoissonsRatio, kDt, kDensity);
 
         plugin().widgets.push_back(&menu());
         viewer().plugins.push_back(&plugin());

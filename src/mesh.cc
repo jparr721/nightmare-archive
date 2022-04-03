@@ -1,17 +1,15 @@
 #include "mesh.h"
+#include <igl/copyleft/tetgen/tetrahedralize.h>
 #include <igl/read_triangle_mesh.h>
 #include <igl/unique_simplices.h>
-#include <igl/copyleft/tetgen/tetrahedralize.h>
 #include <spdlog/spdlog.h>
 
 #include <utility>
 
 namespace nm {
-    Mesh::Mesh(const std::string &meshFile) {
-        igl::read_triangle_mesh(meshFile, vertices, faces);
-    }
+    Mesh::Mesh(const std::string &meshFile) { igl::read_triangle_mesh(meshFile, vertices, faces); }
 
-    void tetrahedralizeMesh(Mesh *mesh, const char* flags) {
+    void tetrahedralizeMesh(Mesh *mesh, const char *flags) {
         matXr TV;
         matXi F, TF, TT;
         igl::unique_simplices(mesh->faces, F);
@@ -40,8 +38,6 @@ namespace nm {
     }
 
     void translateMesh(Mesh *mesh, const vec3r &amount) {
-        for (int ii = 0; ii < amount.rows(); ++ii) {
-            (mesh->vertices.col(ii).array() += amount(ii)).matrix();
-        }
+        for (int ii = 0; ii < amount.rows(); ++ii) { (mesh->vertices.col(ii).array() += amount(ii)).matrix(); }
     }
 }// namespace nm

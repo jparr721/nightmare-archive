@@ -32,6 +32,8 @@ add_library(${PROJECT_LIB}
         src/nm_math.h
         src/visualization.cc
         src/visualization.h
+        src/simulation.cc
+        src/simulation.h
 
         # nm::fem
         src/fem/phi_linear_tetrahedron.cc
@@ -59,7 +61,8 @@ add_library(${PROJECT_LIB}
         src/fem/mass_matrix_linear_tetrahedron.cc
         src/fem/mass_matrix_linear_tetrahedron.h
         src/fem/mass_matrix_linear_tetmesh.cc
-        src/fem/mass_matrix_linear_tetmesh.h)
+        src/fem/mass_matrix_linear_tetmesh.h
+        )
 
 target_link_libraries(${PROJECT_LIB}
         PUBLIC

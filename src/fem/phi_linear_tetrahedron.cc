@@ -18,7 +18,7 @@ namespace nm::fem {
         vec3r b = ref - X0;
 
         // Now, we can solve the linear system. As Ax=b where A is T and phi is our basis function mapping.
-        phi.segment<3>(1) = T.fullPivHouseholderQr().solve(b); // phi_1, 2, 3
+        phi.segment<3>(1) = T.fullPivHouseholderQr().solve(b);// phi_1, 2, 3
 
         // phi_0 is a linear combination of its elements.
         phi(0) = 1 - phi(1) - phi(2) - phi(3);

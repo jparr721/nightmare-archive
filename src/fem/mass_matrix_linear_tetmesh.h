@@ -3,6 +3,6 @@
 #include "../nm_math.h"
 
 namespace nm::fem {
-    auto massMatrixLinearTetmesh(const matXr &vertices, const matXi &tets, const vecXr &qdot, real density,
-                                 const vecXr &tetVolumes) -> spmatXr;
+    auto massMatrixLinearTetmesh(const matXi &tets, const vecXr &qdot, const vecXr &tetVolumes, real density)
+            -> spmatXr;
 }

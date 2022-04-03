@@ -29,4 +29,4 @@ namespace nm::fem {
 
         return M;
     }
-}
+}// namespace nm::fem

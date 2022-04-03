@@ -19,4 +19,4 @@ namespace nm::fem {
      * @param phi The 4x1 values of the basis functions for phi.
      */
     void phiLinearTetrahedron(const matXr &vertices, const vec4i &tet, const vec3r &ref, vec4r &phi);
-}
+}// namespace nm::fem

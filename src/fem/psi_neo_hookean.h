@@ -13,4 +13,4 @@ namespace nm::fem {
      * @return The neohookean energy density score.
      */
     auto psiNeoHookean(const mat3r &F, real mu, real lambda) -> real;
-}
+}// namespace nm::fem

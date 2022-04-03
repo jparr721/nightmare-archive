@@ -5,7 +5,7 @@
 #include <utility>
 
 namespace nm {
-    constexpr const char* kDefaultTetgenFlags = "zpqQa1e-1";
+    constexpr const char *kDefaultTetgenFlags = "zpqQa1e-1";
 
     enum TetgenResult {
         kTetgenFailedToConvert = -1,
@@ -15,6 +15,7 @@ namespace nm {
     };
 
     struct Mesh {
+        int id = 0;
         matXr vertices;
         matXi faces;
         matXi tetrahedra;
@@ -24,6 +25,6 @@ namespace nm {
         Mesh(matXr vertices, matXi faces) : vertices(std::move(vertices)), faces(std::move(faces)) {}
     };
 
-    void translateMesh(Mesh* mesh, const vec3r &amount);
-    void tetrahedralizeMesh(Mesh* mesh, const char* flags = kDefaultTetgenFlags);
+    void translateMesh(Mesh *mesh, const vec3r &amount);
+    void tetrahedralizeMesh(Mesh *mesh, const char *flags = kDefaultTetgenFlags);
 }// namespace nm
