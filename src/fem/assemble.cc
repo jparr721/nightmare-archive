@@ -46,8 +46,8 @@ namespace nm::fem {
             }
         }
 
-        spmatXr KK(q.rows(), q.rows());
-        KK.setFromTriplets(triplets.begin(), triplets.end());
-        return KK;
+        spmatXr stiffnessMatrix(q.rows(), q.rows());
+        stiffnessMatrix.setFromTriplets(triplets.begin(), triplets.end());
+        return stiffnessMatrix;
     }
 }// namespace nm::fem

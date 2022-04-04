@@ -33,7 +33,10 @@ namespace nm {
         }
 
         mesh->vertices = TV;
-        mesh->faces = TF;
+
+        // Reverse the faces to fix the winding from boundary_facets. This fixes the normals.
+        mesh->faces = TF.rowwise().reverse().eval();
+
         mesh->tetrahedra = TT;
     }
 

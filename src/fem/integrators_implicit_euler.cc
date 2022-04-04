@@ -48,32 +48,34 @@ namespace nm::fem {
 
     auto NewtonsMethod::energyFunction(const vecXr &guess) -> real {
         // This is the q + dt * v part of the expression.
-        const vecXr newq = q_ + dt_ * guess;
-        real E = 0;
+        const vecXr newq = simulationState_.q + simulationState_.dt * guess;
+        real energy = 0.0;
         for (int ii = 0; ii < tets_.rows(); ++ii) {
-            E += VlinearTetrahedron(q_, vertices_, tets_.row(ii), mu_, lambda_, tetVolumes_(ii));
+            energy += VlinearTetrahedron(simulationState_.q, vertices_, tets_.row(ii), simulationState_.mu,
+                                         simulationState_.lambda, simulationState_.tetVolumes(ii));
         }
 
         // Compute the rest of the energy function value.
-        E += 0.5 * (guess - qdot_).transpose() * massMatrix_ * (guess - qdot_);
-        return E;
+        energy += 0.5 * (guess - simulationState_.qdot).transpose() * simulationState_.massMatrix *
+                  (guess - simulationState_.qdot);
+        return energy;
     }
 
     auto NewtonsMethod::energyFunctionGradient(const vecXr &guess) -> vecXr {
-        const vecXr force = -assembleForces(q_, vertices_, tets_, tetVolumes_, mu_, lambda_);
-        return massMatrix_ * (guess - qdot_) + dt_ * force;
+        const vecXr force = -assembleForces(simulationState_.q, vertices_, tets_, simulationState_.tetVolumes,
+                                            simulationState_.mu, simulationState_.lambda);
+        return simulationState_.massMatrix * (guess - simulationState_.qdot) + simulationState_.dt * force;
     }
 
     auto NewtonsMethod::energyFunctionHessian(const vecXr &guess) -> spmatXr {
-        const spmatXr stiffness = -assembleStiffness(q_, vertices_, tets_, tetVolumes_, mu_, lambda_);
-        return massMatrix_ + dt_ * dt_ * stiffness;
+        const spmatXr stiffness = -assembleStiffness(simulationState_.q, vertices_, tets_, simulationState_.tetVolumes,
+                                                     simulationState_.mu, simulationState_.lambda);
+        return simulationState_.massMatrix + simulationState_.dt * simulationState_.dt * stiffness;
     }
 
-    auto implicitEuler(vecXr &q, vecXr &qdot, const matXr &vertices, const spmatXr &massMatrix, const matXi &tets,
-                       const vecXr &tetVolumes, real mu, real lambda, real dt) -> void {
-        const auto newtonsMethodSolver =
-                std::make_unique<NewtonsMethod>(q, qdot, vertices, massMatrix, tets, tetVolumes, mu, lambda, dt);
-        qdot = newtonsMethodSolver->solve(5, qdot);
-        q += dt * qdot;
+    auto implicitEuler(SimulationState &simulationState, const matXr &vertices, const matXi &tets) -> void {
+        const auto newtonsMethodSolver = std::make_unique<NewtonsMethod>(simulationState, vertices, tets);
+        simulationState.qdot = newtonsMethodSolver->solve(5, simulationState.qdot);
+        simulationState.q += simulationState.dt * simulationState.qdot;
     }
 }// namespace nm::fem

@@ -8,8 +8,9 @@
 #include <vector>
 
 namespace nm {
-    using real = double;
+    constexpr int kNumberOfColumns = 3;
 
+    using real = double;
 
     // reals
     // Dense vec Types
@@ -86,8 +87,7 @@ namespace nm {
     template<typename T>
     using mat4 = Eigen::Matrix<T, 4, 4>;
 
-    template<typename T>
-    using SparseMatrixX = Eigen::SparseMatrix<T>;
+    using tripletr = Eigen::Triplet<real>;
 
     template<typename T>
     inline auto stlMatrixToEigenMatrix(const std::vector<std::vector<T>> &in) -> matX<T> {

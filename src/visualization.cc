@@ -65,8 +65,7 @@ namespace nm {
 
             // Sim options
             if (ImGui::CollapsingHeader("Sim Options", ImGuiTreeNodeFlags_DefaultOpen)) {
-                if (ImGui::Checkbox("Simulating", &kSimulating)) {
-                }
+                if (ImGui::Checkbox("Simulating", &kSimulating)) {}
             }
         }
     }// namespace
@@ -81,21 +80,19 @@ namespace nm {
     }
 
     void updateVertexPositions(const vecXr &pos) {
-        //update vertex positions
+        // Update vertex positions
         for (unsigned int ii = 0; ii < mesh()->vertices.rows(); ++ii) {
             mesh()->vertices.row(ii) = pos.segment<3>(3 * ii).transpose();
         }
 
         viewer().data_list[0].V = mesh()->vertices;
 
-        //tell viewer to update
+        // Tell viewer to update
         viewer().data_list[0].dirty |= igl::opengl::MeshGL::DIRTY_POSITION;
     }
 
     auto simulationCallback() -> bool {
-        while (kSimulating) {
-            simulate(simulationState(), mesh()->vertices, mesh()->tetrahedra);
-        }
+        while (kSimulating) { simulate(simulationState(), mesh()->vertices, mesh()->tetrahedra); }
         return false;
     }
 
@@ -118,10 +115,11 @@ namespace nm {
         spdlog::info("Loading mesh");
         mesh_ = std::make_unique<Mesh>("assets/cube.obj");
         tetrahedralizeMesh(mesh_.get());
-        viewer().data().invert_normals = true;
 
         simulationState_ = simulationStateFactory(mesh_->vertices, mesh_->tetrahedra, kYoungsModulus, kPoissonsRatio,
                                                   kDt, kDensity);
+
+//        simulationState().setSimulationConstraint(simulationConstraintFactory(mesh()->vertices, 0.1));
 
         auto simThread = std::thread(simulationCallback);
         simThread.detach();
