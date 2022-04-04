@@ -62,6 +62,12 @@ namespace nm {
                 makeCheckbox("Show overlay", viewer().data().show_overlay);
                 makeCheckbox("Show overlay depth", viewer().data().show_overlay_depth);
             }
+
+            // Sim options
+            if (ImGui::CollapsingHeader("Sim Options", ImGuiTreeNodeFlags_DefaultOpen)) {
+                if (ImGui::Checkbox("Simulating", &kSimulating)) {
+                }
+            }
         }
     }// namespace
 
