@@ -97,7 +97,8 @@ namespace nm {
     }
 
     auto drawCallback(igl::opengl::glfw::Viewer &viewer) -> bool {
-        updateVertexPositions(simulationState().q);
+        updateVertexPositions(simulationState().constraint.selectionMatrix.transpose() * simulationState().q +
+                              simulationState().constraint.positions);
         return false;
     }
 
@@ -119,7 +120,7 @@ namespace nm {
         simulationState_ = simulationStateFactory(mesh_->vertices, mesh_->tetrahedra, kYoungsModulus, kPoissonsRatio,
                                                   kDt, kDensity);
 
-//        simulationState().setSimulationConstraint(simulationConstraintFactory(mesh()->vertices, 0.1));
+        simulationState().setSimulationConstraint(simulationConstraintFactory(mesh()->vertices, 0.1));
 
         auto simThread = std::thread(simulationCallback);
         simThread.detach();

@@ -9,12 +9,12 @@ namespace nm::fem {
     class NewtonsMethod {
     public:
         NewtonsMethod(SimulationState simulationState, matXr vertices, matXi tets)
-            : simulationState_(std::move(simulationState)), vertices_(std::move(vertices)), tets_(std::move(tets)) {}
+            : state_(std::move(simulationState)), vertices_(std::move(vertices)), tets_(std::move(tets)) {}
 
         auto solve(unsigned int maxIterations, const vecXr &initialGuess) -> vecXr;
 
     private:
-        const SimulationState simulationState_;
+        const SimulationState state_;
 
         const matXr vertices_;
         const matXi tets_;

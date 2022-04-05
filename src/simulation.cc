@@ -6,31 +6,21 @@
 #include <spdlog/spdlog.h>
 
 namespace nm {
-    void SimulationState::setSimulationConstraint(const SimulationConstraint &constraint) {
+    void SimulationState::setSimulationConstraint(const SimulationConstraint &simulationConstraint) {
         if (!isInit()) {
             spdlog::error("System is not yet initialized!!");
             return;
         }
 
-        simulationConstraint_ = constraint;
+        constraint = simulationConstraint;
 
         // The positions vector contains all the fixed nodes and zeroes for everything else.
-        simulationConstraint_.positions =
-                q - simulationConstraint_.selectionMatrix.transpose() * simulationConstraint_.selectionMatrix * q;
+        constraint.positions = q - constraint.selectionMatrix.transpose() * constraint.selectionMatrix * q;
 
         // We need to resize the vectors and matrices so they are the correct size.
-        spdlog::debug("q.rows() before: {}", q.rows());
-        q = simulationConstraint_.selectionMatrix * q;
-        spdlog::debug("q.rows() after: {}", q.rows());
-
-        spdlog::debug("qdot.rows() before: {}", qdot.rows());
-        qdot = simulationConstraint_.selectionMatrix * qdot;
-        spdlog::debug("qdot.rows() after: {}", qdot.rows());
-
-        spdlog::debug("massMatrix.rows() before: {}", massMatrix.rows());
-        massMatrix =
-                simulationConstraint_.selectionMatrix * massMatrix * simulationConstraint_.selectionMatrix.transpose();
-        spdlog::debug("massMatrix.rows() after: {}", massMatrix.rows());
+        q = constraint.selectionMatrix * q;
+        qdot = constraint.selectionMatrix * qdot;
+        massMatrix = constraint.selectionMatrix * massMatrix * constraint.selectionMatrix.transpose();
     }
 
     void SimulationState::initializeSimRuntimeMembers(const matXr &vertices) {
@@ -51,8 +41,16 @@ namespace nm {
         massMatrix = fem::massMatrixLinearTetmesh(tets, qdot, tetVolumes, density);
     }
 
-    auto SimulationState::isInit() -> bool {
+    auto SimulationState::isInit() const -> bool {
         return q.size() > 0 && qdot.size() > 0 && massMatrix.size() > 0 && tetVolumes.size() > 0;
+    }
+
+    auto SimulationState::getSelectedVertexPositions() const -> vecXr {
+        return constraint.selectionMatrix.transpose() * q;
+    }
+
+    auto SimulationState::getSelectedVertexVelocities() const -> vecXr {
+        return constraint.selectionMatrix.transpose() * qdot;
     }
 
     auto simulationStateFactory(const matXr &vertices, const matXi &tets, real youngsModulus, real poissonsRatio,

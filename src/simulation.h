@@ -28,19 +28,20 @@ namespace nm {
         vecXr q;
         vecXr qdot;
 
+        SimulationConstraint constraint;
+
         SimulationState() = default;
         SimulationState(real youngsModulus, real poissonsRatio, real dt, real density)
             : dt(dt), density(density), mu(0.5 * youngsModulus / (2.0 * (1.0 + poissonsRatio))),
               lambda(0.5 * (youngsModulus * poissonsRatio) / ((1.0 + poissonsRatio) * (1.0 - 2.0 * poissonsRatio))){};
 
-        void setSimulationConstraint(const SimulationConstraint &constraint);
+        void setSimulationConstraint(const SimulationConstraint &simulationConstraint);
         void initializeSimRuntimeMembers(const matXr &vertices);
         void initializeSimAuxiliaryMembers(const matXr &vertices, const matXi &tets);
 
-        auto isInit() -> bool;
-
-    private:
-        SimulationConstraint simulationConstraint_;
+        auto isInit() const -> bool;
+        auto getSelectedVertexPositions() const -> vecXr;
+        auto getSelectedVertexVelocities() const -> vecXr;
     };
 
     auto simulationStateFactory(const matXr &vertices, const matXi &tets, real youngsModulus, real poissonsRatio,

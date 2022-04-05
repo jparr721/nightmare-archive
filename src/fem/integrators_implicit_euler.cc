@@ -2,6 +2,7 @@
 #include "V_linear_tetrahedron.h"
 #include "assemble.h"
 #include <memory>
+#include <spdlog/spdlog.h>
 
 namespace nm::fem {
     auto NewtonsMethod::solve(unsigned int maxIterations, const vecXr &initialGuess) -> vecXr {
@@ -48,29 +49,30 @@ namespace nm::fem {
 
     auto NewtonsMethod::energyFunction(const vecXr &guess) -> real {
         // This is the q + dt * v part of the expression.
-        const vecXr newq = simulationState_.q + simulationState_.dt * guess;
+        const vecXr newq = state_.constraint.selectionMatrix.transpose() * (state_.q + state_.dt * guess) +
+                           state_.constraint.positions;
         real energy = 0.0;
         for (int ii = 0; ii < tets_.rows(); ++ii) {
-            energy += VlinearTetrahedron(simulationState_.q, vertices_, tets_.row(ii), simulationState_.mu,
-                                         simulationState_.lambda, simulationState_.tetVolumes(ii));
+            energy += VlinearTetrahedron(state_.getSelectedVertexPositions(), vertices_, tets_.row(ii), state_.mu,
+                                         state_.lambda, state_.tetVolumes(ii));
         }
 
         // Compute the rest of the energy function value.
-        energy += 0.5 * (guess - simulationState_.qdot).transpose() * simulationState_.massMatrix *
-                  (guess - simulationState_.qdot);
+        energy += 0.5 * (guess - state_.qdot).transpose() * state_.massMatrix * (guess - state_.qdot);
         return energy;
     }
 
     auto NewtonsMethod::energyFunctionGradient(const vecXr &guess) -> vecXr {
-        const vecXr force = -assembleForces(simulationState_.q, vertices_, tets_, simulationState_.tetVolumes,
-                                            simulationState_.mu, simulationState_.lambda);
-        return simulationState_.massMatrix * (guess - simulationState_.qdot) + simulationState_.dt * force;
+        const vecXr force = -assembleForces(state_.getSelectedVertexPositions(), vertices_, tets_, state_.tetVolumes,
+                                            state_.mu, state_.lambda);
+        return state_.massMatrix * (guess - state_.qdot) + state_.dt * state_.constraint.selectionMatrix * force;
     }
 
     auto NewtonsMethod::energyFunctionHessian(const vecXr &guess) -> spmatXr {
-        const spmatXr stiffness = -assembleStiffness(simulationState_.q, vertices_, tets_, simulationState_.tetVolumes,
-                                                     simulationState_.mu, simulationState_.lambda);
-        return simulationState_.massMatrix + simulationState_.dt * simulationState_.dt * stiffness;
+        spmatXr stiffness = -assembleStiffness(state_.getSelectedVertexPositions(), vertices_, tets_,
+                                                     state_.tetVolumes, state_.mu, state_.lambda);
+        stiffness = state_.constraint.selectionMatrix * stiffness * state_.constraint.selectionMatrix.transpose();
+        return state_.massMatrix + state_.dt * state_.dt *  stiffness;
     }
 
     auto implicitEuler(SimulationState &simulationState, const matXr &vertices, const matXi &tets) -> void {
