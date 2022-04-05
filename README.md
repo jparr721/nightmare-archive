@@ -3,6 +3,7 @@ BYOR (Bring Your Own Renderer) physics engine.
 
 ## Compiling
 We use CMake, all the dependencies are self contained so you shouldn't need anything besides OpenGL installed.
+
 ```bash
 $ mkdir build && cd build
 $ cmake ..
