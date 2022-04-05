@@ -62,7 +62,8 @@ add_library(${PROJECT_LIB}
         src/fem/mass_matrix_linear_tetrahedron.h
         src/fem/mass_matrix_linear_tetmesh.cc
         src/fem/mass_matrix_linear_tetmesh.h
-        )
+        src/fem/newtons_method.cc
+        src/fem/newtons_method.h)
 
 target_link_libraries(${PROJECT_LIB}
         PUBLIC
