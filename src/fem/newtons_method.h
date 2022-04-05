@@ -2,23 +2,58 @@
 
 #include "../nm_math.h"
 #include "../simulation.h"
+#include <type_traits>
 
 namespace nm::fem {
-    class NewtonsMethod {
-    public:
-        NewtonsMethod(SimulationState simulationState, matXr vertices, matXi tets)
-            : state_(std::move(simulationState)), vertices_(std::move(vertices)), tets_(std::move(tets)) {}
+    template<typename EnergyFn, typename GradFn, typename HessianFn>
+    auto newtonsMethod(const EnergyFn &energyFn, const GradFn &gradFn, const HessianFn &hessianFn,
+                       const SimulationState &simulationState, const matXr &vertices, const matXi &tets,
+                       unsigned int maxIterations, const vecXr &initialGuess) -> vecXr {
+        //        static_assert(std::is_function(energyFn), "Energy function must be a function pointer");
+        //        static_assert(std::is_function(gradFn), "Gradient function must be a function pointer");
+        //        static_assert(std::is_function(hessianFn), "Hessian function must be a function pointer");
 
-        auto solve(unsigned int maxIterations, const vecXr &initialGuess) -> vecXr;
+        // Copy the initial guess into x0 so we can update it.
+        vecXr x0 = initialGuess;
+        vecXr noOpResult = x0;
 
-    private:
-        const SimulationState state_;
+        // Begin iterating newton's method.
+        for (int ii = 0; ii < maxIterations; ++ii) {
+            // First, check for convergence
+            const vecXr gradient = gradFn(simulationState, vertices, tets, x0);
 
-        const matXr vertices_;
-        const matXi tets_;
+            // Convergence reached! Woo!
+            if (gradient.squaredNorm() < std::numeric_limits<real>::epsilon()) { return noOpResult; }
 
-        auto energyFunction(const vecXr &guess) -> real;
-        auto energyFunctionGradient(const vecXr &guess) -> vecXr;
-        auto energyFunctionHessian(const vecXr &guess) -> spmatXr;
-    };
+            // Compute the search direction by solving for d in Hd = -g where H is the hessian and g is the gradient.
+            const spmatXr hessian = hessianFn(simulationState, vertices, tets, x0);
+
+            Eigen::SimplicialLDLT<spmatXr> solver;
+            solver.analyzePattern(hessian);
+            solver.factorize(hessian);
+
+            // Compute d to get our direction vector.
+            vecXr d = -solver.solve(gradient);
+
+            // Line search for optimum alpha value.
+            real alpha = 0.0;
+            real c = 1e-8;
+            real p = 0.5;
+
+            for (;;) {
+                if (energyFn(simulationState, vertices, tets, x0 + alpha * d) <=
+                    energyFn(simulationState, vertices, tets, x0) + c * d.transpose() * gradient) {
+                    break;
+                }
+
+                alpha *= p;
+
+                if (alpha < std::numeric_limits<real>::epsilon()) { return noOpResult; }
+            }
+
+            x0 += alpha * d;
+        }
+
+        return x0;
+    }
 }// namespace nm::fem

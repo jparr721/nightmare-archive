@@ -1,4 +1,6 @@
 #include "visualization.h"
+#include "fem/V_linear_tetrahedron.h"
+#include "fem/assemble.h"
 #include "renderer_utils.h"
 #include <spdlog/spdlog.h>
 #include <thread>
