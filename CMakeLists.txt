@@ -34,6 +34,8 @@ add_library(${PROJECT_LIB}
         src/visualization.h
         src/simulation.cc
         src/simulation.h
+        src/mouse_control.cc
+        src/mouse_control.h
 
         # nm::fem
         src/fem/phi_linear_tetrahedron.cc
@@ -62,7 +64,13 @@ add_library(${PROJECT_LIB}
         src/fem/mass_matrix_linear_tetrahedron.h
         src/fem/mass_matrix_linear_tetmesh.cc
         src/fem/mass_matrix_linear_tetmesh.h
-        src/fem/newtons_method.h src/fem/linear_energy_function.cc src/fem/linear_energy_function.h)
+        src/fem/newtons_method.h
+        src/fem/linear_energy_function.cc
+        src/fem/linear_energy_function.h
+        src/fem/external_forces.cc
+        src/fem/external_forces.h
+        src/fem/spring_potential.cc
+        src/fem/spring_potential.h)
 
 target_link_libraries(${PROJECT_LIB}
         PUBLIC

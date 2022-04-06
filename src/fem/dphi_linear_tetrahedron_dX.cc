@@ -14,11 +14,11 @@ namespace nm::fem {
         T.col(2) = X3 - X0;
 
         // Construct the 4x3 matrix of -1^T * TT and TT.
-        mat3r TT = T.inverse();
-        vec3r topRow = -vec3r::Ones().transpose() * TT;
+        mat3r Tinv = T.inverse();
+        vec3r topRow = -vec3r::Ones().transpose() * Tinv;
         mat43r dphi;
         dphi.row(0) = topRow;
-        dphi.block<3, 3>(1, 0) = TT;
+        dphi.block<3, 3>(1, 0) = Tinv;
 
         return dphi;
     }

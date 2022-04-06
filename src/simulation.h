@@ -42,6 +42,7 @@ namespace nm {
         auto isInit() const -> bool;
         auto getSelectedVertexPositions() const -> vecXr;
         auto getSelectedVertexVelocities() const -> vecXr;
+        auto computeExternalForceForSelectedPositions(const vec3r &force) const -> vecXr;
     };
 
     auto simulationStateFactory(const matXr &vertices, const matXi &tets, real youngsModulus, real poissonsRatio,
@@ -49,5 +50,6 @@ namespace nm {
 
     auto simulationConstraintFactory(const matXr &vertices, real selectionTolerance) -> SimulationConstraint;
 
-    void simulate(SimulationState &simulationState, const matXr &vertices, const matXi &tets);
+    void simulate(SimulationState &simulationState, const matXr &vertices, const matXi &tets,
+                  const vecXr &externalForces);
 }// namespace nm

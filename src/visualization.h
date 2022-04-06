@@ -19,5 +19,8 @@ namespace nm {
 
     auto initialize() -> bool;
     auto simulationCallback() -> bool;
+
+    // UI Controls
     auto drawCallback(igl::opengl::glfw::Viewer &viewer) -> bool;
+    auto mouseDown(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool;
 }// namespace nm

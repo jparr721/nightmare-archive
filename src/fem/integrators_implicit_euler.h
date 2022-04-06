@@ -7,5 +7,6 @@
 #include "newtons_method.h"
 
 namespace nm::fem {
-    auto implicitEuler(SimulationState &simulationState, const matXr &vertices, const matXi &tets) -> void;
+    auto implicitEuler(SimulationState &simulationState, const matXr &vertices, const matXi &tets,
+                       const vecXr &externalForces) -> void;
 }// namespace nm::fem

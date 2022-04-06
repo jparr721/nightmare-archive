@@ -76,7 +76,7 @@ namespace nm {
         spdlog::debug("Drawing grid");
         matXr points;
         matXi edges;
-        nm::makeRenderableGrid(1.0, 50, points, edges, -1.0);
+        nm::makeRenderableGrid(10.0, 100, points, edges, 0.0);
         viewer().data().set_edges(points, edges, Rowvec3r(1.0, 1.0, 1.0));
         viewer().core().background_color = vec4<float>(0.15, 0.15, 0.15, 1.0);
     }
@@ -94,13 +94,21 @@ namespace nm {
     }
 
     auto simulationCallback() -> bool {
-        while (kSimulating) { simulate(simulationState(), mesh()->vertices, mesh()->tetrahedra); }
+//        const auto externalForce = simulationState().computeExternalForceForSelectedPositions(vec3r(0, -1.0, 0));
+        const vecXr externalForce = vecXr::Zero(simulationState().getSelectedVertexPositions().rows());
+        while (kSimulating) {
+            simulate(simulationState(), mesh()->vertices, mesh()->tetrahedra, externalForce);
+        }
         return false;
     }
 
     auto drawCallback(igl::opengl::glfw::Viewer &viewer) -> bool {
         updateVertexPositions(simulationState().constraint.selectionMatrix.transpose() * simulationState().q +
                               simulationState().constraint.positions);
+        return false;
+    }
+
+    auto mouseDown(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool {
         return false;
     }
 
@@ -116,8 +124,11 @@ namespace nm {
         drawGrid();
 
         spdlog::info("Loading mesh");
-        mesh_ = std::make_unique<Mesh>("assets/cube.obj");
-        tetrahedralizeMesh(mesh_.get());
+        mesh_ = std::make_unique<Mesh>("assets/bunny.obj");
+        if (!tetrahedralizeMesh(mesh_.get())) {
+            spdlog::error("Tetrahedralization failed. Exiting");
+            return false;
+        }
 
         simulationState_ = simulationStateFactory(mesh_->vertices, mesh_->tetrahedra, kYoungsModulus, kPoissonsRatio,
                                                   kDt, kDensity);
@@ -130,6 +141,7 @@ namespace nm {
         plugin().widgets.push_back(&menu());
         viewer().plugins.push_back(&plugin());
         viewer().callback_post_draw = &drawCallback;
+        viewer().callback_mouse_down = &mouseDown;
         menu().callback_draw_viewer_menu = &callbackDrawViewerMenu;
         viewer().data().set_mesh(mesh()->vertices, mesh()->faces);
         return true;

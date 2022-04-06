@@ -8,10 +8,10 @@ namespace nm::fem {
     template<typename EnergyFn, typename GradFn, typename HessianFn>
     auto newtonsMethod(const EnergyFn &energyFn, const GradFn &gradFn, const HessianFn &hessianFn,
                        const SimulationState &simulationState, const matXr &vertices, const matXi &tets,
-                       unsigned int maxIterations, const vecXr &initialGuess) -> vecXr {
-        //        static_assert(std::is_function(energyFn), "Energy function must be a function pointer");
-        //        static_assert(std::is_function(gradFn), "Gradient function must be a function pointer");
-        //        static_assert(std::is_function(hessianFn), "Hessian function must be a function pointer");
+                       unsigned int maxIterations, const vecXr &initialGuess, const vecXr &externalForces) -> vecXr {
+        static_assert(std::is_function_v<EnergyFn>, "Energy function must be a function pointer");
+        static_assert(std::is_function_v<GradFn>, "Gradient function must be a function pointer");
+        static_assert(std::is_function_v<HessianFn>, "Hessian function must be a function pointer");
 
         // Copy the initial guess into x0 so we can update it.
         vecXr x0 = initialGuess;
@@ -20,10 +20,10 @@ namespace nm::fem {
         // Begin iterating newton's method.
         for (int ii = 0; ii < maxIterations; ++ii) {
             // First, check for convergence
-            const vecXr gradient = gradFn(simulationState, vertices, tets, x0);
+            const vecXr gradient = gradFn(simulationState, vertices, tets, x0, externalForces);
 
             // Convergence reached! Woo!
-            if (gradient.squaredNorm() < std::numeric_limits<real>::epsilon()) { return noOpResult; }
+            if (gradient.squaredNorm() < 1e-8) { return noOpResult; }
 
             // Compute the search direction by solving for d in Hd = -g where H is the hessian and g is the gradient.
             const spmatXr hessian = hessianFn(simulationState, vertices, tets, x0);
@@ -48,7 +48,7 @@ namespace nm::fem {
 
                 alpha *= p;
 
-                if (alpha < std::numeric_limits<real>::epsilon()) { return noOpResult; }
+                if (alpha < 1e-8) { return noOpResult; }
             }
 
             x0 += alpha * d;

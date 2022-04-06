@@ -53,6 +53,18 @@ namespace nm {
         return constraint.selectionMatrix.transpose() * qdot;
     }
 
+    auto SimulationState::computeExternalForceForSelectedPositions(const vec3r &force) const -> vecXr {
+        assert(isInit());
+        vecXr externalForce;
+        externalForce.resize(getSelectedVertexPositions().rows());
+
+        for (int ii = 0; ii < externalForce.rows(); ii += 3) {
+            externalForce.segment<3>(ii) = force;
+        }
+
+        return externalForce;
+    }
+
     auto simulationStateFactory(const matXr &vertices, const matXi &tets, real youngsModulus, real poissonsRatio,
                                 real dt, real density) -> SimulationState {
         spdlog::info("Initializing simulation runtime...");
@@ -100,7 +112,8 @@ namespace nm {
         return simulationConstraint;
     }
 
-    void simulate(SimulationState &simulationState, const matXr &vertices, const matXi &tets) {
-        fem::implicitEuler(simulationState, vertices, tets);
+    void simulate(SimulationState &simulationState, const matXr &vertices, const matXi &tets,
+                  const vecXr &externalForces) {
+        fem::implicitEuler(simulationState, vertices, tets, externalForces);
     }
 }// namespace nm

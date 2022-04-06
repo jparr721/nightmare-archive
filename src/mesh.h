@@ -5,7 +5,11 @@
 #include <utility>
 
 namespace nm {
-    constexpr const char *kDefaultTetgenFlags = "zpqQa1e-1";
+#ifdef NDEBUG
+    constexpr const char *kDefaultTetgenFlags = "zpqQa1";
+#else
+    constexpr const char *kDefaultTetgenFlags = "zpq";
+#endif
 
     enum TetgenResult {
         kTetgenFailedToConvert = -1,
@@ -26,5 +30,5 @@ namespace nm {
     };
 
     void translateMesh(Mesh *mesh, const vec3r &amount);
-    void tetrahedralizeMesh(Mesh *mesh, const char *flags = kDefaultTetgenFlags);
+    auto tetrahedralizeMesh(Mesh *mesh, const char *flags = kDefaultTetgenFlags) -> bool;
 }// namespace nm

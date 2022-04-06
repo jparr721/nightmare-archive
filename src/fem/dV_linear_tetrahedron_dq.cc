@@ -30,7 +30,7 @@ namespace nm::fem {
             B.block(6, 2 + 3 * ii, 3, 1) = dphiDX.row(ii).transpose();
         }
 
-        return -volume * B.transpose() * dpsi;
+        return -volume * (B.transpose() * dpsi);
     }
 
 }// namespace nm::fem

@@ -9,27 +9,31 @@
 namespace nm {
     Mesh::Mesh(const std::string &meshFile) { igl::read_triangle_mesh(meshFile, vertices, faces); }
 
-    void tetrahedralizeMesh(Mesh *mesh, const char *flags) {
+    auto tetrahedralizeMesh(Mesh *mesh, const char *flags) -> bool {
         matXr TV;
-        matXi F, TF, TT;
-        igl::unique_simplices(mesh->faces, F);
+        matXi TF, TT;
 
         const TetgenResult res = static_cast<const TetgenResult>(
-                igl::copyleft::tetgen::tetrahedralize(mesh->vertices, F, flags, TV, TT, TF));
+                igl::copyleft::tetgen::tetrahedralize(mesh->vertices, mesh->faces, flags, TV, TT, TF));
 
         if (res != 0) {
             switch (res) {
                 case kTetgenFailedToConvert:
                     spdlog::error("Internal igl error occurred");
+                    break;
                 case kTetgenCrashed:
                     spdlog::error("Tetgen crashed");
+                    break;
                 case kTetgenFailedToCreateTets:
                     spdlog::error("Tets could not be created for some reason");
+                    break;
                 case kTetgenFailedToConvertToMatrix:
                     spdlog::error("Matrix conversion failed for some reason");
+                    break;
                 default:
                     break;
             }
+            return false;
         }
 
         mesh->vertices = TV;
@@ -38,6 +42,8 @@ namespace nm {
         mesh->faces = TF.rowwise().reverse().eval();
 
         mesh->tetrahedra = TT;
+
+        return true;
     }
 
     void translateMesh(Mesh *mesh, const vec3r &amount) {

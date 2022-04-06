@@ -11,6 +11,20 @@ namespace nm {
         return (tetrahedralElement.rowwise().sum().array() / 4).matrix();
     }
 
+    auto computeTetrahedralCircumcenter(const mat43r &tetrahedralElement) -> vec3r {
+        mat3r A;
+        vec3r b;
+
+        const real n0 = tetrahedralElement.row(0).squaredNorm();
+
+        for (int ii = 0; ii < 3; ++ii) {
+            A.row(ii) = tetrahedralElement.row(ii + 1) - tetrahedralElement.row(0);
+            b(ii) = tetrahedralElement.row(ii + 1).squaredNorm() - n0;
+        }
+
+        return 0.5 * A.fullPivHouseholderQr().solve(b);
+    }
+
     auto computeTetrahedralElementVolume(const mat43r &tet) -> real {
         mat4r sqTet = mat4r::Ones();
         sqTet.block<4, 3>(0, 1) = tet;

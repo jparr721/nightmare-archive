@@ -6,6 +6,7 @@
 namespace nm {
     auto computeTetrahedralCentroid(const mat43r &tetrahedralElement) -> vec3r;
     auto computeTetrahedralCentroid(const mat34r &tetrahedralElement) -> vec3r;
+    auto computeTetrahedralCircumcenter(const mat43r &tetrahedralElement) -> vec3r;
     auto computeTetrahedralElementVolume(const mat43r &tet) -> real;
     auto findMinVertices(const matXr &vertices, real tol) -> std::vector<int>;
 

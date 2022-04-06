@@ -17,6 +17,7 @@ namespace nm {
     using vec2r = Eigen::Matrix<real, 2, 1>;
     using vec3r = Eigen::Matrix<real, 3, 1>;
     using vec4r = Eigen::Matrix<real, 4, 1>;
+    using vec6r = Eigen::Matrix<real, 6, 1>;
     using vec9r = Eigen::Matrix<real, 9, 1>;
     using vec12r = Eigen::Matrix<real, 12, 1>;
     using vecXr = Eigen::Matrix<real, Eigen::Dynamic, 1>;
