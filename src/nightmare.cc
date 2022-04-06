@@ -11,5 +11,5 @@ auto main() -> int {
 #endif
 
     assert(nm::initialize());
-    nm::viewer().launch();
+    nm::launch();
 }

@@ -22,7 +22,7 @@
         <rule entity="CLASS_MEMBER_FIELD" visibility="PUBLIC" specifier="ANY" prefix="" style="CAMEL_CASE" suffix="" />
         <rule entity="STRUCT_MEMBER_FIELD" visibility="PUBLIC" specifier="ANY" prefix="" style="CAMEL_CASE" suffix="" />
         <rule entity="GLOBAL_FUNCTION" visibility="ANY" specifier="ANY" prefix="" style="CAMEL_CASE" suffix="" />
-        <rule entity="GLOBAL_VARIABLE" visibility="ANY" specifier="ANY" prefix="k" style="PASCAL_CASE" suffix="" />
+        <rule entity="GLOBAL_VARIABLE" visibility="ANY" specifier="CONST,STATIC" prefix="k" style="PASCAL_CASE" suffix="" />
         <rule entity="PARAMETER" visibility="ANY" specifier="ANY" prefix="" style="CAMEL_CASE" suffix="" />
         <rule entity="LOCAL_VARIABLE" visibility="ANY" specifier="ANY" prefix="" style="CAMEL_CASE" suffix="" />
         <rule entity="CLASS_MEMBER_FIELD,STRUCT_MEMBER_FIELD" visibility="PROTECTED,PRIVATE" specifier="ANY" prefix="" style="CAMEL_CASE" suffix="_" />

@@ -36,6 +36,10 @@ add_library(${PROJECT_LIB}
         src/simulation.h
         src/mouse_control.cc
         src/mouse_control.h
+        src/visualization_menu.cc
+        src/visualization_menu.h
+        src/visualization_vars.cc
+        src/visualization_vars.h
 
         # nm::fem
         src/fem/phi_linear_tetrahedron.cc
@@ -70,7 +74,7 @@ add_library(${PROJECT_LIB}
         src/fem/external_forces.cc
         src/fem/external_forces.h
         src/fem/spring_potential.cc
-        src/fem/spring_potential.h)
+        src/fem/spring_potential.h )
 
 target_link_libraries(${PROJECT_LIB}
         PUBLIC

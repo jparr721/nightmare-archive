@@ -1,7 +1,6 @@
 #include "visualization.h"
-#include "fem/V_linear_tetrahedron.h"
-#include "fem/assemble.h"
 #include "renderer_utils.h"
+#include "visualization_menu.h"
 #include <spdlog/spdlog.h>
 #include <thread>
 
@@ -11,139 +10,95 @@ namespace nm {
     constexpr real kDensity = 0.1;
     constexpr real kDt = 0.01;
 
-    bool kSimulating = true;
-
-    igl::opengl::glfw::Viewer viewer_;
-    igl::opengl::glfw::imgui::ImGuiMenu menu_;
-    igl::opengl::glfw::imgui::ImGuiPlugin plugin_;
-    std::unique_ptr<Mesh> mesh_;
-    SimulationState simulationState_;
-
-    // Menus and other non-exported stuff
-    namespace {
-        auto callbackDrawViewerMenu() -> void {
-            // Mesh
-            if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen)) {
-                float w = ImGui::GetContentRegionAvail().x;
-                float p = ImGui::GetStyle().FramePadding.x;
-                if (ImGui::Button("Load##Mesh", ImVec2((w - p) / 2.f, 0))) {
-                    viewer().open_dialog_load_mesh();
-                    mesh()->vertices = viewer().data().V;
-                    mesh()->faces = viewer().data().F;
-                    tetrahedralizeMesh(mesh().get());
-                    viewer().data().set_mesh(mesh()->vertices, mesh()->faces);
-                }
-                ImGui::SameLine(0, p);
-                if (ImGui::Button("Save##Mesh", ImVec2((w - p) / 2.f, 0))) { viewer().open_dialog_save_mesh(); }
-            }
-            // Viewing options
-            if (ImGui::CollapsingHeader("Viewing Options", ImGuiTreeNodeFlags_DefaultOpen)) {
-                if (ImGui::Button("Center object", ImVec2(-1, 0))) {
-                    viewer().core().align_camera_center(viewer().data().V, viewer().data().F);
-                }
-                if (ImGui::Button("Snap canonical view", ImVec2(-1, 0))) { viewer().snap_to_canonical_quaternion(); }
-
-                // Zoom
-                ImGui::PushItemWidth(80 * menu().menu_scaling());
-                ImGui::DragFloat("Zoom", &(viewer().core().camera_zoom), 0.05f, 0.1f, 20.0f);
-            }
-            // Helper for setting viewport specific mesh options
-            auto makeCheckbox = [&](const char *label, unsigned int &option) {
-                return ImGui::Checkbox(
-                        label, [&]() { return viewer().core().is_set(option); },
-                        [&](bool value) { return viewer().core().set(option, value); });
-            };
-            // Draw options
-            if (ImGui::CollapsingHeader("Draw Options", ImGuiTreeNodeFlags_DefaultOpen)) {
-                if (ImGui::Checkbox("Face-based", &(viewer().data().face_based))) {
-                    viewer().data().dirty = igl::opengl::MeshGL::DIRTY_ALL;
-                }
-                if (ImGui::Checkbox("Invert normals", &(viewer().data().invert_normals))) {
-                    viewer().data().dirty |= igl::opengl::MeshGL::DIRTY_NORMAL;
-                }
-                makeCheckbox("Show overlay", viewer().data().show_overlay);
-                makeCheckbox("Show overlay depth", viewer().data().show_overlay_depth);
-            }
-
-            // Sim options
-            if (ImGui::CollapsingHeader("Sim Options", ImGuiTreeNodeFlags_DefaultOpen)) {
-                if (ImGui::Checkbox("Simulating", &kSimulating)) {}
-            }
-        }
-    }// namespace
+    VisualizationVars visualizationVars;
+    MouseInputController mouseInputController;
+    SimulationVars simulationVars;
 
     void drawGrid() {
         spdlog::debug("Drawing grid");
         matXr points;
         matXi edges;
         nm::makeRenderableGrid(10.0, 100, points, edges, 0.0);
-        viewer().data().set_edges(points, edges, Rowvec3r(1.0, 1.0, 1.0));
-        viewer().core().background_color = vec4<float>(0.15, 0.15, 0.15, 1.0);
+        visualizationVars.viewer.data().set_edges(points, edges, Rowvec3r(1.0, 1.0, 1.0));
+        visualizationVars.viewer.core().background_color = vec4<float>(0.15, 0.15, 0.15, 1.0);
     }
 
     void updateVertexPositions(const vecXr &pos) {
         // Update vertex positions
-        for (unsigned int ii = 0; ii < mesh()->vertices.rows(); ++ii) {
-            mesh()->vertices.row(ii) = pos.segment<3>(3 * ii).transpose();
+        for (unsigned int ii = 0; ii < visualizationVars.mesh->vertices.rows(); ++ii) {
+            visualizationVars.mesh->vertices.row(ii) = pos.segment<3>(3 * ii).transpose();
         }
 
-        viewer().data_list[0].V = mesh()->vertices;
+        visualizationVars.viewer.data_list[0].V = visualizationVars.mesh->vertices;
 
         // Tell viewer to update
-        viewer().data_list[0].dirty |= igl::opengl::MeshGL::DIRTY_POSITION;
+        visualizationVars.viewer.data_list[0].dirty |= igl::opengl::MeshGL::DIRTY_POSITION;
     }
 
     auto simulationCallback() -> bool {
-//        const auto externalForce = simulationState().computeExternalForceForSelectedPositions(vec3r(0, -1.0, 0));
-        const vecXr externalForce = vecXr::Zero(simulationState().getSelectedVertexPositions().rows());
-        while (kSimulating) {
-            simulate(simulationState(), mesh()->vertices, mesh()->tetrahedra, externalForce);
+        //        const auto externalForce = simulationVars.simulationState.computeExternalForceForSelectedPositions(vec3r(0, -1.0, 0));
+        const vecXr externalForce = vecXr::Zero(simulationVars.simulationState.getSelectedVertexPositions().rows());
+        while (simulationVars.isSimulating) {
+            simulate(simulationVars.simulationState, visualizationVars.mesh->vertices,
+                     visualizationVars.mesh->tetrahedra, externalForce);
         }
         return false;
     }
 
     auto drawCallback(igl::opengl::glfw::Viewer &viewer) -> bool {
-        updateVertexPositions(simulationState().constraint.selectionMatrix.transpose() * simulationState().q +
-                              simulationState().constraint.positions);
+        updateVertexPositions(simulationVars.simulationState.constraint.selectionMatrix.transpose() *
+                                      simulationVars.simulationState.q +
+                              simulationVars.simulationState.constraint.positions);
         return false;
     }
 
     auto mouseDown(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool {
+        mouseInputController.mouseWindow =
+                vec3r(viewer.current_mouse_x, viewer.core().viewport(3) - viewer.current_mouse_y, 0.);
+
+        // Project the ray from the mouse and get the mouse pos in world space.
+        igl::unproject(mouseInputController.mouseWindow, viewer.core().view, viewer.core().proj, viewer.core().viewport,
+                       mouseInputController.mouseWorld);
+
+        //
+
         return false;
     }
 
 
-    auto viewer() -> igl::opengl::glfw::Viewer & { return viewer_; }
-    auto menu() -> igl::opengl::glfw::imgui::ImGuiMenu & { return menu_; }
-    auto plugin() -> igl::opengl::glfw::imgui::ImGuiPlugin & { return plugin_; }
-    auto mesh() -> std::unique_ptr<Mesh> & { return mesh_; }
-    auto simulationState() -> SimulationState & { return simulationState_; }
+    void callbackDrawViewerMenu() { drawVisualizerMenu(visualizationVars, simulationVars); }
 
     auto initialize() -> bool {
         spdlog::info("Initializing");
         drawGrid();
 
         spdlog::info("Loading mesh");
-        mesh_ = std::make_unique<Mesh>("assets/bunny.obj");
-        if (!tetrahedralizeMesh(mesh_.get())) {
+        visualizationVars.mesh = std::make_unique<Mesh>("assets/bunny.obj");
+        if (!tetrahedralizeMesh(visualizationVars.mesh.get())) {
             spdlog::error("Tetrahedralization failed. Exiting");
             return false;
         }
 
-        simulationState_ = simulationStateFactory(mesh_->vertices, mesh_->tetrahedra, kYoungsModulus, kPoissonsRatio,
-                                                  kDt, kDensity);
+        simulationVars.simulationState =
+                simulationStateFactory(visualizationVars.mesh->vertices, visualizationVars.mesh->tetrahedra,
+                                       kYoungsModulus, kPoissonsRatio, kDt, kDensity);
 
-        simulationState().setSimulationConstraint(simulationConstraintFactory(mesh()->vertices, 0.1));
+        simulationVars.simulationState.setSimulationConstraint(
+                simulationConstraintFactory(visualizationVars.mesh->vertices, 0.1));
 
         auto simThread = std::thread(simulationCallback);
         simThread.detach();
 
-        plugin().widgets.push_back(&menu());
-        viewer().plugins.push_back(&plugin());
-        viewer().callback_post_draw = &drawCallback;
-        viewer().callback_mouse_down = &mouseDown;
-        menu().callback_draw_viewer_menu = &callbackDrawViewerMenu;
-        viewer().data().set_mesh(mesh()->vertices, mesh()->faces);
+        visualizationVars.plugin.widgets.push_back(&visualizationVars.menu);
+        visualizationVars.viewer.plugins.push_back(&visualizationVars.plugin);
+        visualizationVars.viewer.callback_post_draw = &drawCallback;
+        visualizationVars.viewer.callback_mouse_down = &mouseDown;
+        visualizationVars.menu.callback_draw_viewer_menu = &callbackDrawViewerMenu;
+        visualizationVars.viewer.data().set_mesh(visualizationVars.mesh->vertices, visualizationVars.mesh->faces);
         return true;
+    }
+
+    auto launch() -> int {
+        return visualizationVars.viewer.launch();
     }
 }// namespace nm

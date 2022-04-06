@@ -11,16 +11,12 @@ namespace nm {
     void drawGrid();
     void updateVertexPositions(const vecXr &pos);
 
-    auto viewer() -> igl::opengl::glfw::Viewer &;
-    auto menu() -> igl::opengl::glfw::imgui::ImGuiMenu &;
-    auto plugin() -> igl::opengl::glfw::imgui::ImGuiPlugin &;
-    auto mesh() -> std::unique_ptr<Mesh> &;
-    auto simulationState() -> SimulationState &;
-
     auto initialize() -> bool;
+    auto launch() -> int;
     auto simulationCallback() -> bool;
 
     // UI Controls
+    void callbackDrawViewerMenu();
     auto drawCallback(igl::opengl::glfw::Viewer &viewer) -> bool;
     auto mouseDown(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool;
 }// namespace nm
