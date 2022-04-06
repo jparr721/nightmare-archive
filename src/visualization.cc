@@ -1,4 +1,5 @@
 #include "visualization.h"
+#include "mouse_control.h"
 #include "renderer_utils.h"
 #include "visualization_menu.h"
 #include <spdlog/spdlog.h>
@@ -60,17 +61,51 @@ namespace nm {
         igl::unproject(mouseInputController.mouseWindow, viewer.core().view, viewer.core().proj, viewer.core().viewport,
                        mouseInputController.mouseWorld);
 
-        //
+        // Compute the vertices in world space nearest to the mouse cursor position.
+        const auto verts = pickNearestVertices(mouseInputController.mouseWindow, viewer.core().view.cast<real>(),
+                                               viewer.core().proj.cast<real>(), viewer.core().viewport.cast<real>(),
+                                               visualizationVars.mesh->vertices, visualizationVars.mesh->faces,
+                                               mouseInputController.pickingTolerance);
+
+        mouseInputController.isMouseDragging = true;
 
         return false;
     }
 
+    auto mouseUp(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool {
+        mouseInputController.isMouseDragging = false;
+        mouseInputController.pickedVertices.clear();
+        mouseInputController.lastMouseDragWorld.setZero();
+        return false;
+    }
+
+    auto mouseMove(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool {
+        mouseInputController.lastMouseDragWindow =
+                vec3r(viewer.current_mouse_x, viewer.core().viewport(3) - viewer.current_mouse_y, 0.0) -
+                mouseInputController.mouseWindow;
+        mouseInputController.mouseWindow =
+                vec3r(viewer.current_mouse_x, viewer.core().viewport(3) - viewer.current_mouse_y, 0.0);
+        mouseInputController.lastMouseDragWorld -= mouseInputController.mouseWorld;
+        igl::unproject(mouseInputController.mouseWindow, viewer.core().view, viewer.core().proj, viewer.core().viewport,
+                       mouseInputController.mouseWorld);
+
+        if (mouseInputController.isMouseDragging && !mouseInputController.pickedVertices.empty()) { return true; }
+
+        return false;
+    }
 
     void callbackDrawViewerMenu() { drawVisualizerMenu(visualizationVars, simulationVars); }
 
     auto initialize() -> bool {
         spdlog::info("Initializing");
         drawGrid();
+
+        // Load sim vars
+        simulationVars.youngsModulus = kYoungsModulus;
+        simulationVars.poissonsRatio = kPoissonsRatio;
+        simulationVars.density = kDensity;
+        simulationVars.dt = kDt;
+
 
         spdlog::info("Loading mesh");
         visualizationVars.mesh = std::make_unique<Mesh>("assets/bunny.obj");
@@ -79,9 +114,9 @@ namespace nm {
             return false;
         }
 
-        simulationVars.simulationState =
-                simulationStateFactory(visualizationVars.mesh->vertices, visualizationVars.mesh->tetrahedra,
-                                       kYoungsModulus, kPoissonsRatio, kDt, kDensity);
+        simulationVars.simulationState = simulationStateFactory(
+                visualizationVars.mesh->vertices, visualizationVars.mesh->tetrahedra, simulationVars.youngsModulus,
+                simulationVars.poissonsRatio, simulationVars.dt, simulationVars.density);
 
         simulationVars.simulationState.setSimulationConstraint(
                 simulationConstraintFactory(visualizationVars.mesh->vertices, 0.1));
@@ -98,7 +133,5 @@ namespace nm {
         return true;
     }
 
-    auto launch() -> int {
-        return visualizationVars.viewer.launch();
-    }
+    auto launch() -> int { return visualizationVars.viewer.launch(); }
 }// namespace nm

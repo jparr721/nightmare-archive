@@ -19,4 +19,6 @@ namespace nm {
     void callbackDrawViewerMenu();
     auto drawCallback(igl::opengl::glfw::Viewer &viewer) -> bool;
     auto mouseDown(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool;
+    auto mouseUp(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool;
+    auto mouseMove(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool;
 }// namespace nm
