@@ -1,10 +1,8 @@
 #include "linear_energy_function.h"
-#include "external_forces.h"
-#include <spdlog/fmt/ostr.h>
 #include <spdlog/spdlog.h>
 
 namespace nm::fem {
-    auto computeLineatTetrahedralEnergy(const SimulationState &simulationState, const matXr &vertices,
+    auto computeLinearTetrahedralEnergy(const SimulationState &simulationState, const matXr &vertices,
                                         const matXi &tets, const vecXr &guess) -> real {
         // This is the q + dt * v part of the expression.
         const vecXr newq = simulationState.constraint.selectionMatrix.transpose() *

@@ -71,8 +71,6 @@ add_library(${PROJECT_LIB}
         src/fem/newtons_method.h
         src/fem/linear_energy_function.cc
         src/fem/linear_energy_function.h
-        src/fem/external_forces.cc
-        src/fem/external_forces.h
         src/fem/spring_potential.cc
         src/fem/spring_potential.h )
 

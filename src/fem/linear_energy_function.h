@@ -14,7 +14,7 @@ namespace nm::fem {
      * @param guess The initial guess from newton's method.
      * @return The total potential energy of the tetrahedral volume.
      */
-    auto computeLineatTetrahedralEnergy(const SimulationState &simulationState, const matXr &vertices,
+    auto computeLinearTetrahedralEnergy(const SimulationState &simulationState, const matXr &vertices,
                                         const matXi &tets, const vecXr &guess) -> real;
 
     /**
