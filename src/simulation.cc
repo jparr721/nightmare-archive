@@ -58,9 +58,7 @@ namespace nm {
         vecXr externalForce;
         externalForce.resize(getSelectedVertexPositions().rows());
 
-        for (int ii = 0; ii < externalForce.rows(); ii += 3) {
-            externalForce.segment<3>(ii) = force;
-        }
+        for (int ii = 0; ii < externalForce.rows(); ii += 3) { externalForce.segment<3>(ii) = force; }
 
         return externalForce;
     }
@@ -113,7 +111,7 @@ namespace nm {
     }
 
     void simulate(SimulationState &simulationState, const matXr &vertices, const matXi &tets,
-                  const vecXr &externalForces) {
-        fem::implicitEuler(simulationState, vertices, tets, externalForces);
+                  std::optional<unsigned int> selectedVertex) {
+        fem::implicitEuler(simulationState, vertices, tets, selectedVertex);
     }
 }// namespace nm

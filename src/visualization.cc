@@ -37,11 +37,9 @@ namespace nm {
     }
 
     auto simulationCallback() -> bool {
-        //        const auto externalForce = simulationVars.simulationState.computeExternalForceForSelectedPositions(vec3r(0, -1.0, 0));
-        const vecXr externalForce = vecXr::Zero(simulationVars.simulationState.getSelectedVertexPositions().rows());
         while (simulationVars.isSimulating) {
             simulate(simulationVars.simulationState, visualizationVars.mesh->vertices,
-                     visualizationVars.mesh->tetrahedra, externalForce);
+                     visualizationVars.mesh->tetrahedra, mouseInputController.selectedVertex);
         }
         return false;
     }
@@ -62,10 +60,10 @@ namespace nm {
                        mouseInputController.mouseWorld);
 
         // Compute the vertices in world space nearest to the mouse cursor position.
-        const auto verts = pickNearestVertices(mouseInputController.mouseWindow, viewer.core().view.cast<real>(),
-                                               viewer.core().proj.cast<real>(), viewer.core().viewport.cast<real>(),
-                                               visualizationVars.mesh->vertices, visualizationVars.mesh->faces,
-                                               mouseInputController.pickingTolerance);
+        mouseInputController.selectedVertex = pickNearestVertex(
+                mouseInputController.mouseWindow, viewer.core().view.cast<real>(), viewer.core().proj.cast<real>(),
+                viewer.core().viewport.cast<real>(), visualizationVars.mesh->vertices, visualizationVars.mesh->faces,
+                mouseInputController.pickingTolerance);
 
         mouseInputController.isMouseDragging = true;
 
@@ -74,7 +72,6 @@ namespace nm {
 
     auto mouseUp(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool {
         mouseInputController.isMouseDragging = false;
-        mouseInputController.pickedVertices.clear();
         mouseInputController.lastMouseDragWorld.setZero();
         return false;
     }
@@ -89,7 +86,7 @@ namespace nm {
         igl::unproject(mouseInputController.mouseWindow, viewer.core().view, viewer.core().proj, viewer.core().viewport,
                        mouseInputController.mouseWorld);
 
-        if (mouseInputController.isMouseDragging && !mouseInputController.pickedVertices.empty()) { return true; }
+        if (mouseInputController.isMouseDragging && !mouseInputController.selectedVertex.has_value()) { return true; }
 
         return false;
     }
@@ -128,6 +125,8 @@ namespace nm {
         visualizationVars.viewer.plugins.push_back(&visualizationVars.plugin);
         visualizationVars.viewer.callback_post_draw = &drawCallback;
         visualizationVars.viewer.callback_mouse_down = &mouseDown;
+        visualizationVars.viewer.callback_mouse_move = &mouseMove;
+        visualizationVars.viewer.callback_mouse_up = &mouseUp;
         visualizationVars.menu.callback_draw_viewer_menu = &callbackDrawViewerMenu;
         visualizationVars.viewer.data().set_mesh(visualizationVars.mesh->vertices, visualizationVars.mesh->faces);
         return true;

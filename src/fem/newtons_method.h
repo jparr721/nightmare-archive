@@ -8,7 +8,8 @@ namespace nm::fem {
     template<typename EnergyFn, typename GradFn, typename HessianFn>
     auto newtonsMethod(const EnergyFn &energyFn, const GradFn &gradFn, const HessianFn &hessianFn,
                        const SimulationState &simulationState, const matXr &vertices, const matXi &tets,
-                       unsigned int maxIterations, const vecXr &initialGuess, const vecXr &externalForces) -> vecXr {
+                       unsigned int maxIterations, const vecXr &initialGuess,
+                       std::optional<unsigned int> selectedVertex) -> vecXr {
         static_assert(std::is_function_v<EnergyFn>, "Energy function must be a function pointer");
         static_assert(std::is_function_v<GradFn>, "Gradient function must be a function pointer");
         static_assert(std::is_function_v<HessianFn>, "Hessian function must be a function pointer");
@@ -20,7 +21,7 @@ namespace nm::fem {
         // Begin iterating newton's method.
         for (int ii = 0; ii < maxIterations; ++ii) {
             // First, check for convergence
-            const vecXr gradient = gradFn(simulationState, vertices, tets, x0, externalForces);
+            const vecXr gradient = gradFn(simulationState, vertices, tets, x0, selectedVertex);
 
             // Convergence reached! Woo!
             if (gradient.squaredNorm() < 1e-8) { return noOpResult; }

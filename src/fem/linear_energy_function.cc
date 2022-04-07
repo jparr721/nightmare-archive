@@ -1,11 +1,11 @@
 #include "linear_energy_function.h"
 #include "external_forces.h"
-#include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
+#include <spdlog/spdlog.h>
 
 namespace nm::fem {
-    auto linearEnergyFunction(const SimulationState &simulationState, const matXr &vertices, const matXi &tets,
-                              const vecXr &guess) -> real {
+    auto computeLineatTetrahedralEnergy(const SimulationState &simulationState, const matXr &vertices,
+                                        const matXi &tets, const vecXr &guess) -> real {
         // This is the q + dt * v part of the expression.
         const vecXr newq = simulationState.constraint.selectionMatrix.transpose() *
                                    (simulationState.q + simulationState.dt * guess) +
@@ -24,18 +24,17 @@ namespace nm::fem {
         return energy;
     }
 
-    auto linearEnergyFunctionGradient(const SimulationState &simulationState, const matXr &vertices, const matXi &tets,
-                                      const vecXr &guess, const vecXr &externalForces) -> vecXr {
-        vecXr forces =
-                -nm::fem::assembleForces(simulationState.getSelectedVertexPositions(), vertices, tets,
-                                         simulationState.tetVolumes, simulationState.mu, simulationState.lambda);
-//        applyForce(externalForces, forces);
+    auto computeLinearTetrahedralForce(const SimulationState &simulationState, const matXr &vertices, const matXi &tets,
+                                       const vecXr &guess, std::optional<unsigned int> selectedVertex) -> vecXr {
+        vecXr forces = -nm::fem::assembleForces(simulationState.getSelectedVertexPositions(), vertices, tets,
+                                                simulationState.tetVolumes, simulationState.mu, simulationState.lambda);
+        //        applyForce(externalForces, forces);
         return simulationState.massMatrix * (guess - simulationState.qdot) +
                simulationState.dt * simulationState.constraint.selectionMatrix * forces;
     }
 
-    auto linearEnergyFunctionHessian(const SimulationState &simulationState, const matXr &vertices, const matXi &tets,
-                                     const vecXr &guess) -> spmatXr {
+    auto computeLinearTetrahedralStiffness(const SimulationState &simulationState, const matXr &vertices,
+                                           const matXi &tets, const vecXr &guess) -> spmatXr {
         spmatXr stiffness =
                 -nm::fem::assembleStiffness(simulationState.getSelectedVertexPositions(), vertices, tets,
                                             simulationState.tetVolumes, simulationState.mu, simulationState.lambda);

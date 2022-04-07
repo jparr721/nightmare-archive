@@ -8,5 +8,5 @@
 
 namespace nm::fem {
     auto implicitEuler(SimulationState &simulationState, const matXr &vertices, const matXi &tets,
-                       const vecXr &externalForces) -> void;
+                       std::optional<unsigned int> selectedVertex) -> void;
 }// namespace nm::fem

@@ -4,10 +4,10 @@
 
 namespace nm::fem {
     auto implicitEuler(SimulationState &simulationState, const matXr &vertices, const matXi &tets,
-                       const vecXr &externalForces) -> void {
-        simulationState.qdot =
-                newtonsMethod(linearEnergyFunction, linearEnergyFunctionGradient, linearEnergyFunctionHessian,
-                              simulationState, vertices, tets, 5, simulationState.qdot, externalForces);
+                       std::optional<unsigned int> selectedVertex) -> void {
+        simulationState.qdot = newtonsMethod(computeLineatTetrahedralEnergy, computeLinearTetrahedralForce,
+                                             computeLinearTetrahedralStiffness, simulationState, vertices, tets, 5,
+                                             simulationState.qdot, selectedVertex);
         simulationState.q += simulationState.dt * simulationState.qdot;
     }
 }// namespace nm::fem

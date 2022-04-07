@@ -13,11 +13,14 @@ namespace nm {
         // Whether or not the mouse is currently dragging
         bool isMouseDragging = false;
 
+        // The stiffness of the interaction spring
+        real interactionSpringStiffness = 1e5;
+
         // The radius around the mouse to mark selections
         real pickingTolerance = 0.1;
 
         // The selected vertex positions
-        std::vector<unsigned int> pickedVertices;
+        std::optional<unsigned int> selectedVertex;
 
         // Mouse position in the window
         vec3r mouseWindow = vec3r::Zero();

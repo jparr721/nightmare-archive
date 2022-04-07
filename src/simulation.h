@@ -51,5 +51,5 @@ namespace nm {
     auto simulationConstraintFactory(const matXr &vertices, real selectionTolerance) -> SimulationConstraint;
 
     void simulate(SimulationState &simulationState, const matXr &vertices, const matXi &tets,
-                  const vecXr &externalForces);
+                  std::optional<unsigned int> selectedVertex);
 }// namespace nm

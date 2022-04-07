@@ -1,8 +1,7 @@
 #include "spring_potential.h"
 
 namespace nm::fem {
-    auto springPotentialEnergy(const nm::vecXr &u, const nm::vecXr &v, nm::real l0, nm::real stiffness)
-            -> nm::real {
+    auto springPotentialEnergy(const nm::vecXr &u, const nm::vecXr &v, nm::real l0, nm::real stiffness) -> nm::real {
         return 0.5 * stiffness * std::pow(((u - v).norm() - l0), 2);
     }
 
@@ -16,4 +15,4 @@ namespace nm::fem {
         ret.segment<3>(3) = -k * direction;
         return ret;
     }
-}
+}// namespace nm::fem
