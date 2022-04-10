@@ -13,7 +13,7 @@ namespace nm {
     }
 
     auto pickNearestVertex(const vec3r &win, const mat4r &view, const mat4r &proj, const vec4r &viewport,
-                           const matXr &vertices, const matXi &faces, double radius) -> std::optional<unsigned int> {
+                           const matXr &vertices, const matXi &faces, double radius) -> int {
         // Source, destination and direction in world
         vec3r start, dir;
         vec3r win0(win(0), win(1), win(2));
@@ -27,7 +27,7 @@ namespace nm {
 
         const auto hit = shootRay(vertices, faces, start, dir);
 
-        if (!hit.has_value()) { return std::nullopt; }
+        if (!hit.has_value()) { return -1; }
 
         vec3r bc(1.0 - hit.value().u - hit.value().v, hit.value().u, hit.value().v);
         unsigned int fid = hit.value().id;
@@ -36,11 +36,11 @@ namespace nm {
         bc.maxCoeff(&c);
         unsigned int vid = faces(fid, c);
 
-        for (auto ii = 0u; ii < vertices.rows(); ++ii) {
+        for (auto ii = 0; ii < vertices.rows(); ++ii) {
             if ((vertices.row(ii) - vertices.row(vid)).norm() < radius) { return ii; }
         }
 
-        return std::nullopt;
+        return -1;
     }
 
 }// namespace nm

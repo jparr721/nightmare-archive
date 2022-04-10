@@ -23,12 +23,10 @@ namespace nm {
         matXr vertices;
         matXi faces;
         matXi tetrahedra;
-
-        Mesh() = default;
-        explicit Mesh(const std::string &meshFile);
-        Mesh(matXr vertices, matXi faces) : vertices(std::move(vertices)), faces(std::move(faces)) {}
     };
 
-    void translateMesh(Mesh *mesh, const vec3r &amount);
-    auto tetrahedralizeMesh(Mesh *mesh, const char *flags = kDefaultTetgenFlags) -> bool;
+    void initializeMesh(const std::string &meshfile, Mesh &mesh);
+
+    void translateMesh(Mesh &mesh, const vec3r &amount);
+    auto tetrahedralizeMesh(Mesh &mesh, const char *flags = kDefaultTetgenFlags) -> bool;
 }// namespace nm

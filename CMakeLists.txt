@@ -36,10 +36,6 @@ add_library(${PROJECT_LIB}
         src/simulation.h
         src/mouse_control.cc
         src/mouse_control.h
-        src/visualization_menu.cc
-        src/visualization_menu.h
-        src/visualization_vars.cc
-        src/visualization_vars.h
 
         # nm::fem
         src/fem/phi_linear_tetrahedron.cc
@@ -60,7 +56,6 @@ add_library(${PROJECT_LIB}
         src/fem/dV_linear_tetrahedron_dq.h
         src/fem/d2V_linear_tetrahedron_dq2.cc
         src/fem/d2V_linear_tetrahedron_dq2.h
-        src/fem/integrators_implicit_euler.cc
         src/fem/integrators_implicit_euler.h
         src/fem/assemble.cc
         src/fem/assemble.h

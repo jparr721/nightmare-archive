@@ -10,15 +10,20 @@
 namespace nm {
     void drawGrid();
     void updateVertexPositions(const vecXr &pos);
+    void setMesh(const std::string &filename, bool tetrahedralize = true);
 
     auto initialize() -> bool;
     auto launch() -> int;
-    auto simulationCallback() -> bool;
+
+    auto getMeshInstance() -> Mesh &;
+    auto getViewerInstance() -> igl::opengl::glfw::Viewer &;
+    auto getFaces(const igl::opengl::glfw::Viewer &viewerInstance) -> matXi;
+    auto getVertices(const igl::opengl::glfw::Viewer &viewerInstance) -> matXr;
 
     // UI Controls
     void callbackDrawViewerMenu();
-    auto drawCallback(igl::opengl::glfw::Viewer &viewer) -> bool;
-    auto mouseDown(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool;
-    auto mouseUp(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool;
-    auto mouseMove(igl::opengl::glfw::Viewer &viewer, int x, int y) -> bool;
+    auto drawCallback(igl::opengl::glfw::Viewer &viewerInstance) -> bool;
+    auto mouseDown(igl::opengl::glfw::Viewer &viewerInstance, int x, int y) -> bool;
+    auto mouseUp(igl::opengl::glfw::Viewer &viewerInstance, int x, int y) -> bool;
+    auto mouseMove(igl::opengl::glfw::Viewer &viewerInstance, int x, int y) -> bool;
 }// namespace nm
