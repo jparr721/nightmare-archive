@@ -3,7 +3,7 @@
 #include "renderer_utils.h"
 #include <spdlog/spdlog.h>
 
-namespace nm {
+namespace nm::viz {
     constexpr real kPickingTolerance = 0.1;
 
     igl::opengl::glfw::Viewer viewer;
@@ -46,7 +46,7 @@ namespace nm {
     }
 
     void setMesh(const std::string &filename, bool tetrahedralize) {
-        auto &[_id, V, F, _T] = getMeshInstance();
+        auto &[_id, V, F, _] = getMeshInstance();
         igl::read_triangle_mesh(filename, V, F);
         if (tetrahedralize) { tetrahedralizeMesh(getMeshInstance()); }
         viewer.data().set_mesh(V, F);
@@ -134,4 +134,6 @@ namespace nm {
     }
 
     auto launch() -> int { return viewer.launch(); }
+
+    auto getPickedVertex() -> int & { return pickedVertex; }
 }// namespace nm

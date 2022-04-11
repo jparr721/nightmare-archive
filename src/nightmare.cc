@@ -10,6 +10,6 @@ auto main() -> int {
     spdlog::set_level(spdlog::level::debug);
 #endif
 
-    assert(nm::initialize());
-    nm::launch();
+    assert(nm::viz::initialize());
+    nm::viz::launch();
 }

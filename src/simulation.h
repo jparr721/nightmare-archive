@@ -11,6 +11,6 @@
 #include <vector>
 
 namespace nm {
-    auto setupVariables(Mesh &mesh) -> bool;
-    auto refreshViewerData() -> vecXr;
+    void simulate(vecXr &q, vecXr &qdot, real dt);
+    auto setupVariables(vecXr &q, vecXr &qdot, Mesh &mesh) -> bool;
 }// namespace nm

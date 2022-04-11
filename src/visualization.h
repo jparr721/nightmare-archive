@@ -7,7 +7,7 @@
 #include <igl/opengl/glfw/imgui/ImGuiPlugin.h>
 #include <memory>
 
-namespace nm {
+namespace nm::viz {
     void drawGrid();
     void updateVertexPositions(const vecXr &pos);
     void setMesh(const std::string &filename, bool tetrahedralize = true);
@@ -19,6 +19,8 @@ namespace nm {
     auto getViewerInstance() -> igl::opengl::glfw::Viewer &;
     auto getFaces(const igl::opengl::glfw::Viewer &viewerInstance) -> matXi;
     auto getVertices(const igl::opengl::glfw::Viewer &viewerInstance) -> matXr;
+    auto getPickedVertex() -> int &;
+    auto getMouseDragWorld() -> vec3r;
 
     // UI Controls
     void callbackDrawViewerMenu();
