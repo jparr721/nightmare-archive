@@ -6,6 +6,8 @@
 namespace nm::viz {
     constexpr real kPickingTolerance = 0.1;
 
+    bool isSimulating = true;
+
     igl::opengl::glfw::Viewer viewer;
     igl::opengl::glfw::imgui::ImGuiPlugin plugin;
     igl::opengl::glfw::imgui::ImGuiMenu menu;
@@ -21,6 +23,7 @@ namespace nm::viz {
 
     Mesh mesh;
 
+    auto getIsSimulating() -> bool & { return isSimulating; }
     auto getMeshInstance() -> Mesh & { return mesh; }
     auto getViewerInstance() -> igl::opengl::glfw::Viewer & { return viewer; }
 
@@ -94,7 +97,10 @@ namespace nm::viz {
         return false;
     }
 
-    void callbackDrawViewerMenu() { menu.draw_viewer_menu(); }
+    void callbackDrawViewerMenu() {
+        menu.draw_viewer_menu();
+        ImGui::Checkbox("Simulating", &getIsSimulating());
+    }
 
     auto getFaces(const igl::opengl::glfw::Viewer &viewerInstance) -> matXi { return viewerInstance.data_list.at(0).F; }
 

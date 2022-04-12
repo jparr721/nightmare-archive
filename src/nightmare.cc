@@ -5,15 +5,12 @@
 
 constexpr nm::real kDt = 0.01;
 
-bool isSimulating = false;
-
 nm::vecXr q;
 nm::vecXr qdot;
 
 
 auto simulationCallback() -> bool {
-    while (isSimulating) { nm::simulate(q, qdot, kDt); }
-
+    while (nm::viz::getIsSimulating()) { nm::simulate(q, qdot, kDt); }
     return false;
 }
 
@@ -33,6 +30,10 @@ auto main() -> int {
 
     assert(nm::viz::initialize());
     assert(nm::setupVariables(q, qdot, nm::viz::getMeshInstance()));
+
+    auto simThread = std::thread(simulationCallback);
+    simThread.detach();
+
     nm::viz::getViewerInstance().callback_post_draw = &drawCallback;
     return nm::viz::getViewerInstance().launch();
 }
