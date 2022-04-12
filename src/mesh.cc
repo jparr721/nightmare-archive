@@ -42,6 +42,7 @@ namespace nm {
 
         mesh.tetrahedra = TT;
 
+        spdlog::debug("Tetrahedralization succeeded");
         return true;
     }
 

@@ -46,8 +46,10 @@ namespace nm::viz {
     }
 
     void setMesh(const std::string &filename, bool tetrahedralize) {
+        spdlog::info("Loading mesh at filename: {}", filename);
         auto &[_id, V, F, _] = getMeshInstance();
         igl::read_triangle_mesh(filename, V, F);
+        spdlog::info("Tetrahedralizing mesh");
         if (tetrahedralize) { tetrahedralizeMesh(getMeshInstance()); }
         viewer.data().set_mesh(V, F);
     }

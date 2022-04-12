@@ -99,10 +99,7 @@ namespace nm {
         }
 
         // Initialize position tracking variables
-        q.resize(mesh.vertices.size());
-        qdot.resize(mesh.vertices.size());
-        q = matrixToVector(mesh.vertices.transpose().eval());
-        qdot.setZero();
+        setupSimulationVariables(mesh.vertices, q, qdot);
 
         // Get volumes of all elements
         igl::volume(mesh.vertices, mesh.tetrahedra, tetrahedronVolumes);
@@ -151,7 +148,16 @@ namespace nm {
             triplets.emplace_back(count + 2, ii + 2, 1.0);
             count += 3;
         }
+
         P.setFromTriplets(triplets.begin(), triplets.end());
         return P;
+    }
+
+    void setupSimulationVariables(const matXr &vertices, vecXr &q, vecXr &qdot) {
+        q.resize(vertices.size());
+        qdot.resize(vertices.size());
+        matXr vt = vertices.transpose();
+        q = Eigen::Map<vecXr>(vt.data(), vt.size());
+        qdot.setZero();
     }
 }// namespace nm

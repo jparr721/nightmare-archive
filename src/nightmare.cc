@@ -32,7 +32,7 @@ auto main() -> int {
 #endif
 
     assert(nm::viz::initialize());
-//    assert(nm::setupVariables(q, qdot, nm::viz::getMeshInstance()));
-//    nm::viz::getViewerInstance().callback_post_draw = &drawCallback;
+    assert(nm::setupVariables(q, qdot, nm::viz::getMeshInstance()));
+    nm::viz::getViewerInstance().callback_post_draw = &drawCallback;
     return nm::viz::getViewerInstance().launch();
 }

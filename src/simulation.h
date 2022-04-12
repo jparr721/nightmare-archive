@@ -15,6 +15,7 @@ namespace nm {
     void simulate(vecXr &q, vecXr &qdot, real dt);
     auto setupVariables(vecXr &q, vecXr &qdot, Mesh &mesh) -> bool;
 
+    void setupSimulationVariables(const matXr &vertices, vecXr &q, vecXr &qdot);
     auto setupFixedPointConstraints(unsigned int qSize, const std::vector<int> &indices)
             -> spmatXr;
 }// namespace nm
