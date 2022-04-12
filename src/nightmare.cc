@@ -28,8 +28,8 @@ auto main() -> int {
     spdlog::set_level(spdlog::level::debug);
 #endif
 
-    assert(nm::viz::initialize());
-    assert(nm::setupVariables(q, qdot, nm::viz::getMeshInstance()));
+    if (!nm::viz::initialize()) { spdlog::error("Initialize Operation Failed."); }
+    if (!nm::setupVariables(q, qdot, nm::viz::getMeshInstance())) { spdlog::error("Variable Setup Failed."); }
 
     auto simThread = std::thread(simulationCallback);
     simThread.detach();

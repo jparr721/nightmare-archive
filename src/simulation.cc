@@ -6,6 +6,7 @@
 #include "geometry.h"
 #include "visualization.h"
 #include <igl/volume.h>
+#include <spdlog/fmt/ostr.h>
 #include <spdlog/spdlog.h>
 #include <vector>
 
@@ -46,7 +47,7 @@ namespace nm {
 
         const auto energy = [&](const vecXr &initialGuess) -> real {
             real energy = 0;
-            vecXr newq = selectionMatrix.transpose() * (q + dt * initialGuess) * fixedPointVertices;
+            vecXr newq = selectionMatrix.transpose() * (q + dt * initialGuess) + fixedPointVertices;
 
             for (auto ii = 0u; ii < viz::getMeshInstance().tetrahedra.rows(); ++ii) {
                 energy += fem::VlinearTetrahedron(newq, viz::getMeshInstance().vertices,
@@ -54,7 +55,7 @@ namespace nm {
                                                   tetrahedronVolumes(ii));
             }
 
-            if (!springPoints.empty()) {
+            if (!springPoints.empty() && viz::getPickedVertex() >= 0) {
                 energy +=
                         fem::springPotentialEnergy(springPoints.at(0).first, newq.segment<3>(springPoints.at(0).second),
                                                    kSpringRestLength, kSelectionSpringStiffness);
@@ -69,11 +70,13 @@ namespace nm {
                                              viz::getMeshInstance().vertices, viz::getMeshInstance().tetrahedra,
                                              tetrahedronVolumes, mu, lambda);
 
-            if (!springPoints.empty()) {
+            if (!springPoints.empty() && viz::getPickedVertex() >= 0) {
                 const auto u = springPoints.at(0).first;
                 const auto v =
                         (selectionMatrix.transpose() * newq + fixedPointVertices).segment<3>(springPoints.at(0).second);
                 const auto dV = fem::springPotentialEnergyGradient(u, v, kSpringRestLength, kSelectionSpringStiffness);
+                spdlog::debug("Dump: PickedVertex: {}, dV: {}", viz::getPickedVertex(),
+                              -dV.segment<3>(3).transpose().eval());
                 force.segment<3>(3 * viz::getPickedVertex()) -= dV.segment<3>(3);
             }
 

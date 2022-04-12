@@ -6,7 +6,7 @@
 
 namespace nm {
 #ifdef NDEBUG
-    constexpr const char *kDefaultTetgenFlags = "zpqQa1";
+    constexpr const char *kDefaultTetgenFlags = "zpqQ";
 #else
     constexpr const char *kDefaultTetgenFlags = "zpq";
 #endif

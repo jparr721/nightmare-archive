@@ -54,6 +54,7 @@ namespace nm::viz {
         igl::read_triangle_mesh(filename, V, F);
         spdlog::info("Tetrahedralizing mesh");
         if (tetrahedralize) { tetrahedralizeMesh(getMeshInstance()); }
+        spdlog::info("Tetrahedralization complete");
         viewer.data().set_mesh(V, F);
     }
 
