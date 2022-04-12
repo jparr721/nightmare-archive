@@ -52,8 +52,6 @@ namespace nm::viz {
         viewer.data().set_mesh(V, F);
     }
 
-    auto drawCallback(igl::opengl::glfw::Viewer &viewerInstance) -> bool { return false; }
-
     auto mouseDown(igl::opengl::glfw::Viewer &viewerInstance, int x, int y) -> bool {
         mouseWindow = vec3r(viewerInstance.current_mouse_x,
                             viewerInstance.core().viewport(3) - viewerInstance.current_mouse_y, 0.);
@@ -106,25 +104,8 @@ namespace nm::viz {
         spdlog::info("Initializing");
         drawGrid();
 
-
-        //        spdlog::info("Loading mesh");
-        //        mesh = std::make_unique<Mesh>("assets/bunny.obj");
-        //        if (!tetrahedralizeMesh(mesh.get())) {
-        //            spdlog::error("Tetrahedralization failed. Exiting");
-        //            return false;
-        //        }
-        //
-        //        simulationState =
-        //                simulationStateFactory(mesh.vertices, mesh.tetrahedra, youngsModulus, poissonsRatio, dt, density);
-        //
-        //        simulationState.setSimulationConstraint(simulationConstraintFactory(mesh.vertices, 0.1));
-        //
-        //        auto simThread = std::thread(simulationCallback);
-        //        simThread.detach();
-
         plugin.widgets.push_back(&menu);
         viewer.plugins.push_back(&plugin);
-        viewer.callback_post_draw = &drawCallback;
         viewer.callback_mouse_down = &mouseDown;
         viewer.callback_mouse_move = &mouseMove;
         viewer.callback_mouse_up = &mouseUp;
@@ -133,7 +114,6 @@ namespace nm::viz {
         return true;
     }
 
-    auto launch() -> int { return viewer.launch(); }
-
     auto getPickedVertex() -> int & { return pickedVertex; }
+    auto getMouseDragWorld() -> vec3r { return mouseDragWorld; }
 }// namespace nm

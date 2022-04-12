@@ -11,6 +11,10 @@
 #include <vector>
 
 namespace nm {
+    void draw(const vecXr &q);
     void simulate(vecXr &q, vecXr &qdot, real dt);
     auto setupVariables(vecXr &q, vecXr &qdot, Mesh &mesh) -> bool;
+
+    auto setupFixedPointConstraints(unsigned int qSize, const std::vector<int> &indices)
+            -> spmatXr;
 }// namespace nm

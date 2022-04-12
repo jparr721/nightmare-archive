@@ -29,6 +29,8 @@ namespace nm {
     constexpr real kFixedVertexSelectionTolerance = 3;
     constexpr real kSpringRestLength = 0.0;
 
+    void draw(const vecXr &q) { viz::updateVertexPositions(selectionMatrix.transpose() * q + fixedPointVertices); }
+
     void simulate(vecXr &q, vecXr &qdot, real dt) {
         springPoints.clear();
 
@@ -119,24 +121,7 @@ namespace nm {
         selectionMatrix.setIdentity();
 
         // Fill the constraint matrix
-        selectionMatrix.resize(q.rows() - fixedPointIndices.size() * 3, q.rows());
-        std::vector<Eigen::Triplet<real>> triplets;
-        triplets.reserve(selectionMatrix.rows());
-
-        unsigned int count = 0;
-        for (auto ii = 0u; ii < q.rows(); ++ii) {
-            // If this item is not divisible by 3, skip it
-            if (std::find(fixedPointIndices.begin(), fixedPointIndices.end(), ii / 3) != fixedPointIndices.end()) {
-                continue;
-            }
-
-            // Construct a banded matrix of selections so we can select 3-vertex groups from q.
-            triplets.emplace_back(count, ii, 1.0);
-            triplets.emplace_back(count + 1, ii + 1, 1.0);
-            triplets.emplace_back(count + 2, ii + 2, 1.0);
-            count += 3;
-        }
-        selectionMatrix.setFromTriplets(triplets.begin(), triplets.end());
+        selectionMatrix = setupFixedPointConstraints(q.rows(), fixedPointIndices);
 
         fixedPointVertices = q - selectionMatrix.transpose() * selectionMatrix * q;
 
@@ -148,5 +133,25 @@ namespace nm {
         spdlog::info("Simulation variables initialized");
 
         return true;
+    }
+
+    auto setupFixedPointConstraints(unsigned int qSize, const std::vector<int> &indices) -> spmatXr {
+        spmatXr P;
+        P.resize(qSize, qSize);
+        P.setIdentity();
+
+        std::vector<Eigen::Triplet<real>> triplets;
+        triplets.reserve(qSize - indices.size() * 3);
+
+        unsigned int count = 0;
+        for (auto ii = 0u; ii < qSize; ii += 3) {
+            if (std::find(indices.begin(), indices.end(), (unsigned int) (ii / 3)) != indices.end()) { continue; }
+            triplets.emplace_back(count, ii, 1.0);
+            triplets.emplace_back(count + 1, ii + 1, 1.0);
+            triplets.emplace_back(count + 2, ii + 2, 1.0);
+            count += 3;
+        }
+        P.setFromTriplets(triplets.begin(), triplets.end());
+        return P;
     }
 }// namespace nm
