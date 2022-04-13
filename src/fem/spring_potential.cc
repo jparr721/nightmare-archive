@@ -7,7 +7,7 @@ namespace nm::fem {
 
     auto springPotentialEnergyGradient(const nm::vecXr &u, const nm::vecXr &v, nm::real l0, nm::real stiffness)
             -> nm::vec6r {
-        const auto k = stiffness * (u - v).norm();
+        const auto k = stiffness * ((u - v).norm() - l0);
         const auto direction = (u - v).normalized();
 
         vec6r ret;
