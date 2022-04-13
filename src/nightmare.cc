@@ -1,13 +1,13 @@
 #include "nm_math.h"
 #include "simulation.h"
 #include "visualization.h"
+#include <spdlog/fmt/ostr.h>
 #include <spdlog/spdlog.h>
 
 constexpr nm::real kDt = 0.01;
 
 nm::vecXr q;
 nm::vecXr qdot;
-
 
 auto simulationCallback() -> bool {
     while (nm::viz::getIsSimulating()) { nm::simulate(q, qdot, kDt); }
@@ -28,8 +28,15 @@ auto main() -> int {
     spdlog::set_level(spdlog::level::debug);
 #endif
 
-    if (!nm::viz::initialize()) { spdlog::error("Initialize Operation Failed."); }
-    if (!nm::setupVariables(q, qdot, nm::viz::getMeshInstance())) { spdlog::error("Variable Setup Failed."); }
+    if (!nm::viz::initialize()) {
+        spdlog::error("Initialize Operation Failed.");
+        return EXIT_FAILURE;
+    }
+
+    if (!nm::setupVariables(q, qdot, nm::viz::getMeshInstance())) {
+        spdlog::error("Variable Setup Failed.");
+        return EXIT_FAILURE;
+    }
 
     auto simThread = std::thread(simulationCallback);
     simThread.detach();

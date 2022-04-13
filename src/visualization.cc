@@ -71,6 +71,7 @@ namespace nm::viz {
                 mouseWindow, viewerInstance.core().view.cast<real>(), viewerInstance.core().proj.cast<real>(),
                 viewerInstance.core().viewport.cast<real>(), mesh.vertices, mesh.faces, kPickingTolerance);
 
+        spdlog::info("MouseDown: {}", pickedVertex);
         isMouseDragging = true;
 
         return false;

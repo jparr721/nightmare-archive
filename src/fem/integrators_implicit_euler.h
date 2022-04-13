@@ -5,6 +5,8 @@
 #include "../nm_math.h"
 #include "../simulation.h"
 #include "newtons_method.h"
+#include <spdlog/fmt/ostr.h>
+#include <spdlog/spdlog.h>
 
 namespace nm::fem {
     template<typename Energy, typename Force, typename Stiffness>
@@ -20,7 +22,8 @@ namespace nm::fem {
             return massMatrix - dt * dt * k;
         };
 
-        qdot = newtonsMethod(energy, grad, hessian, 5, qdot);
+        newtonsMethod(energy, grad, hessian, 5, qdot);
+//        spdlog::info("{}", qdot.transpose());
         q += dt * qdot;
     }
 }// namespace nm::fem

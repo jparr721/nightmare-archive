@@ -6,7 +6,6 @@
 #include "mesh.h"
 #include "mouse_control.h"
 #include "nm_math.h"
-#include "mesh.h"
 #include <igl/opengl/glfw/Viewer.h>
 #include <vector>
 
@@ -16,6 +15,5 @@ namespace nm {
     auto setupVariables(vecXr &q, vecXr &qdot, Mesh &mesh) -> bool;
 
     void setupSimulationVariables(const matXr &vertices, vecXr &q, vecXr &qdot);
-    auto setupFixedPointConstraints(unsigned int qSize, const std::vector<int> &indices)
-            -> spmatXr;
+    auto setupFixedPointConstraints(unsigned int qSize, const std::vector<int> &indices) -> spmatXr;
 }// namespace nm

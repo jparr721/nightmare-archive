@@ -75,8 +75,6 @@ namespace nm {
                 const auto v =
                         (selectionMatrix.transpose() * newq + fixedPointVertices).segment<3>(springPoints.at(0).second);
                 const auto dV = fem::springPotentialEnergyGradient(u, v, kSpringRestLength, kSelectionSpringStiffness);
-                spdlog::debug("Dump: PickedVertex: {}, dV: {}", viz::getPickedVertex(),
-                              -dV.segment<3>(3).transpose().eval());
                 force.segment<3>(3 * viz::getPickedVertex()) -= dV.segment<3>(3);
             }
 
