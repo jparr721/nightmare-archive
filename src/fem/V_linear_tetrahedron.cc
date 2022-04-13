@@ -1,32 +1,29 @@
 #include "V_linear_tetrahedron.h"
-#include "../geometry.h"
 #include "dphi_linear_tetrahedron_dX.h"
 #include "psi_neo_hookean.h"
+#include "quadrature_single_point.h"
 
 namespace nm::fem {
     auto VlinearTetrahedron(const vecXr &q, const matXr &vertices, const vec4i &element, real mu, real lambda,
                             real volume) -> real {
-        // Compute the potential energy via quadrature
+        const auto computeNeohookeanPotentialEnergy = [&](const vecXr &deformedVertices,
+                                                          const vecXi &tetrahedralIndices, const vec3r &centroid) {
+            mat34r deformedTetrahedron;
+#pragma unroll
+            for (int ii = 0; ii < 4; ++ii) { deformedTetrahedron.col(ii) = q.segment<3>(3 * tetrahedralIndices(ii)); }
 
-        // Obtain the deformed space vertex position matrix for this element
-        // x
-        mat34r deformed;
-        for (int ii = 0; ii < 4; ++ii) { deformed.col(ii) = q.segment<3>(element(ii) * 3); }
+            // Obtain the shape function gradient matrix D;
+            const auto D = dphiLinearTetrahedronDx(vertices, element, centroid);
 
-        // Get the centroid of the deformed coordinates
-        const vec3r centroid = computeTetrahedralCentroid(deformed);
+            // Obtain the deformation gradient
+            const mat3r F = deformedTetrahedron * D;
 
-        // Obtain the shape function gradient matrix, D.
-        // Obtain dphi/dX, the right hand side of the expression
-        const mat43r dphiDX = dphiLinearTetrahedronDx(vertices, element, centroid);
+            // Compute the strain energy density for the neohookean model
+            return psiNeoHookean(F, mu, lambda);
+        };
 
-        // Obtain the deformation gradient
-        const mat3r F = deformed * dphiDX;
-
-        // Compute psi with the deformation gradient.
-        const real strain_energy_density = psiNeoHookean(F, mu, lambda);
-
-        // Now, finish up by multiplying this value by the weight.
-        return strain_energy_density * volume;
+        real potentialEnergy;
+        quadratureSinglePoint(computeNeohookeanPotentialEnergy, q, element, volume, potentialEnergy);
+        return potentialEnergy;
     }
 }// namespace nm::fem

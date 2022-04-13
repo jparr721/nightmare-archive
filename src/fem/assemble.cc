@@ -39,8 +39,10 @@ namespace nm::fem {
                 for (int kk = 0; kk < 4; ++kk) {
                     for (int row = 0; row < 3; ++row) {
                         for (int col = 0; col < 3; ++col) {
-                            triplets.emplace_back(3 * element(jj) + row, 3 * element(kk) + col,
-                                                  -d2V(3 * jj + row, 3 * kk + col));
+                            const auto i = 3 * element(jj) + row;
+                            const auto j = 3 * element(kk) + col;
+                            const auto v = -d2V(3 * jj + row, 3 * kk + col);
+                            triplets.emplace_back(i, j, v);
                         }
                     }
                 }
