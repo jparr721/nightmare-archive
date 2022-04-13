@@ -23,7 +23,7 @@ namespace nm::fem {
         };
 
         newtonsMethod(energy, grad, hessian, 5, qdot);
-//        spdlog::info("{}", qdot.transpose());
+        //        spdlog::info("{}", qdot.transpose());
         q += dt * qdot;
     }
 }// namespace nm::fem

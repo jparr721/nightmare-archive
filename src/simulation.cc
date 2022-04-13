@@ -25,7 +25,7 @@ namespace nm {
     spmatXr selectionMatrix;
     spmatXr massMatrix;
 
-    constexpr real kSelectionSpringStiffness = 1e8;
+    constexpr real kSelectionSpringStiffness = 1e5;
     constexpr real kDensity = 0.1;
     constexpr real kFixedVertexSelectionTolerance = 3;
     constexpr real kSpringRestLength = 0.0;

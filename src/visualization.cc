@@ -124,4 +124,4 @@ namespace nm::viz {
 
     auto getPickedVertex() -> int & { return pickedVertex; }
     auto getMouseDragWorld() -> vec3r { return mouseDragWorld; }
-}// namespace nm
+}// namespace nm::viz
