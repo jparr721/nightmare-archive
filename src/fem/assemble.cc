@@ -17,10 +17,10 @@ namespace nm::fem {
             const vec12r dV = dVlinearTetrahedronDq(q, vertices, element, mu, lambda, tetVolumes(ii));
 
             // Place into the vector assembly.
-            f.segment<3>(3 * tets(ii, 0)) += dV.segment<3>(0);
-            f.segment<3>(3 * tets(ii, 1)) += dV.segment<3>(3);
-            f.segment<3>(3 * tets(ii, 2)) += dV.segment<3>(6);
-            f.segment<3>(3 * tets(ii, 3)) += dV.segment<3>(9);
+            f.segment<3>(3 * tets(ii, 0)) += -dV.segment<3>(0);
+            f.segment<3>(3 * tets(ii, 1)) += -dV.segment<3>(3);
+            f.segment<3>(3 * tets(ii, 2)) += -dV.segment<3>(6);
+            f.segment<3>(3 * tets(ii, 3)) += -dV.segment<3>(9);
         }
 
         return f;
@@ -30,6 +30,7 @@ namespace nm::fem {
                            real lambda) -> spmatXr {
         using triplet = Eigen::Triplet<real>;
         std::vector<triplet> triplets;
+        triplets.reserve(tets.rows() * 4 * 4 * 9);
         for (int ii = 0; ii < tets.rows(); ++ii) {
             const vec4i element = tets.row(ii);
             const mat1212r d2V = d2VlinearTetrahedronDq2(q, vertices, element, mu, lambda, tetVolumes(ii));
@@ -39,7 +40,7 @@ namespace nm::fem {
                     for (int row = 0; row < 3; ++row) {
                         for (int col = 0; col < 3; ++col) {
                             triplets.emplace_back(3 * element(jj) + row, 3 * element(kk) + col,
-                                                  d2V(3 * jj + row, 3 * kk + col));
+                                                  -d2V(3 * jj + row, 3 * kk + col));
                         }
                     }
                 }

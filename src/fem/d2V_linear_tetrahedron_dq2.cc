@@ -2,50 +2,54 @@
 #include "../geometry.h"
 #include "d2psi_neo_hookean_dF2.h"
 #include "dphi_linear_tetrahedron_dX.h"
+#include "quadrature_single_point.h"
 
 namespace nm::fem {
     auto d2VlinearTetrahedronDq2(const vecXr &q, const matXr &vertices, const vec4i &element, real mu, real lambda,
                                  real volume) -> mat1212r {
-        // Obtain the deformed space vertex position matrix for this element
-        mat34r deformed;
-        for (int ii = 0; ii < 4; ++ii) { deformed.col(ii) = q.segment<3>(element(ii) * 3); }
+        const auto computeNeohookeanLinearTetHessian =
+                [&](const vecXr &deformedVertices, const vecXi &tetrahedralIndices, const vec3r &centroid) -> mat1212r {
+            mat34r deformedTetrahedron;
+#pragma unroll
+            for (int ii = 0; ii < 4; ++ii) { deformedTetrahedron.col(ii) = q.segment<3>(3 * tetrahedralIndices(ii)); }
 
-        // Get the centroid of the deformed coordinates
-        const vec3r centroid = computeTetrahedralCentroid(deformed);
+            // Obtain the shape function gradient matrix D;
+            const auto D = dphiLinearTetrahedronDx(vertices, element, centroid);
 
-        // Obtain the shape function gradient matrix, D.
-        const mat43r dphiDX = dphiLinearTetrahedronDx(vertices, element, centroid);
+            // Obtain the deformation gradient
+            const mat3r F = deformedTetrahedron * D;
 
-        // Obtain the deformation gradient
-        const mat3r F = deformed * dphiDX;
+            // Compute the hessian of the strain energy density with respect to F.
+            const mat99r dpsi = d2PsiNeoHookeanDf2(F, mu, lambda);
 
-        // Obtain the hessian of the strain energy density function
-        const mat99r d2PsiDf = d2PsiNeoHookeanDf2(F, mu, lambda);
+            // Compute the matrix B from the shape function gradient matrix.
+            mat912r B;
+            B.setZero();
+#pragma unroll
+            for (int ii = 0; ii < 4; ++ii) {
+                B.block(0, 0 + 3 * ii, 3, 1) = D.row(ii).transpose();
+                B.block(3, 1 + 3 * ii, 3, 1) = D.row(ii).transpose();
+                B.block(6, 2 + 3 * ii, 3, 1) = D.row(ii).transpose();
+            }
 
-        // Now, construct B_j from the shape function gradient matrix.
-        mat912r B;
-        for (int ii = 0; ii < 4; ++ii) {
-            B.block(0, 0 + 3 * ii, 3, 1) = dphiDX.row(ii).transpose();
-            B.block(3, 1 + 3 * ii, 3, 1) = dphiDX.row(ii).transpose();
-            B.block(6, 2 + 3 * ii, 3, 1) = dphiDX.row(ii).transpose();
+            return B.transpose() * dpsi * B;
+        };
+
+        mat1212r H;
+        quadratureSinglePoint(computeNeohookeanLinearTetHessian, q, element, volume, H);
+
+        // Make sure that the hessian is symmetric and positive definite.
+        // We do this by projecting all of the negative eigenvalues to small, positive values.
+        Eigen::SelfAdjointEigenSolver<mat1212r> eigenSolver(H);
+        const matXr eigenVectors = eigenSolver.eigenvectors().real();
+        matXr eigenvaluesDiagonal = eigenSolver.eigenvalues().real().asDiagonal();
+
+#pragma unroll
+        for (int ii = 0; ii < 12; ++ii) {
+            if (eigenSolver.eigenvalues()[ii] < 1e-6) { eigenvaluesDiagonal(ii, ii) = 1e-3; }
         }
 
-        // Finally, get the hessian.
-        mat1212r H = -volume * B.transpose() * d2PsiDf * B;
-
-        // This code ensures that the hessian matrix is symmetric positive definite by projecting all
-        // negative eigenvalues to small, positive values.
-        Eigen::SelfAdjointEigenSolver<mat1212r> es(H);
-
-        Eigen::MatrixXd diagEval = es.eigenvalues().real().asDiagonal();
-        Eigen::MatrixXd evec = es.eigenvectors().real();
-
-        for (int i = 0; i < 12; ++i) {
-            if (es.eigenvalues()[i] < 1e-6) { diagEval(i, i) = 1e-3; }
-        }
-
-        H = evec * diagEval * evec.transpose();
-
+        H = eigenVectors * eigenvaluesDiagonal * eigenVectors.transpose();
         return H;
     }
 }// namespace nm::fem

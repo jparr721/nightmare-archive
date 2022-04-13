@@ -67,7 +67,7 @@ add_library(${PROJECT_LIB}
         src/fem/linear_energy_function.cc
         src/fem/linear_energy_function.h
         src/fem/spring_potential.cc
-        src/fem/spring_potential.h )
+        src/fem/spring_potential.h src/fem/quadrature_single_point.h)
 
 target_link_libraries(${PROJECT_LIB}
         PUBLIC

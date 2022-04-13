@@ -27,7 +27,6 @@ auto main() -> int {
     spdlog::info("Logging level is at debug");
     spdlog::set_level(spdlog::level::debug);
 #endif
-
     if (!nm::viz::initialize()) {
         spdlog::error("Initialize Operation Failed.");
         return EXIT_FAILURE;

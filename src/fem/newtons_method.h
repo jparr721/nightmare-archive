@@ -24,7 +24,7 @@ namespace nm::fem {
             solver.analyzePattern(hessian);
             solver.factorize(hessian);
 
-            // Compute d to get our direction vector.
+            // Compute d to get the direction vector.
             vecXr d = -solver.solve(gradient);
 
             // Line search for optimum alpha value.
