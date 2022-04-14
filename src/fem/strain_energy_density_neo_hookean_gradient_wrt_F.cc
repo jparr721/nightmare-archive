@@ -1,8 +1,8 @@
-#include "dpsi_neo_hookean_dF.h"
+#include "strain_energy_density_neo_hookean_gradient_wrt_F.h"
 
 namespace nm::fem {
 
-    auto dpsiNeoHookeanDf(const mat3r &F, real mu, real lambda) -> vec9r {
+    auto strainEnergyDensityNeoHookeanGradientWrtF(const mat3r &F, real mu, real lambda) -> vec9r {
         vec9r dpsi;
 
         real f11 = F(0, 0);

@@ -1,7 +1,7 @@
-#include "d2psi_neo_hookean_dF2.h"
+#include "strain_energy_density_neo_hookean_hessian_wrt_F.h"
 
 namespace nm::fem {
-    auto d2PsiNeoHookeanDf2(const mat3r &F, real mu, real lambda) -> mat99r {
+    auto strainEnergyDensityNeoHookeanHessianWrtF(const mat3r &F, real mu, real lambda) -> mat99r {
         mat99r H;
 
         const real params1 = mu;

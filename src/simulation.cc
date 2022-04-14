@@ -1,8 +1,8 @@
 #include "simulation.h"
-#include "fem/V_linear_tetrahedron.h"
 #include "fem/integrators_implicit_euler.h"
+#include "fem/linear_tetrahedron_potential_energy.h"
 #include "fem/mass_matrix_linear_tetmesh.h"
-#include "fem/spring_potential.h"
+#include "fem/linear_spring_potential_energy.h"
 #include "geometry.h"
 #include "visualization.h"
 #include <igl/volume.h>
@@ -25,7 +25,7 @@ namespace nm {
     spmatXr selectionMatrix;
     spmatXr massMatrix;
 
-    constexpr real kSelectionSpringStiffness = 1e5;
+    constexpr real kSelectionSpringStiffness = 1e8;
     constexpr real kDensity = 0.1;
     constexpr real kFixedVertexSelectionTolerance = 3;
     constexpr real kSpringRestLength = 0.0;
@@ -46,23 +46,22 @@ namespace nm {
         }
 
         const auto energy = [&](const vecXr &initialGuess) -> real {
-            real energy = 0;
+            real E = 0;
             vecXr newq = selectionMatrix.transpose() * (q + dt * initialGuess) + fixedPointVertices;
 
             for (auto ii = 0u; ii < viz::getMeshInstance().tetrahedra.rows(); ++ii) {
-                energy += fem::VlinearTetrahedron(newq, viz::getMeshInstance().vertices,
-                                                  viz::getMeshInstance().tetrahedra.row(ii), mu, lambda,
-                                                  tetrahedronVolumes(ii));
+                E += fem::linearTetrahedronPotentialEnergy(newq, viz::getMeshInstance().vertices,
+                                                           viz::getMeshInstance().tetrahedra.row(ii), mu, lambda,
+                                                           tetrahedronVolumes(ii));
             }
 
             if (!springPoints.empty() && viz::getPickedVertex() >= 0) {
-                energy +=
-                        fem::springPotentialEnergy(springPoints.at(0).first, newq.segment<3>(springPoints.at(0).second),
-                                                   kSpringRestLength, kSelectionSpringStiffness);
+                E += fem::springPotentialEnergy(springPoints.at(0).first, newq.segment<3>(springPoints.at(0).second),
+                                                kSpringRestLength, kSelectionSpringStiffness);
             }
 
-            energy += 0.5 * (initialGuess - qdot).transpose() * massMatrix * (initialGuess - qdot);
-            return energy;
+            E += 0.5 * (initialGuess - qdot).transpose() * massMatrix * (initialGuess - qdot);
+            return E;
         };
 
         const auto force = [&](const vecXr &newq) -> vecXr {

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "fem/V_linear_tetrahedron.h"
+#include "fem/linear_tetrahedron_potential_energy.h"
 #include "fem/assemble.h"
-#include "fem/spring_potential.h"
+#include "fem/linear_spring_potential_energy.h"
 #include "mesh.h"
 #include "mouse_control.h"
 #include "nm_math.h"

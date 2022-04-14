@@ -38,24 +38,24 @@ add_library(${PROJECT_LIB}
         src/mouse_control.h
 
         # nm::fem
-        src/fem/phi_linear_tetrahedron.cc
-        src/fem/phi_linear_tetrahedron.h
-        src/fem/dphi_linear_tetrahedron_dX.cc
-        src/fem/dphi_linear_tetrahedron_dX.h
-        src/fem/psi_neo_hookean.cc
-        src/fem/psi_neo_hookean.h
-        src/fem/dpsi_neo_hookean_dF.cc
-        src/fem/dpsi_neo_hookean_dF.h
-        src/fem/d2psi_neo_hookean_dF2.cc
-        src/fem/d2psi_neo_hookean_dF2.h
-        src/fem/T_linear_tetrahedron.cc
-        src/fem/T_linear_tetrahedron.h
-        src/fem/V_linear_tetrahedron.cc
-        src/fem/V_linear_tetrahedron.h
-        src/fem/dV_linear_tetrahedron_dq.cc
-        src/fem/dV_linear_tetrahedron_dq.h
-        src/fem/d2V_linear_tetrahedron_dq2.cc
-        src/fem/d2V_linear_tetrahedron_dq2.h
+        src/fem/linear_tetrahedron_basis_functions.cc
+        src/fem/linear_tetrahedron_basis_functions.h
+        src/fem/linear_tetrahedron_basis_function_gradient_matrix.cc
+        src/fem/linear_tetrahedron_basis_function_gradient_matrix.h
+        src/fem/strain_energy_density_neo_hookean.cc
+        src/fem/strain_energy_density_neo_hookean.h
+        src/fem/strain_energy_density_neo_hookean_gradient_wrt_F.cc
+        src/fem/strain_energy_density_neo_hookean_gradient_wrt_F.h
+        src/fem/strain_energy_density_neo_hookean_hessian_wrt_F.cc
+        src/fem/strain_energy_density_neo_hookean_hessian_wrt_F.h
+        src/fem/linear_tetrahedron_kinetic_energy.cc
+        src/fem/linear_tetrahedron_kinetic_energy.h
+        src/fem/linear_tetrahedron_potential_energy.cc
+        src/fem/linear_tetrahedron_potential_energy.h
+        src/fem/linear_tetrahedron_potential_energy_gradient_wrt_q.cc
+        src/fem/linear_tetrahedron_potential_energy_gradient_wrt_q.h
+        src/fem/linear_tetrahedron_potential_energy_hessian_wrt_q.cc
+        src/fem/linear_tetrahedron_potential_energy_hessian_wrt_q.h
         src/fem/integrators_implicit_euler.h
         src/fem/assemble.cc
         src/fem/assemble.h
@@ -66,8 +66,8 @@ add_library(${PROJECT_LIB}
         src/fem/newtons_method.h
         src/fem/linear_energy_function.cc
         src/fem/linear_energy_function.h
-        src/fem/spring_potential.cc
-        src/fem/spring_potential.h src/fem/quadrature_single_point.h)
+        src/fem/linear_spring_potential_energy.cc
+        src/fem/linear_spring_potential_energy.h src/fem/quadrature_single_point.h)
 
 target_link_libraries(${PROJECT_LIB}
         PUBLIC

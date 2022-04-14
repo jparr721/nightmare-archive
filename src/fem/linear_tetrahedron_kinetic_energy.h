@@ -29,6 +29,6 @@ namespace nm::fem {
      * @param volume The volume of the tetrahedral element.
      * @return The kinetic energy of the linear tetrahedron.
      */
-    auto TlinearTetrahedron(const vecXr &qdot, const vecXi &element, real density, real volume) -> real;
+    auto linearTetrahedronKineticEnergy(const vecXr &qdot, const vecXi &element, real density, real volume) -> real;
 
 }// namespace nm::fem

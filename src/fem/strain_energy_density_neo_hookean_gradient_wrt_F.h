@@ -18,5 +18,5 @@ namespace nm::fem {
      * @param lambda The lame's lambda coefficient
      * @return The first Piola-Kirchoff stress value, P.
      */
-    auto dpsiNeoHookeanDf(const mat3r &F, real mu, real lambda) -> vec9r;
+    auto strainEnergyDensityNeoHookeanGradientWrtF(const mat3r &F, real mu, real lambda) -> vec9r;
 }// namespace nm::fem

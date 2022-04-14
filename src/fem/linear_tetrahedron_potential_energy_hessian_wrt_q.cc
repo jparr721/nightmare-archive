@@ -1,12 +1,12 @@
-#include "d2V_linear_tetrahedron_dq2.h"
+#include "linear_tetrahedron_potential_energy_hessian_wrt_q.h"
 #include "../geometry.h"
-#include "d2psi_neo_hookean_dF2.h"
-#include "dphi_linear_tetrahedron_dX.h"
+#include "linear_tetrahedron_basis_function_gradient_matrix.h"
 #include "quadrature_single_point.h"
+#include "strain_energy_density_neo_hookean_hessian_wrt_F.h"
 
 namespace nm::fem {
-    auto d2VlinearTetrahedronDq2(const vecXr &q, const matXr &vertices, const vec4i &element, real mu, real lambda,
-                                 real volume) -> mat1212r {
+    auto linearTetrahedronPotentialEnergyHessianWrtq(const vecXr &q, const matXr &vertices, const vec4i &element,
+                                                     real mu, real lambda, real volume) -> mat1212r {
         const auto computeNeohookeanLinearTetHessian =
                 [&](const vecXr &deformedVertices, const vecXi &tetrahedralIndices, const vec3r &centroid) -> mat1212r {
             mat34r deformedTetrahedron;
@@ -14,13 +14,13 @@ namespace nm::fem {
             for (int ii = 0; ii < 4; ++ii) { deformedTetrahedron.col(ii) = q.segment<3>(3 * tetrahedralIndices(ii)); }
 
             // Obtain the shape function gradient matrix D;
-            const auto D = dphiLinearTetrahedronDx(vertices, element, centroid);
+            const auto D = linearTetrahedronBasisFunctionGradientMatrix(vertices, element, centroid);
 
             // Obtain the deformation gradient
             const mat3r F = deformedTetrahedron * D;
 
             // Compute the hessian of the strain energy density with respect to F.
-            const mat99r dpsi = d2PsiNeoHookeanDf2(F, mu, lambda);
+            const mat99r dpsi = strainEnergyDensityNeoHookeanHessianWrtF(F, mu, lambda);
 
             // Compute the matrix B from the shape function gradient matrix.
             mat912r B;

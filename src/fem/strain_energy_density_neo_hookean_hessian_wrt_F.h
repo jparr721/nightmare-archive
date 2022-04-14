@@ -11,5 +11,5 @@ namespace nm::fem {
      * @param lambda The lame's lambda parameter from the provided E and v.
      * @return The 9x9 matrix hessian of the potential energy.
      */
-    auto d2PsiNeoHookeanDf2(const mat3r &F, real mu, real lambda) -> mat99r;
+    auto strainEnergyDensityNeoHookeanHessianWrtF(const mat3r &F, real mu, real lambda) -> mat99r;
 }// namespace nm::fem

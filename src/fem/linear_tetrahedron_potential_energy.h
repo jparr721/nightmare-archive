@@ -13,6 +13,6 @@ namespace nm::fem {
      * @param volume The volume of the tetrahedral.
      * @return The potential energy.
      */
-    auto VlinearTetrahedron(const vecXr &q, const matXr &vertices, const vec4i &element, real mu, real lambda,
-                            real volume) -> real;
+    auto linearTetrahedronPotentialEnergy(const vecXr &q, const matXr &vertices, const vec4i &element, real mu,
+                                          real lambda, real volume) -> real;
 }// namespace nm::fem

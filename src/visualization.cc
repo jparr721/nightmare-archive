@@ -4,7 +4,7 @@
 #include <spdlog/spdlog.h>
 
 namespace nm::viz {
-    constexpr real kPickingTolerance = 0.1;
+    constexpr real kPickingTolerance = 1.0;
 
     bool isSimulating = true;
 

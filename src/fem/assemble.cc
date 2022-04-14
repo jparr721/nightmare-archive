@@ -1,6 +1,6 @@
 #include "assemble.h"
-#include "d2V_linear_tetrahedron_dq2.h"
-#include "dV_linear_tetrahedron_dq.h"
+#include "linear_tetrahedron_potential_energy_gradient_wrt_q.h"
+#include "linear_tetrahedron_potential_energy_hessian_wrt_q.h"
 
 namespace nm::fem {
 
@@ -14,7 +14,8 @@ namespace nm::fem {
         for (int ii = 0; ii < tets.rows(); ++ii) {
             // Obtain the tetrahedral element force with respect to the reference coordinates
             const vec4i element = tets.row(ii);
-            const vec12r dV = dVlinearTetrahedronDq(q, vertices, element, mu, lambda, tetVolumes(ii));
+            const vec12r dV =
+                    linearTetrahedronPotentialEnergyGradientWrtq(q, vertices, element, mu, lambda, tetVolumes(ii));
 
             // Place into the vector assembly.
             f.segment<3>(3 * tets(ii, 0)) += -dV.segment<3>(0);
@@ -33,14 +34,15 @@ namespace nm::fem {
         triplets.reserve(tets.rows() * 4 * 4 * 9);
         for (int ii = 0; ii < tets.rows(); ++ii) {
             const vec4i element = tets.row(ii);
-            const mat1212r d2V = d2VlinearTetrahedronDq2(q, vertices, element, mu, lambda, tetVolumes(ii));
+            const mat1212r d2V =
+                    linearTetrahedronPotentialEnergyHessianWrtq(q, vertices, element, mu, lambda, tetVolumes(ii));
 
             for (int jj = 0; jj < 4; ++jj) {
                 for (int kk = 0; kk < 4; ++kk) {
                     for (int row = 0; row < 3; ++row) {
                         for (int col = 0; col < 3; ++col) {
-                            const auto i = 3 * element(jj) + row;
-                            const auto j = 3 * element(kk) + col;
+                            const auto i = 3 * tets(ii, jj) + row;
+                            const auto j = 3 * tets(ii, jj) + col;
                             const auto v = -d2V(3 * jj + row, 3 * kk + col);
                             triplets.emplace_back(i, j, v);
                         }

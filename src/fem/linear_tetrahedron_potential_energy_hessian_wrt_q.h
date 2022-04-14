@@ -15,6 +15,6 @@ namespace nm::fem {
      * @param volume The volume of the tetrahedral element we're targeting.
      * @return The 12x12 hessian matrix.
      */
-    auto d2VlinearTetrahedronDq2(const vecXr &q, const matXr &vertices, const vec4i &element, real mu, real lambda,
-                                 real volume) -> mat1212r;
+    auto linearTetrahedronPotentialEnergyHessianWrtq(const vecXr &q, const matXr &vertices, const vec4i &element,
+                                                     real mu, real lambda, real volume) -> mat1212r;
 }// namespace nm::fem

@@ -1,4 +1,4 @@
-#include "spring_potential.h"
+#include "linear_spring_potential_energy.h"
 
 namespace nm::fem {
     auto springPotentialEnergy(const nm::vecXr &u, const nm::vecXr &v, nm::real l0, nm::real stiffness) -> nm::real {

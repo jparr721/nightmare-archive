@@ -1,8 +1,8 @@
-#include "T_linear_tetrahedron.h"
+#include "linear_tetrahedron_kinetic_energy.h"
 #include "mass_matrix_linear_tetrahedron.h"
 
 namespace nm::fem {
-    auto TlinearTetrahedron(const vecXr &qdot, const vecXi &element, real density, real volume) -> real {
+    auto linearTetrahedronKineticEnergy(const vecXr &qdot, const vecXi &element, real density, real volume) -> real {
         const mat1212r M = massMatrixLinearTetrahedron(density, volume);
 
         // Index into qdot to find the elements that we want.

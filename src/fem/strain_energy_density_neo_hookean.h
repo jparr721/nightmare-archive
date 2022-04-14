@@ -12,5 +12,5 @@ namespace nm::fem {
      * @param lambda The lame's lambda parameter from the provided E and v.
      * @return The neohookean energy density score.
      */
-    auto psiNeoHookean(const mat3r &F, real mu, real lambda) -> real;
+    auto strainEnergyDensityNeoHookean(const mat3r &F, real mu, real lambda) -> real;
 }// namespace nm::fem

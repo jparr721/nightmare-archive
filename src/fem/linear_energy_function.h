@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../simulation.h"
-#include "V_linear_tetrahedron.h"
 #include "assemble.h"
+#include "linear_tetrahedron_potential_energy.h"
 
 namespace nm::fem {
     /**

@@ -10,7 +10,7 @@ namespace nm::fem {
     //                           simulationState.constraint.positions;
     //        real energy = 0.0;
     //        for (int ii = 0; ii < tets.rows(); ++ii) {
-    //            energy += nm::fem::VlinearTetrahedron(simulationState.getSelectedVertexPositions(), vertices, tets.row(ii),
+    //            energy += nm::fem::linearTetrahedronPotentialEnergy(simulationState.getSelectedVertexPositions(), vertices, tets.row(ii),
     //                                                  simulationState.mu, simulationState.lambda,
     //                                                  simulationState.tetVolumes(ii));
     //        }
