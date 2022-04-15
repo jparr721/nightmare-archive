@@ -6,7 +6,7 @@
 namespace nm::fem {
     auto linearTetrahedronPotentialEnergy(const vecXr &q, const matXr &vertices, const vec4i &element, real mu,
                                           real lambda, real volume) -> real {
-        const auto computeNeohookeanPotentialEnergy = [&](const vecXr &deformedVertices,
+        const auto computeNeoHookeanPotentialEnergy = [&](const vecXr &deformedVertices,
                                                           const vecXi &tetrahedralIndices, const vec3r &centroid) {
             mat34r deformedTetrahedron;
 #pragma unroll
@@ -23,7 +23,7 @@ namespace nm::fem {
         };
 
         real potentialEnergy;
-        quadratureSinglePoint(computeNeohookeanPotentialEnergy, q, element, volume, potentialEnergy);
+        quadratureSinglePoint(computeNeoHookeanPotentialEnergy, q, element, volume, potentialEnergy);
         return potentialEnergy;
     }
 }// namespace nm::fem

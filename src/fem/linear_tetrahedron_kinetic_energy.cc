@@ -3,7 +3,7 @@
 
 namespace nm::fem {
     auto linearTetrahedronKineticEnergy(const vecXr &qdot, const vecXi &element, real density, real volume) -> real {
-        const mat1212r M = massMatrixLinearTetrahedron(density, volume);
+        const mat1212r massMatrix = massMatrixLinearTetrahedron(density, volume);
 
         // Index into qdot to find the elements that we want.
         vec12r v;
@@ -11,6 +11,6 @@ namespace nm::fem {
         v.segment<3>(3) = qdot.segment<3>(element(1) * 3);
         v.segment<3>(6) = qdot.segment<3>(element(2) * 3);
         v.segment<3>(9) = qdot.segment<3>(element(3) * 3);
-        return 0.5 * qdot.transpose() * M * qdot;
+        return 0.5 * qdot.transpose() * massMatrix * qdot;
     }
 }// namespace nm::fem
