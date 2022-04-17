@@ -7,5 +7,5 @@ namespace nm::fem {
                         real lambda) -> vecXr;
 
     auto assembleStiffness(const vecXr &q, const matXr &vertices, const matXi &tets, const vecXr &tetVolumes, real mu,
-                           real lambda) -> spmatXr;
+                           real lambda) -> spmatr;
 }// namespace nm::fem

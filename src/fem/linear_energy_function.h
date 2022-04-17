@@ -37,5 +37,5 @@ namespace nm::fem {
      * @return The stiffness matrix.
      */
     //    auto computeLinearTetrahedralStiffness(const SimulationState &simulationState, const matXr &vertices,
-    //                                           const matXi &tets, const vecXr &guess) -> spmatXr;
+    //                                           const matXi &tets, const vecXr &guess) -> spmatr;
 }// namespace nm::fem

@@ -3,6 +3,8 @@
 #include "linear_tetrahedron_basis_function_gradient_matrix.h"
 #include "quadrature_single_point.h"
 #include "strain_energy_density_neo_hookean_hessian_wrt_F.h"
+#include <spdlog/fmt/ostr.h>
+#include <spdlog/spdlog.h>
 
 namespace nm::fem {
     auto linearTetrahedronPotentialEnergyHessianWrtq(const vecXr &q, const matXr &vertices, const vec4i &element,

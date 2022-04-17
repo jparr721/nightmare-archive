@@ -9,23 +9,38 @@ namespace nm::fem {
     template<typename Energy, typename Force, typename Stiffness>
     void newtonsMethod(const Energy &energy, const Force &force, const Stiffness &stiffness, unsigned int maxIterations,
                        vecXr &x0) {
+        constexpr real kMinimumValueThreshold = std::numeric_limits<real>::epsilon();
+
         // Begin iterating newton's method.
         for (int ii = 0; ii < maxIterations; ++ii) {
             // First, check for convergence
             const vecXr gradient = force(x0);
 
             // Convergence reached! Woo!
-            if (gradient.squaredNorm() < 1e-8) { return; }
+            if (gradient.squaredNorm() < kMinimumValueThreshold) { return; }
 
             // Compute the search direction by solving for d in Hd = -g where H is the hessian and g is the gradient.
-            const spmatXr hessian = stiffness(x0);
+            const spmatr hessian = stiffness(x0);
 
-            Eigen::SimplicialLDLT<spmatXr, Eigen::Upper> solver;
-            solver.analyzePattern(hessian);
-            solver.factorize(hessian);
+            Eigen::SimplicialLDLT<spmatr, Eigen::Upper> solver(hessian);
+
+            if (solver.info() == Eigen::NumericalIssue) {
+                spdlog::error("Matrix could not be facotorized, running diagnostic and exiting");
+                checkSpdMatrix(hessian);
+                std::exit(1);
+            }
+
+            if (solver.info() != Eigen::Success) {
+                spdlog::error("Decomposition failed");
+                return;
+            }
 
             // Compute d to get the direction vector.
             vecXr d = -solver.solve(gradient);
+            if (solver.info() != Eigen::Success) {
+                spdlog::error("Solving the linear system has failed.");
+                return;
+            }
 
             // Line search for optimum alpha value.
             real alpha = 1.0;
@@ -37,7 +52,7 @@ namespace nm::fem {
 
                 alpha *= p;
 
-                if (alpha < 1e-8) { return; }
+                if (alpha < kMinimumValueThreshold) { return; }
             }
 
             x0 += alpha * d;

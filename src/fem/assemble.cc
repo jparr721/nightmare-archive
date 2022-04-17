@@ -28,7 +28,7 @@ namespace nm::fem {
     }
 
     auto assembleStiffness(const vecXr &q, const matXr &vertices, const matXi &tets, const vecXr &tetVolumes, real mu,
-                           real lambda) -> spmatXr {
+                           real lambda) -> spmatr {
         using triplet = Eigen::Triplet<real>;
         std::vector<triplet> triplets;
         triplets.reserve(tets.rows() * 4 * 4 * 9);
@@ -51,7 +51,7 @@ namespace nm::fem {
             }
         }
 
-        spmatXr stiffnessMatrix(q.rows(), q.rows());
+        spmatr stiffnessMatrix(q.rows(), q.rows());
         stiffnessMatrix.setFromTriplets(triplets.begin(), triplets.end());
         return stiffnessMatrix;
     }

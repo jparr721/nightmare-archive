@@ -7,8 +7,6 @@ set(PROJECT_LIB ${PROJECT_NAME}_lib)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-option(LIBIGL_GLFW /cmake)
-
 option(LIBIGL_GLFW "Build target igl::glfw" ON)
 option(LIBIGL_IMGUI "Build target igl::imgui" ON)
 option(LIBIGL_OPENGL "Build target igl::opengl" ON)

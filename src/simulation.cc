@@ -1,8 +1,8 @@
 #include "simulation.h"
 #include "fem/integrators_implicit_euler.h"
+#include "fem/linear_spring_potential_energy.h"
 #include "fem/linear_tetrahedron_potential_energy.h"
 #include "fem/mass_matrix_linear_tetmesh.h"
-#include "fem/linear_spring_potential_energy.h"
 #include "geometry.h"
 #include "visualization.h"
 #include <igl/volume.h>
@@ -22,8 +22,8 @@ namespace nm {
     vecXr fixedPointVertices;
     vecXr tetrahedronVolumes;
 
-    spmatXr selectionMatrix;
-    spmatXr massMatrix;
+    spmatr selectionMatrix;
+    spmatr massMatrix;
 
     constexpr real kSelectionSpringStiffness = 1e8;
     constexpr real kDensity = 0.1;
@@ -35,8 +35,7 @@ namespace nm {
     void simulate(vecXr &q, vecXr &qdot, real dt) {
         springPoints.clear();
 
-        vec3r mouse;
-        vec6r dVMouse;
+        real currentSpringStiffness = viz::getIsMouseDragging() ? kSelectionSpringStiffness : 0.0;
 
         if (viz::getPickedVertex() >= 0) {
             springPoints.emplace_back(
@@ -46,46 +45,48 @@ namespace nm {
         }
 
         const auto energy = [&](const vecXr &initialGuess) -> real {
-            real E = 0;
+            real energyScore = 0;
             vecXr newq = selectionMatrix.transpose() * (q + dt * initialGuess) + fixedPointVertices;
 
             for (auto ii = 0u; ii < viz::getMeshInstance().tetrahedra.rows(); ++ii) {
-                E += fem::linearTetrahedronPotentialEnergy(newq, viz::getMeshInstance().vertices,
-                                                           viz::getMeshInstance().tetrahedra.row(ii), mu, lambda,
-                                                           tetrahedronVolumes(ii));
+                const auto tetrahedronPotentialEnergy = fem::linearTetrahedronPotentialEnergy(
+                        newq, viz::getMeshInstance().vertices, viz::getMeshInstance().tetrahedra.row(ii), mu, lambda,
+                        tetrahedronVolumes(ii));
+                energyScore += tetrahedronPotentialEnergy;
             }
 
-            if (!springPoints.empty() && viz::getPickedVertex() >= 0) {
-                E += fem::springPotentialEnergy(springPoints.at(0).first, newq.segment<3>(springPoints.at(0).second),
-                                                kSpringRestLength, kSelectionSpringStiffness);
+            for (const auto &[u, v] : springPoints) {
+                const auto springPotentialEnergy =
+                        fem::springPotentialEnergy(u, newq.segment<3>(v), kSpringRestLength, currentSpringStiffness);
+                energyScore += springPotentialEnergy;
             }
 
-            E += 0.5 * (initialGuess - qdot).transpose() * massMatrix * (initialGuess - qdot);
-            return E;
+            energyScore += 0.5 * (initialGuess - qdot).transpose() * massMatrix * (initialGuess - qdot);
+            return energyScore;
         };
 
         const auto force = [&](const vecXr &newq) -> vecXr {
-            auto force = fem::assembleForces(selectionMatrix.transpose() * newq + fixedPointVertices,
-                                             viz::getMeshInstance().vertices, viz::getMeshInstance().tetrahedra,
-                                             tetrahedronVolumes, mu, lambda);
+            auto forces = fem::assembleForces(selectionMatrix.transpose() * newq + fixedPointVertices,
+                                              viz::getMeshInstance().vertices, viz::getMeshInstance().tetrahedra,
+                                              tetrahedronVolumes, mu, lambda);
 
             if (!springPoints.empty() && viz::getPickedVertex() >= 0) {
                 const auto u = springPoints.at(0).first;
                 const auto v =
                         (selectionMatrix.transpose() * newq + fixedPointVertices).segment<3>(springPoints.at(0).second);
                 const auto dV = fem::springPotentialEnergyGradient(u, v, kSpringRestLength, kSelectionSpringStiffness);
-                force.segment<3>(3 * viz::getPickedVertex()) -= dV.segment<3>(3);
+                forces.segment<3>(3 * viz::getPickedVertex()) -= dV.segment<3>(3);
             }
 
-            return selectionMatrix * force;
+            return selectionMatrix * forces;
         };
 
-        const auto stiffness = [&](const vecXr &newq) -> spmatXr {
-            const spmatXr stiffness = fem::assembleStiffness(
+        const auto stiffness = [&](const vecXr &newq) -> spmatr {
+            spmatr stiffnessMatrix = fem::assembleStiffness(
                     selectionMatrix.transpose() * newq + fixedPointVertices, viz::getMeshInstance().vertices,
                     viz::getMeshInstance().tetrahedra, tetrahedronVolumes, mu, lambda);
-
-            return selectionMatrix * stiffness * selectionMatrix.transpose();
+            stiffnessMatrix = selectionMatrix * stiffnessMatrix * selectionMatrix.transpose();
+            return stiffnessMatrix;
         };
 
         fem::implicitEuler(energy, force, stiffness, viz::getMeshInstance().vertices, viz::getMeshInstance().tetrahedra,
@@ -93,10 +94,22 @@ namespace nm {
     }
 
     auto setupVariables(vecXr &q, vecXr &qdot, Mesh &mesh) -> bool {
+        spdlog::info("=======RUNTIME VARS=========");
+        spdlog::info("Youngs Modulus: {}", youngsModulus);
+        spdlog::info("Poissons Ratio: {}", poissonsRatio);
+        spdlog::info("Lame's Lambda: {}", lambda);
+        spdlog::info("Lame's Mu: {}", mu);
+        spdlog::info("============================");
+
         if (!tetrahedralizeMesh(mesh)) {
             spdlog::error("Tetrahedralization failed.");
             return false;
         }
+
+        spdlog::info("=======MESH STATS=========");
+        spdlog::info("Vertices: {}", mesh.vertices.rows());
+        spdlog::info("Tetrahedra: {}", mesh.tetrahedra.rows());
+        spdlog::info("==========================");
 
         // Initialize position tracking variables
         setupSimulationVariables(mesh.vertices, q, qdot);
@@ -114,8 +127,6 @@ namespace nm {
 
         // Set up the constraint matrix
         fixedPointIndices = findMinVertices(mesh.vertices, kFixedVertexSelectionTolerance);
-        selectionMatrix.resize(q.rows(), q.rows());
-        selectionMatrix.setIdentity();
 
         // Fill the constraint matrix
         selectionMatrix = setupFixedPointConstraints(q.rows(), fixedPointIndices);
@@ -132,10 +143,10 @@ namespace nm {
         return true;
     }
 
-    auto setupFixedPointConstraints(unsigned int qSize, const std::vector<int> &indices) -> spmatXr {
-        spmatXr P;
-        P.resize(qSize, qSize);
-        P.setIdentity();
+    auto setupFixedPointConstraints(unsigned int qSize, const std::vector<int> &indices) -> spmatr {
+        spmatr fixedPointSelectionMatrix;
+        fixedPointSelectionMatrix.resize(qSize - indices.size() * 3, qSize);
+        fixedPointSelectionMatrix.setIdentity();
 
         std::vector<Eigen::Triplet<real>> triplets;
         triplets.reserve(qSize - indices.size() * 3);
@@ -149,8 +160,8 @@ namespace nm {
             count += 3;
         }
 
-        P.setFromTriplets(triplets.begin(), triplets.end());
-        return P;
+        fixedPointSelectionMatrix.setFromTriplets(triplets.begin(), triplets.end());
+        return fixedPointSelectionMatrix;
     }
 
     void setupSimulationVariables(const matXr &vertices, vecXr &q, vecXr &qdot) {

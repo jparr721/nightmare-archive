@@ -34,8 +34,8 @@ namespace nm::fem {
     //    }
     //
     //    auto computeLinearTetrahedralStiffness(const SimulationState &simulationState, const matXr &vertices,
-    //                                           const matXi &tets, const vecXr &guess) -> spmatXr {
-    //        spmatXr stiffness =
+    //                                           const matXi &tets, const vecXr &guess) -> spmatr {
+    //        spmatr stiffness =
     //                -nm::fem::assembleStiffness(simulationState.getSelectedVertexPositions(), vertices, tets,
     //                                            simulationState.tetVolumes, simulationState.mu, simulationState.lambda);
     //        stiffness = simulationState.constraint.selectionMatrix * stiffness *

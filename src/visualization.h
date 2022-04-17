@@ -15,6 +15,7 @@ namespace nm::viz {
     auto initialize() -> bool;
 
     auto getIsSimulating() -> bool &;
+    auto getIsMouseDragging() -> bool &;
     auto getMeshInstance() -> Mesh &;
     auto getViewerInstance() -> igl::opengl::glfw::Viewer &;
     auto getFaces(const igl::opengl::glfw::Viewer &viewerInstance) -> matXi;

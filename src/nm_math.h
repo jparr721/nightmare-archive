@@ -5,11 +5,10 @@
 #include <Eigen/Sparse>
 #include <cstdint>
 #include <iostream>
+#include <spdlog/spdlog.h>
 #include <vector>
 
 namespace nm {
-    constexpr int kNumberOfColumns = 3;
-
     using real = double;
 
     // reals
@@ -23,8 +22,8 @@ namespace nm {
     using vecXr = Eigen::Matrix<real, Eigen::Dynamic, 1>;
 
     // Dense Row vec Types
-    using Rowvec3r = Eigen::Matrix<real, 1, 3>;
-    using RowvecXr = Eigen::Matrix<real, 1, Eigen::Dynamic>;
+    using rowvec3r = Eigen::Matrix<real, 1, 3>;
+    using rowvecXr = Eigen::Matrix<real, 1, Eigen::Dynamic>;
 
     // Dense Matrix Types
     using mat2r = Eigen::Matrix<real, 2, 2>;
@@ -36,10 +35,9 @@ namespace nm {
     using mat912r = Eigen::Matrix<real, 9, 12>;
     using mat1212r = Eigen::Matrix<real, 12, 12>;
     using matXr = Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic>;
-    using rowMatXr = Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
     // Sparse Matrix Types
-    using spmatXr = Eigen::SparseMatrix<real>;
+    using spmatr = Eigen::SparseMatrix<real>;
 
     // ints
     // Dense vec Types
@@ -50,19 +48,14 @@ namespace nm {
     using vec12i = Eigen::Matrix<int, 12, 1>;
     using vecXi = Eigen::Matrix<int, Eigen::Dynamic, 1>;
 
-    // Dense Row vec Types
-    using Rowvec3i = Eigen::Matrix<int, 1, 3>;
-    using RowvecXi = Eigen::Matrix<int, 1, Eigen::Dynamic>;
-
     // Dense Matrix Types
     using mat2i = Eigen::Matrix<int, 2, 2>;
     using mat3i = Eigen::Matrix<int, 3, 3>;
     using mat4i = Eigen::Matrix<int, 4, 4>;
     using matXi = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
-    using rowMatXi = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
     // Sparse MatrixTypes
-    using spmatXi = Eigen::SparseMatrix<int>;
+    using spmati = Eigen::SparseMatrix<int>;
 
     template<typename T>
     using vecX = Eigen::Matrix<T, Eigen::Dynamic, 1>;
@@ -80,13 +73,14 @@ namespace nm {
     template<typename T>
     using matX = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
     template<typename T>
-    using rowMatX = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-    template<typename T>
     using mat2 = Eigen::Matrix<T, 2, 2>;
     template<typename T>
     using mat3 = Eigen::Matrix<T, 3, 3>;
     template<typename T>
     using mat4 = Eigen::Matrix<T, 4, 4>;
+
+    template<typename T>
+    using spmat = Eigen::SparseMatrix<T>;
 
     using tripletr = Eigen::Triplet<real>;
 
@@ -143,6 +137,44 @@ namespace nm {
             for (const auto &col : row) { out.push_back(col); }
         }
         return out;
+    }
+
+    template<typename T>
+    inline void checkSpdMatrix(const T &matrix) {
+        spdlog::info("=======CHECKING MATRIX==========");
+        Eigen::SelfAdjointEigenSolver<T> eigenSolver(matrix);
+        spdlog::info("Checking for all valid eigenvalues");
+        const vecXr eigenvalues = eigenSolver.eigenvalues().real();
+        bool allPositive = true;
+        for (auto jj = 0u; jj < eigenvalues.rows(); ++jj) {
+            if (eigenvalues(jj) <= 0) { allPositive = false; }
+        }
+
+        if (allPositive) {
+            spdlog::info("All Eigenvalues > 0");
+        } else {
+            spdlog::error("Matrix contains invalid eigenvalues");
+        }
+
+        // Check if the matrix is symmetric
+        if (!matrix.isApprox(matrix.transpose())) {
+            spdlog::error("Matrix is not symmetric");
+        } else {
+            spdlog::info("Matrix is symmetric.");
+        }
+
+        bool allDiagGtZero = true;
+        const vecXr diag = matrix.diagonal();
+        for (auto jj = 0u; jj < diag.rows(); ++jj) {
+            if (diag(jj) == 0) { allDiagGtZero = false; }
+        }
+
+        if (allDiagGtZero) {
+            spdlog::info("All diagonal values are greater than zero");
+        } else {
+            spdlog::error("Matrix does not have an all nonzero diagonal");
+        }
+        spdlog::info("================================");
     }
 
 }// namespace nm

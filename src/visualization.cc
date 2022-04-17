@@ -1,6 +1,7 @@
 #include "visualization.h"
 #include "mouse_control.h"
 #include "renderer_utils.h"
+#include <spdlog/fmt/ostr.h>
 #include <spdlog/spdlog.h>
 
 namespace nm::viz {
@@ -14,7 +15,7 @@ namespace nm::viz {
 
     int pickedVertex = -1;
 
-    bool isMouseDragging;
+    bool isMouseDragging = false;
 
     vec3r mouseWindow;
     vec3r mouseDrag;
@@ -24,6 +25,7 @@ namespace nm::viz {
     Mesh mesh;
 
     auto getIsSimulating() -> bool & { return isSimulating; }
+    auto getIsMouseDragging() -> bool & { return isMouseDragging; }
     auto getMeshInstance() -> Mesh & { return mesh; }
     auto getViewerInstance() -> igl::opengl::glfw::Viewer & { return viewer; }
 
@@ -32,7 +34,7 @@ namespace nm::viz {
         matXr points;
         matXi edges;
         nm::makeRenderableGrid(10.0, 100, points, edges, 0.0);
-        viewer.data().set_edges(points, edges, Rowvec3r(1.0, 1.0, 1.0));
+        viewer.data().set_edges(points, edges, rowvec3r(1.0, 1.0, 1.0));
         viewer.core().background_color = vec4<float>(0.15, 0.15, 0.15, 1.0);
     }
 
@@ -88,13 +90,13 @@ namespace nm::viz {
                     mouseWindow;
         mouseWindow = vec3r(viewerInstance.current_mouse_x,
                             viewerInstance.core().viewport(3) - viewerInstance.current_mouse_y, 0.0);
+        igl::unproject(mouseWindow, viewerInstance.core().view, viewerInstance.core().proj,
+                       viewerInstance.core().viewport, mouseDragWorld);
         mouseDragWorld -= mouseWorld;
         igl::unproject(mouseWindow, viewerInstance.core().view, viewerInstance.core().proj,
                        viewerInstance.core().viewport, mouseWorld);
 
-        if (isMouseDragging && pickedVertex >= 0) { return true; }
-
-        return false;
+        return isMouseDragging && pickedVertex >= 0;
     }
 
     void callbackDrawViewerMenu() {
