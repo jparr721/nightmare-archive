@@ -42,7 +42,7 @@ namespace nm::fem {
                     for (int row = 0; row < 3; ++row) {
                         for (int col = 0; col < 3; ++col) {
                             const auto i = 3 * tets(ii, jj) + row;
-                            const auto j = 3 * tets(ii, jj) + col;
+                            const auto j = 3 * tets(ii, kk) + col;
                             const auto v = -d2V(3 * jj + row, 3 * kk + col);
                             triplets.emplace_back(i, j, v);
                         }
