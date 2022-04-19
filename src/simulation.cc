@@ -70,12 +70,11 @@ namespace nm {
                                               viz::getMeshInstance().vertices, viz::getMeshInstance().tetrahedra,
                                               tetrahedronVolumes, mu, lambda);
 
-            if (!springPoints.empty() && viz::getPickedVertex() >= 0) {
-                const auto u = springPoints.at(0).first;
-                const auto v =
-                        (selectionMatrix.transpose() * newq + fixedPointVertices).segment<3>(springPoints.at(0).second);
-                const auto dV = fem::springPotentialEnergyGradient(u, v, kSpringRestLength, kSelectionSpringStiffness);
-                forces.segment<3>(3 * viz::getPickedVertex()) -= dV.segment<3>(3);
+            for (const auto &[u, v] : springPoints) {
+                const auto potentialEnergyGradient = fem::springPotentialEnergyGradient(
+                        u, (selectionMatrix.transpose() * newq + fixedPointVertices).segment<3>(v), kSpringRestLength,
+                        currentSpringStiffness);
+                forces.segment<3>(3 * viz::getPickedVertex()) -= potentialEnergyGradient.segment<3>(3);
             }
 
             return selectionMatrix * forces;

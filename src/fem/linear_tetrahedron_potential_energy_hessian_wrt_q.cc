@@ -16,7 +16,7 @@ namespace nm::fem {
             for (int ii = 0; ii < 4; ++ii) { deformedTetrahedron.col(ii) = q.segment<3>(3 * tetrahedralIndices(ii)); }
 
             // Obtain the shape function gradient matrix D;
-            const auto D = linearTetrahedronBasisFunctionGradientMatrix(vertices, element, centroid);
+            const auto D = linearTetrahedronBasisFunctionGradientMatrix(vertices, element);
 
             // Obtain the deformation gradient
             const mat3r F = deformedTetrahedron * D;

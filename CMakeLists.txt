@@ -62,8 +62,6 @@ add_library(${PROJECT_LIB}
         src/fem/mass_matrix_linear_tetmesh.cc
         src/fem/mass_matrix_linear_tetmesh.h
         src/fem/newtons_method.h
-        src/fem/linear_energy_function.cc
-        src/fem/linear_energy_function.h
         src/fem/linear_spring_potential_energy.cc
         src/fem/linear_spring_potential_energy.h src/fem/quadrature_single_point.h)
 

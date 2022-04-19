@@ -12,14 +12,14 @@ namespace nm::fem {
 #pragma unroll
             for (int ii = 0; ii < 4; ++ii) { deformedTetrahedron.col(ii) = q.segment<3>(3 * tetrahedralIndices(ii)); }
 
-            // Obtain the shape function gradient matrix D;
-            const auto D = linearTetrahedronBasisFunctionGradientMatrix(vertices, element, centroid);
+            // Obtain the shape function gradient matrix shapeFunctionGradientMatrix;
+            const auto shapeFunctionGradientMatrix = linearTetrahedronBasisFunctionGradientMatrix(vertices, element);
 
             // Obtain the deformation gradient
-            const mat3r F = deformedTetrahedron * D;
+            const mat3r deformationGradient = deformedTetrahedron * shapeFunctionGradientMatrix;
 
             // Compute the strain energy density for the neohookean model
-            return strainEnergyDensityNeoHookean(F, mu, lambda);
+            return strainEnergyDensityNeoHookean(deformationGradient, mu, lambda);
         };
 
         real potentialEnergy;

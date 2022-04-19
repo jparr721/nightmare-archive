@@ -12,23 +12,23 @@ namespace nm::fem {
 #pragma unroll
             for (int ii = 0; ii < 4; ++ii) { deformedTetrahedron.col(ii) = q.segment<3>(3 * tetrahedralIndices(ii)); }
 
-            // Obtain the shape function gradient matrix D;
-            const auto D = linearTetrahedronBasisFunctionGradientMatrix(vertices, element, centroid);
+            // Obtain the shape function gradient matrix shapeFunctionGradientMatrix;
+            const auto shapeFunctionGradientMatrix = linearTetrahedronBasisFunctionGradientMatrix(vertices, element);
 
             // Obtain the deformation gradient
-            const mat3r F = deformedTetrahedron * D;
+            const mat3r deformationGradient = deformedTetrahedron * shapeFunctionGradientMatrix;
 
-            // Compute the gradient of the strain energy density with respect to F.
-            const vec9r dpsi = strainEnergyDensityNeoHookeanGradientWrtF(F, mu, lambda);
+            // Compute the gradient of the strain energy density with respect to deformationGradient.
+            const vec9r dpsi = strainEnergyDensityNeoHookeanGradientWrtF(deformationGradient, mu, lambda);
 
             // Compute the matrix B from the shape function gradient matrix.
             mat912r B;
             B.setZero();
 #pragma unroll
             for (int ii = 0; ii < 4; ++ii) {
-                B.block(0, 0 + 3 * ii, 3, 1) = D.row(ii).transpose();
-                B.block(3, 1 + 3 * ii, 3, 1) = D.row(ii).transpose();
-                B.block(6, 2 + 3 * ii, 3, 1) = D.row(ii).transpose();
+                B.block(0, 0 + 3 * ii, 3, 1) = shapeFunctionGradientMatrix.row(ii).transpose();
+                B.block(3, 1 + 3 * ii, 3, 1) = shapeFunctionGradientMatrix.row(ii).transpose();
+                B.block(6, 2 + 3 * ii, 3, 1) = shapeFunctionGradientMatrix.row(ii).transpose();
             }
 
             return B.transpose() * dpsi;

@@ -14,9 +14,9 @@ namespace nm::fem {
      * We can then stack these together and solve the linear system to get the basis functions out.
      *
      * @param vertices The matrix of vertex positions in our entire simulated object.
-     * @param tet The specific tetrahedral elements we are interested in accessing.
-     * @param ref The reference space coordinates on which to compute.
+     * @param element The specific tetrahedral elements we are interested in accessing.
+     * @param referenceSpaceVertex The reference space coordinates on which to compute.
      * @param phi The 4x1 values of the basis functions for phi.
      */
-    void linearTetrahedronBasisFunctions(const matXr &vertices, const vec4i &tet, const vec3r &ref, vec4r &phi);
+    void linearTetrahedronBasisFunctions(const matXr &vertices, const vec4i &element, const vec3r &referenceSpaceVertex, vec4r &phi);
 }// namespace nm::fem

@@ -11,6 +11,6 @@ namespace nm::fem {
         v.segment<3>(3) = qdot.segment<3>(element(1) * 3);
         v.segment<3>(6) = qdot.segment<3>(element(2) * 3);
         v.segment<3>(9) = qdot.segment<3>(element(3) * 3);
-        return 0.5 * qdot.transpose() * massMatrix * qdot;
+        return 0.5 * v.transpose() * massMatrix * v;
     }
 }// namespace nm::fem

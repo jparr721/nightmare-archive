@@ -1,7 +1,6 @@
 #include "linear_tetrahedron_basis_function_gradient_matrix.h"
 namespace nm::fem {
-    auto linearTetrahedronBasisFunctionGradientMatrix(const matXr &vertices, const vec4i &element, const vec3r &ref)
-            -> mat43r {
+    auto linearTetrahedronBasisFunctionGradientMatrix(const matXr &vertices, const vec4i &element) -> mat43r {
         // Get our reference space coordinates
         const vec3r X0 = vertices.row(element(0)).transpose();
         const vec3r X1 = vertices.row(element(1)).transpose();

@@ -17,9 +17,7 @@ namespace nm::fem {
      *
      * @param vertices The vertex positions of the entire simulated object.
      * @param element The tetrahedral vertex indices for this element.
-     * @param ref The reference space tetrahedral where we're computing the energy density.
      * @param dphi The 4x3 gradient basis functions with respect to X. dPhi / dX.
      */
-    auto linearTetrahedronBasisFunctionGradientMatrix(const matXr &vertices, const vec4i &element, const vec3r &ref)
-            -> mat43r;
+    auto linearTetrahedronBasisFunctionGradientMatrix(const matXr &vertices, const vec4i &element) -> mat43r;
 }// namespace nm::fem

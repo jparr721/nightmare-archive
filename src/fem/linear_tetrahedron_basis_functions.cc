@@ -1,11 +1,12 @@
 #include "linear_tetrahedron_basis_functions.h"
 
 namespace nm::fem {
-    void linearTetrahedronBasisFunctions(const matXr &vertices, const vec4i &tet, const vec3r &ref, vec4r &phi) {
-        const vec3r X0 = vertices.row(tet(0));
-        const vec3r X1 = vertices.row(tet(1));
-        const vec3r X2 = vertices.row(tet(2));
-        const vec3r X3 = vertices.row(tet(3));
+    void linearTetrahedronBasisFunctions(const matXr &vertices, const vec4i &element, const vec3r &referenceSpaceVertex,
+                                         vec4r &phi) {
+        const vec3r X0 = vertices.row(element(0));
+        const vec3r X1 = vertices.row(element(1));
+        const vec3r X2 = vertices.row(element(2));
+        const vec3r X3 = vertices.row(element(3));
 
         // The matrix T represents the edge vectors from our source point X0 to each of the other X points in reference
         // space
@@ -15,7 +16,7 @@ namespace nm::fem {
         T.col(2) = X3 - X0;
 
         // Now, we must apply our reference coordinate difference to get the other side of the matrix function.
-        vec3r b = ref - X0;
+        vec3r b = referenceSpaceVertex - X0;
 
         // Now, we can solve the linear system. As Ax=b where A is T and phi is our basis function mapping.
         phi.segment<3>(1) = T.fullPivHouseholderQr().solve(b);// phi_1, 2, 3
