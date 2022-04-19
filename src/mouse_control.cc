@@ -24,7 +24,6 @@ namespace nm {
         igl::unproject(win1, view, proj, viewport, dir);
         dir -= start;
 
-
         const auto hit = shootRay(vertices, faces, start, dir);
 
         if (!hit.has_value()) { return -1; }
