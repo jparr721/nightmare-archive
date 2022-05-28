@@ -33,3 +33,16 @@ inline auto doubleContraction(const mat3 &A, const mat3 &B) -> real {
     return A(0, 0) * B(0, 0) + A(1, 1) * B(1, 1) + A(2, 2) * B(2, 2) + A(3, 3) * B(3, 3) + A(4, 4) * B(4, 4) +
            A(5, 5) * B(5, 5);
 }
+
+namespace identities {
+    /**
+     * Computes the matrix identity for the partial derivative of J wrt F
+     */
+    inline auto gradientJ(const mat3 &F) -> mat3 {
+        mat3 gradJ;
+        gradJ.col(0) = F.col(1).cross(F.col(2));
+        gradJ.col(1) = F.col(2).cross(F.col(0));
+        gradJ.col(2) = F.col(0).cross(F.col(1));
+        return gradJ;
+    }
+}// namespace identities
