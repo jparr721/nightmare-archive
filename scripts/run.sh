@@ -3,6 +3,7 @@
 set -euo pipefail
 
 base=$(basename $(pwd))
+target=${1-nightmare}
 
 print_style () {
     if [ "$2" == "info" ] ; then
@@ -29,4 +30,5 @@ then
   exit 1;
 fi
 
-cmake --build $(pwd)/build --target nightmare && /$(pwd)/build/nightmare
+cmake --build $(pwd)/build --target $target && /$(pwd)/build/nightmare
+

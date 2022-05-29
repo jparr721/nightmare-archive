@@ -18,12 +18,12 @@ namespace nm::geometry {
         TetMesh(const mat &vertices, const mat &tetrahedra);
 
         void setVertices(const mat &vertices);
-        void setTetrahedra(const mat &tetrahedra);
+        void setTetrahedra(const mati &tetrahedra);
 
     private:
         mat vertices_;
-        mat tetrahedra_;
-        mat faces_;
+        mati tetrahedra_;
+        mati faces_;
 
         void tetrahedralizeMesh();
     };

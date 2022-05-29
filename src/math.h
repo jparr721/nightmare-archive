@@ -2,8 +2,20 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
+#include <cstddef>
+#include <cstdint>
 
 using real = double;
+using u8 = uint8_t;
+using u16 = uint16_t;
+using u32 = uint32_t;
+using u64 = uint64_t;
+using i8 = int8_t;
+using i16 = int16_t;
+using i32 = int32_t;
+using i64 = int64_t;
+using usize = std::size_t;
+
 
 // Dense vector types
 using vec2 = Eigen::Vector2d;
@@ -18,7 +30,7 @@ using vec4i = Eigen::Vector4i;
 using vec = Eigen::Matrix<real, Eigen::Dynamic, 1>;
 
 // Dense matrix types
-using mat3 = Eigen::Matrix3d;
+using mat3 = Eigen::Matrix<real, 3, 3>;
 using mat9 = Eigen::Matrix<real, 9, 9>;
 using mat3x12 = Eigen::Matrix<real, 3, 12>;
 using mat9x12 = Eigen::Matrix<real, 9, 12>;
@@ -69,12 +81,12 @@ namespace utils {
 
     inline auto crossMatrix(const mat3 &F, int i) -> mat3 {
         mat3 crossProductMatrix;
-        const auto f0 = F(0, i);
-        const auto f1 = F(1, i);
-        const auto f2 = F(2, i);
+        const real f0 = F(0, i);
+        const real f1 = F(1, i);
+        const real f2 = F(2, i);
 
         crossProductMatrix.row(0) << 0, -f2, f1;
-        crossProductMatrix.row(1) << f2, 0, f1;
+        crossProductMatrix.row(1) << f2, 0, -f0;
         crossProductMatrix.row(2) << -f1, f0, 0;
         return crossProductMatrix;
     }

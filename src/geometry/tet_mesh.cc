@@ -20,7 +20,7 @@ namespace nm::geometry {
     TetMesh::TetMesh(const mat &vertices, const mat &tetrahedra) {}
 
     void TetMesh::setVertices(const mat &vertices) { vertices_ = vertices; }
-    void TetMesh::setTetrahedra(const mat &tetrahedra) { tetrahedra_ = tetrahedra; }
+    void TetMesh::setTetrahedra(const mati &tetrahedra) { tetrahedra_ = tetrahedra; }
 
     void TetMesh::tetrahedralizeMesh() {
         // Do we have vertices?

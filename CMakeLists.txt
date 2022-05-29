@@ -23,6 +23,12 @@ if (NIGHTMARE_TESTS)
 endif ()
 
 add_library(${PROJECT_LIB}
+    src/geometry/primitives/square.h
+    src/geometry/primitives/square.cc
+
+    src/geometry/tet_mesh.h
+    src/geometry/tet_mesh.cc
+
     src/hyperelastic/neo_hookean.h
     src/hyperelastic/neo_hookean.cc
 
@@ -38,10 +44,14 @@ target_link_libraries(${PROJECT_LIB}
         spdlog
         )
 
-add_executable(
-    ${PROJECT_NAME}
-    main.cc
-    )
+macro(package_add_scene SCENE_NAME FILE_NAME)
+    add_executable(${SCENE_NAME} "src/scenes/${FILE_NAME}")
+    target_link_libraries(${SCENE_NAME} ${PROJECT_LIB})
+endmacro()
+
+add_executable(${PROJECT_NAME} main.cc)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_LIB})
+
+package_add_scene("drop" drop.cc)
 
 file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
