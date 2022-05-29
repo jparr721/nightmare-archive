@@ -25,6 +25,7 @@ using mat9x12 = Eigen::Matrix<real, 9, 12>;
 using mat12 = Eigen::Matrix<real, 12, 12>;
 
 using mat = Eigen::Matrix<real, Eigen::Dynamic, Eigen::Dynamic>;
+using mati = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
 
 // Sparse matrix types
 using spmat = Eigen::SparseMatrix<real>;
