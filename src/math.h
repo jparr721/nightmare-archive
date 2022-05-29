@@ -46,3 +46,36 @@ namespace identities {
         return gradJ;
     }
 }// namespace identities
+
+namespace utils {
+    /**
+     * Colwise vectorization of a matrix into a vector for proper shaping
+     * during hessian calculations
+     */
+    inline auto vectorize(const mat3 &A) -> vec9 {
+        vec9 ret;
+        ret(0) = A(0, 0);
+        ret(1) = A(0, 1);
+        ret(2) = A(0, 2);
+        ret(3) = A(1, 1);
+        ret(4) = A(1, 2);
+        ret(5) = A(1, 0);
+        ret(6) = A(2, 0);
+        ret(7) = A(2, 1);
+        ret(8) = A(2, 2);
+        return ret;
+    }
+
+    inline auto crossMatrix(const mat3 &F, int i) -> mat3 {
+        mat3 crossProductMatrix;
+        const auto f0 = F(0, i);
+        const auto f1 = F(1, i);
+        const auto f2 = F(2, i);
+
+        crossProductMatrix.row(0) << 0, -f2, f1;
+        crossProductMatrix.row(1) << f2, 0, f1;
+        crossProductMatrix.row(2) << -f1, f0, 0;
+        return crossProductMatrix;
+    }
+
+}// namespace utils
