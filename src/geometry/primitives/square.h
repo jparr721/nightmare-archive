@@ -4,7 +4,7 @@
 #include <array>
 
 namespace nm::geometry::primitives {
-    void loadCubeFaces(mati &F);
-    void loadCubeVertices(mat &V);
+    auto loadCubeFaces() -> mati;
+    auto loadCubeVertices() -> mat;
     void loadSquareGeometry(mat &V, mati &F);
 }// namespace nm::geometry::primitives

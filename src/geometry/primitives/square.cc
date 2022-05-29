@@ -1,7 +1,9 @@
 #include "square.h"
 
 namespace nm::geometry::primitives {
-    void loadCubeFaces(mati &F) {
+    auto loadCubeFaces() -> mati {
+        mati F;
+        F.resize(12, 3);
         F.row(0) = vec3i(4, 7, 6);
         F.row(1) = vec3i(4, 6, 5);
         F.row(2) = vec3i(3, 0, 1);
@@ -16,7 +18,9 @@ namespace nm::geometry::primitives {
         F.row(11) = vec3i(0, 7, 4);
     }
 
-    void loadCubeVertices(mat &V) {
+    auto loadCubeVertices() -> mat {
+        mat V;
+        V.resize(8, 3);
         V.row(0) = vec3(0.0, 0.0, 0.0);
         V.row(1) = vec3(0.0, 1.0, 0.0);
         V.row(2) = vec3(1.0, 1.0, 0.0);
@@ -28,7 +32,7 @@ namespace nm::geometry::primitives {
     }
 
     void loadSquareGeometry(mat &V, mati &F) {
-        V.resize(8, 3);
-        F.resize(12, 3);
+        F = loadCubeFaces();
+        V = loadCubeVertices();
     }
 }// namespace nm::geometry::primitives

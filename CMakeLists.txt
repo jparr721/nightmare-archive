@@ -23,6 +23,8 @@ if (NIGHTMARE_TESTS)
 endif ()
 
 add_library(${PROJECT_LIB}
+    src/geometry/primitives/grid.h
+    src/geometry/primitives/grid.cc
     src/geometry/primitives/square.h
     src/geometry/primitives/square.cc
 
