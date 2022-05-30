@@ -10,10 +10,10 @@ namespace nm::testing::scenes {
         viewer.core().background_color = Eigen::Vector4f(0.15, 0.15, 0.15, 1.0);
     }
 
-    void Scene::addGrid(real startingy, int size) {
+    void Scene::addGrid(real startingy, real spacingScale, int size) {
         mat points;
         mati edges;
-        geometry::primitives::loadGridGeometry(1.0, startingy, size, points, edges);
+        geometry::primitives::loadGridGeometry(spacingScale, startingy, size, points, edges);
         viewer.data().set_edges(points, edges, Eigen::RowVector3d(1.0, 1.0, 1.0));
     }
 

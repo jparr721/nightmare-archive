@@ -24,12 +24,14 @@ namespace nm::geometry {
         auto tetrahedra() const -> const mati & { return tetrahedra_; }
         auto faces() -> mati & { return faces_; }
         auto faces() const -> const mati & { return faces_; }
+        auto dofs() const -> int { return vertices_.rows() * 3; }
 
         void setVertices(const mat &vertices);
         void setTetrahedra(const mati &tetrahedra);
         void setFaces(const mati &faces);
 
         void translate(const vec3 &translation);
+        void rotate(real angle, const vec3 &axis);
 
         /**
          * Begin tetrahedralization routine

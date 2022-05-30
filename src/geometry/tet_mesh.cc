@@ -30,6 +30,12 @@ namespace nm::geometry {
         for (int ii = 0; ii < vertices_.rows(); ++ii) { vertices_.row(ii) += translation; }
     }
 
+    void TetMesh::rotate(real angle, const vec3 &axis) {
+        const Eigen::AngleAxis rotation = Eigen::AngleAxis(angle, axis);
+        const mat3 rotationMatrix = rotation.toRotationMatrix();
+        vertices_ *= rotationMatrix;
+    }
+
     void TetMesh::tetrahedralizeMesh() {
         // Do we have vertices?
         assert(vertices_.size() > 0 && "NO VERTICES FOUND");

@@ -9,7 +9,7 @@ namespace nm::testing::scenes {
     std::unique_ptr<geometry::TetMesh> bunny;
 
     void initializeDropTest(Scene &scene) {
-        scene.addGrid(0.0, 100);
+        scene.addGrid(0.0, 10.0, 1000);
 
         // Load Squares
         geometry::primitives::loadSquareGeometry(squareOne.get());
@@ -20,9 +20,14 @@ namespace nm::testing::scenes {
         // Position Squares
         // TODO(@jparr721) Add rotation
         squareOne->translate(vec3(2, 0, 0));  // Bottom Right
-        squareTwo->translate(vec3(2, 2, 0));  // Top Right
+        squareTwo->translate(vec3(3, 2, 0));  // Top Right
         squareThree->translate(vec3(0, 1, 0));// Bottom Left
         squareFour->translate(vec3(0, 3, 0)); // Top Left
+
+        squareOne->rotate(utils::rad(-10), vec3::UnitZ());
+        squareTwo->rotate(utils::rad(-10), vec3::UnitZ());
+        squareThree->rotate(utils::rad(10), vec3::UnitZ());
+        squareFour->rotate(utils::rad(10), vec3::UnitZ());
 
         // Add Squares To Scene
         scene.addShape(squareOne.get());
@@ -31,7 +36,7 @@ namespace nm::testing::scenes {
         scene.addShape(squareFour.get());
 
         // Add main piece of geometry to drop.
-        bunny = std::unique_ptr<geometry::TetMesh>(scene.addShapeFromFile("bunny.obj"));
+        // bunny = std::unique_ptr<geometry::TetMesh>(scene.addShapeFromFile("bunny.obj"));
     }
 
     void startDropTest(Scene &scene) {

@@ -91,4 +91,6 @@ namespace utils {
         return crossProductMatrix;
     }
 
+    inline auto rad(real deg) -> real { return deg * M_PI / 180; }
+    inline auto deg(real rad) -> real { return rad * 180 / M_PI; }
 }// namespace utils

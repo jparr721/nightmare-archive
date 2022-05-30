@@ -37,6 +37,11 @@ add_library(${PROJECT_LIB}
     src/hyperelastic/neo_hookean.h
     src/hyperelastic/neo_hookean.cc
 
+    src/integrators/integrator.h
+    src/integrators/integrator.cc
+    src/integrators/backward_euler.h
+    src/integrators/backward_euler.cc
+
     src/math.h
     )
 
@@ -58,5 +63,3 @@ add_executable(${PROJECT_NAME} main.cc)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_LIB})
 
 package_add_scene("drop" drop.cc)
-
-file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

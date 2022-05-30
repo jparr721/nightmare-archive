@@ -15,7 +15,7 @@ namespace nm::testing::scenes {
         igl::opengl::glfw::imgui::ImGuiMenu menu;
 
         Scene();
-        void addGrid(real startingy, int size);
+        void addGrid(real startingy, real spacingScale, int size);
         void addShape(const geometry::TetMesh *tetMesh);
 
         void updateVertexPositions(const mat &V);
