@@ -31,8 +31,7 @@ namespace nm::testing::scenes {
         scene.addShape(squareFour.get());
 
         // Add main piece of geometry to drop.
-        geometry::TetMesh *bunnyPtr = scene.addShapeFromFile("bunny.obj");
-        bunny = std::unique_ptr<geometry::TetMesh>(bunnyPtr);
+        bunny = std::unique_ptr<geometry::TetMesh>(scene.addShapeFromFile("bunny.obj"));
     }
 
     void startDropTest(Scene &scene) {
