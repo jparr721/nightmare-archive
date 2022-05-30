@@ -1,7 +1,7 @@
-#include "square.h"
+#include "cube.h"
 
 namespace nm::geometry::primitives {
-    auto loadCubeFaces() -> mati {
+    void loadSquareGeometry(TetMesh *tetMesh) {
         mati F;
         F.resize(12, 3);
         F.row(0) = vec3i(4, 7, 6);
@@ -16,9 +16,7 @@ namespace nm::geometry::primitives {
         F.row(9) = vec3i(2, 5, 6);
         F.row(10) = vec3i(0, 3, 7);
         F.row(11) = vec3i(0, 7, 4);
-    }
 
-    auto loadCubeVertices() -> mat {
         mat V;
         V.resize(8, 3);
         V.row(0) = vec3(0.0, 0.0, 0.0);
@@ -29,10 +27,9 @@ namespace nm::geometry::primitives {
         V.row(5) = vec3(0.0, 1.0, 1.0);
         V.row(6) = vec3(1.0, 1.0, 1.0);
         V.row(7) = vec3(1.0, 0.0, 1.0);
-    }
 
-    void loadSquareGeometry(mat &V, mati &F) {
-        F = loadCubeFaces();
-        V = loadCubeVertices();
+        tetMesh->setFaces(F);
+        tetMesh->setVertices(V);
+        tetMesh->tetrahedralizeMesh();
     }
 }// namespace nm::geometry::primitives

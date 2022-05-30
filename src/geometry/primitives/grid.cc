@@ -3,7 +3,7 @@
 #include <vector>
 
 namespace nm::geometry::primitives {
-    void loadGridGeometry(real spacingScale, int gridDimensions, mat &points, mati &edges, real startingy) {
+    void loadGridGeometry(real spacingScale, real startingy, int gridDimensions, mat &points, mati &edges) {
         std::vector<std::vector<real>> points_;
         std::vector<std::vector<int>> edges_;
         for (int ii = -gridDimensions; ii < gridDimensions; ++ii) {

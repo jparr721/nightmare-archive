@@ -15,16 +15,30 @@ namespace nm::geometry {
     public:
         TetMesh() = default;
         explicit TetMesh(const std::string &meshPath);
-        TetMesh(const mat &vertices, const mat &tetrahedra);
+        TetMesh(const mat &vertices, const mati &faces);
+        TetMesh(const mat &vertices, const mati &tetrahedra, const mati &faces);
+
+        auto vertices() -> mat & { return vertices_; }
+        auto vertices() const -> const mat & { return vertices_; }
+        auto tetrahedra() -> mati & { return tetrahedra_; }
+        auto tetrahedra() const -> const mati & { return tetrahedra_; }
+        auto faces() -> mati & { return faces_; }
+        auto faces() const -> const mati & { return faces_; }
 
         void setVertices(const mat &vertices);
         void setTetrahedra(const mati &tetrahedra);
+        void setFaces(const mati &faces);
+
+        void translate(const vec3 &translation);
+
+        /**
+         * Begin tetrahedralization routine
+         */
+        void tetrahedralizeMesh();
 
     private:
         mat vertices_;
         mati tetrahedra_;
         mati faces_;
-
-        void tetrahedralizeMesh();
     };
 }// namespace nm::geometry

@@ -11,23 +11,30 @@ namespace nm::geometry {
 #endif
 
     TetMesh::TetMesh(const std::string &meshPath) {
-        // Wrap this in a closure so we can just toss F out of memory right away.
-        { igl::read_triangle_mesh(meshPath, vertices_, faces_); }
-
+        igl::read_triangle_mesh(meshPath, vertices_, faces_);
         tetrahedralizeMesh();
     }
 
-    TetMesh::TetMesh(const mat &vertices, const mat &tetrahedra) {}
+    TetMesh::TetMesh(const mat &vertices, const mati &faces) : vertices_(vertices), faces_(faces) {
+        tetrahedralizeMesh();
+    }
+
+    TetMesh::TetMesh(const mat &vertices, const mati &tetrahedra, const mati &faces)
+        : vertices_(vertices), tetrahedra_(tetrahedra), faces_(faces) {}
 
     void TetMesh::setVertices(const mat &vertices) { vertices_ = vertices; }
     void TetMesh::setTetrahedra(const mati &tetrahedra) { tetrahedra_ = tetrahedra; }
+    void TetMesh::setFaces(const mati &faces) { faces_ = faces; }
+
+    void TetMesh::translate(const vec3 &translation) {
+        for (int ii = 0; ii < vertices_.rows(); ++ii) { vertices_.row(ii) += translation; }
+    }
 
     void TetMesh::tetrahedralizeMesh() {
         // Do we have vertices?
         assert(vertices_.size() > 0 && "NO VERTICES FOUND");
-
-        // Do we have tetrahedra?
-        assert(tetrahedra_.size() > 0 && "NO TETS FOUND");
+        // Do we have faces?
+        assert(faces_.size() > 0 && "NO FACES FOUND");
 
         {
             // Temporaries to hold tetrahedralized data

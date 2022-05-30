@@ -1,10 +1,9 @@
 #pragma once
 
 #include "../../math.h"
+#include "../tet_mesh.h"
 #include <array>
 
 namespace nm::geometry::primitives {
-    auto loadCubeFaces() -> mati;
-    auto loadCubeVertices() -> mat;
-    void loadSquareGeometry(mat &V, mati &F);
+    void loadSquareGeometry(TetMesh *tetMesh);
 }// namespace nm::geometry::primitives

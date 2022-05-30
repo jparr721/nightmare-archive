@@ -23,10 +23,13 @@ if (NIGHTMARE_TESTS)
 endif ()
 
 add_library(${PROJECT_LIB}
+    src/scenes/scene.h
+    src/scenes/scene.cc
+
     src/geometry/primitives/grid.h
     src/geometry/primitives/grid.cc
-    src/geometry/primitives/square.h
-    src/geometry/primitives/square.cc
+    src/geometry/primitives/cube.h
+    src/geometry/primitives/cube.cc
 
     src/geometry/tet_mesh.h
     src/geometry/tet_mesh.cc
