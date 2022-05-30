@@ -1,10 +1,19 @@
 #pragma once
 
 #include "../math.h"
+#include <map>
 #include <string>
+#include <vector>
 
 namespace nm::geometry {
+
     class TetMesh {
+#ifdef NDEBUG
+        static constexpr const char *kDefaultTetgenFlags = "zpqQ";
+#else
+        static constexpr const char *kDefaultTetgenFlags = "zpq";
+#endif
+
         enum TetgenResult {
             kTetgenFailedToConvert = -1,
             kTetgenCrashed = 1,
@@ -42,5 +51,15 @@ namespace nm::geometry {
         mat vertices_;
         mati tetrahedra_;
         mati faces_;
+
+        std::vector<vec3i> surfaceTriangles_;
+        std::vector<u32> surfaceVertices_;
+        std::vector<vec2i> surfaceEdges_;
+
+        std::map<int, int> volumeToSurfaceID_;
+
+        void computeSurfaceTriangles();
+        void computeSurfaceVertices();
+        void computeSurfaceEdges();
     };
 }// namespace nm::geometry

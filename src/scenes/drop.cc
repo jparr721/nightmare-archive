@@ -24,6 +24,7 @@ namespace nm::testing::scenes {
         squareThree->translate(vec3(0, 1, 0));// Bottom Left
         squareFour->translate(vec3(0, 3, 0)); // Top Left
 
+        // Rotate the cubes so that way the object can slide off of them
         squareOne->rotate(utils::rad(-10), vec3::UnitZ());
         squareTwo->rotate(utils::rad(-10), vec3::UnitZ());
         squareThree->rotate(utils::rad(10), vec3::UnitZ());
