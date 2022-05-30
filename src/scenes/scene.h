@@ -6,6 +6,7 @@
 #include <igl/opengl/glfw/Viewer.h>
 #include <igl/opengl/glfw/imgui/ImGuiMenu.h>
 #include <igl/opengl/glfw/imgui/ImGuiPlugin.h>
+#include <string>
 
 namespace nm::testing::scenes {
     struct Scene {
@@ -18,5 +19,7 @@ namespace nm::testing::scenes {
         void addShape(const geometry::TetMesh *tetMesh);
 
         void updateVertexPositions(const mat &V);
+
+        auto addShapeFromFile(const std::string &filename) -> geometry::TetMesh *;
     };
 }// namespace nm::testing::scenes

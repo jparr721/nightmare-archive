@@ -1,5 +1,6 @@
 #include "scene.h"
 #include "../geometry/primitives/grid.h"
+#include "paths.h"
 
 namespace nm::testing::scenes {
     Scene::Scene() {
@@ -28,5 +29,12 @@ namespace nm::testing::scenes {
 
         // Push the mesh values into the data list for the next render pass
         viewer.data_list.push_back(data);
+    }
+
+    auto Scene::addShapeFromFile(const std::string &filename) -> geometry::TetMesh * {
+        const auto filepath = kAssetsPath / filename;
+        geometry::TetMesh *tetMesh = new geometry::TetMesh(filepath.string());
+        addShape(tetMesh);
+        return tetMesh;
     }
 }// namespace nm::testing::scenes
