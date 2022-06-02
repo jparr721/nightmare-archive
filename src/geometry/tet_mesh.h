@@ -33,9 +33,16 @@ namespace nm::geometry {
         auto tetrahedra() const -> const mati & { return tetrahedra_; }
         auto faces() -> mati & { return faces_; }
         auto faces() const -> const mati & { return faces_; }
-        auto dofs() const -> int { return vertices_.rows() * 3; }
+        auto ndofs() const -> int { return vertices_.rows() * 3; }
 
+        auto displacement() const -> vec;
+
+        void setRayleighAlpha(real rayleighAlpha);
+        void setRayleighBeta(real rayleighBeta);
         void setVertices(const mat &vertices);
+        void setVerticesFromPositions(const vec &positions);
+        void setDisplacement(const vec &delta);
+        void addDisplacement(const vec &delta);
         void setTetrahedra(const mati &tetrahedra);
         void setFaces(const mati &faces);
 
@@ -47,14 +54,37 @@ namespace nm::geometry {
          */
         void tetrahedralizeMesh();
 
+        // Internal computation for functionality
+        void computeDeformationGradients();
+
+        auto computeTetrahedralVolumes() -> std::vector<real>;
+        auto computeForces() -> vec;
+        auto computeHessian() -> spmat;
+        auto computeMassMatrix() -> spmat;
+        auto computeStiffnessMatrix() -> spmat;
+        auto computeVolumetricMassMatrix() -> spmat;
+        auto computeDensityVolumeMassMatrix() -> spmat;
+        auto computeDampingMatrix(const spmat &massMatrix, const spmat &stiffnessMatrix) -> spmat;
+
     private:
+        real rayleighAlpha_ = 0.01;
+        real rayleighBeta_ = 0.01;
+
         mat vertices_;
+        mat restVertices_;
         mati tetrahedra_;
         mati faces_;
 
         std::vector<vec3i> surfaceTriangles_;
         std::vector<u32> surfaceVertices_;
+        std::vector<u32> surfaceTetrahedra_;
         std::vector<vec2i> surfaceEdges_;
+
+        // All deformation gradients for each tet
+        std::vector<mat3> deformationGradients_;
+
+        // All velocity gradients for each tet
+        std::vector<mat3> velocityGradients_;
 
         std::map<int, int> volumeToSurfaceID_;
 

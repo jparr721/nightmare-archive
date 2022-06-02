@@ -19,5 +19,13 @@ namespace nm::integrators {
 
         std::unique_ptr<geometry::TetMesh> activeTetMesh;
         std::vector<geometry::TetMesh *> kinematicsCollisionObjects;
+
+        void initialize();
+        void solve();
+
+    private:
+        void buildDampingMatrix();
+        void buildMassMatrix();
+        void buildStiffnessMatrix();
     };
 }// namespace nm::integrators

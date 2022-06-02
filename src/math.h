@@ -93,4 +93,11 @@ namespace utils {
 
     inline auto rad(real deg) -> real { return deg * M_PI / 180; }
     inline auto deg(real rad) -> real { return rad * 180 / M_PI; }
+
+    inline auto tetVolume(const std::vector<vec3> &tetVertices) -> real {
+        const auto d1 = tetVertices.at(1) - tetVertices.at(0);
+        const auto d2 = tetVertices.at(2) - tetVertices.at(0);
+        const auto d3 = tetVertices.at(3) - tetVertices.at(0);
+        return d3.dot(d1.cross(d2)) / 6.0;
+    }
 }// namespace utils

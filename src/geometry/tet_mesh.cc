@@ -5,7 +5,7 @@
 
 namespace nm::geometry {
     struct TriangleCompare {
-        bool operator()(const vec3 &lhs, const vec3 &rhs) {
+        bool operator()(const vec3i &lhs, const vec3i &rhs) const {
             if (lhs(0) < rhs(0)) return true;
             if (lhs(0) > rhs(0)) return false;
             if (lhs(1) < rhs(1)) return true;
@@ -17,18 +17,56 @@ namespace nm::geometry {
     };
 
     TetMesh::TetMesh(const std::string &meshPath) {
-        igl::read_triangle_mesh(meshPath, vertices_, faces_);
+        igl::read_triangle_mesh(meshPath, restVertices_, faces_);
+        vertices_ = restVertices_;
         tetrahedralizeMesh();
     }
 
-    TetMesh::TetMesh(const mat &vertices, const mati &faces) : vertices_(vertices), faces_(faces) {
+    TetMesh::TetMesh(const mat &vertices, const mati &faces)
+        : vertices_(vertices), restVertices_(vertices_), faces_(faces) {
         tetrahedralizeMesh();
     }
 
     TetMesh::TetMesh(const mat &vertices, const mati &tetrahedra, const mati &faces)
         : vertices_(vertices), tetrahedra_(tetrahedra), faces_(faces) {}
 
-    void TetMesh::setVertices(const mat &vertices) { vertices_ = vertices; }
+    auto TetMesh::displacement() const -> vec {
+        vec delta(ndofs());
+        delta.setZero();
+
+        for (auto ii = 0; ii < vertices_.rows(); ++ii) {
+            const vec3 diff = vertices_.row(ii) - restVertices_.row(ii);
+            delta.segment(ii * 3, 3) = diff;
+        }
+
+        return delta;
+    }
+
+    void TetMesh::setRayleighAlpha(real rayleighAlpha) { rayleighAlpha_ = rayleighAlpha; }
+    void TetMesh::setRayleighBeta(real rayleighBeta) { rayleighBeta_ = rayleighBeta; }
+
+    void TetMesh::setVertices(const mat &vertices) {
+        vertices_ = vertices;
+        restVertices_ = vertices;
+    }
+
+    void TetMesh::setVerticesFromPositions(const vec &positions) {
+        assert(positions.rows() == ndofs() && "POSITIONS TOO SMALL");
+        for (auto ii = 0; ii < vertices_.rows(); ++ii) { vertices_.row(ii) = positions.segment(ii * 3, 3); }
+    }
+
+    void TetMesh::setDisplacement(const vec &delta) {
+        assert(delta.rows() == ndofs() && "DELTA TOO SMALL");
+        for (auto ii = 0; ii < vertices_.rows(); ++ii) {
+            vertices_.row(ii) = restVertices_.row(ii) + delta.segment(ii * 3, 3);
+        }
+    }
+
+    void TetMesh::addDisplacement(const vec &delta) {
+        assert(delta.rows() == ndofs() && "DELTA TOO SMALL");
+        for (auto ii = 0; ii < vertices_.rows(); ++ii) { vertices_.row(ii) += delta.segment(ii * 3, 3); }
+    }
+
     void TetMesh::setTetrahedra(const mati &tetrahedra) { tetrahedra_ = tetrahedra; }
     void TetMesh::setFaces(const mati &faces) { faces_ = faces; }
 
@@ -87,38 +125,84 @@ namespace nm::geometry {
         }
     }
 
+    auto TetMesh::computeTetrahedralVolumes() -> std::vector<real> {
+        std::vector<real> volumes;
+        volumes.reserve(tetrahedra_.rows());
+        for (int ii = 0; ii < tetrahedra_.rows(); ++ii) {
+            const vec4i row = tetrahedra_.row(ii);
+            volumes.push_back(utils::tetVolume({
+                    vertices_.row(row(0)),
+                    vertices_.row(row(1)),
+                    vertices_.row(row(2)),
+                    vertices_.row(row(3)),
+            }));
+        }
+
+        return volumes;
+    }
+
+    auto TetMesh::computeForces() -> vec {}
+
+    auto TetMesh::computeHessian() -> spmat {}
+
+    auto TetMesh::computeMassMatrix() -> spmat {}
+
+    auto TetMesh::computeStiffnessMatrix() -> spmat {}
+
+    auto TetMesh::computeVolumetricMassMatrix() -> spmat {}
+
+    auto TetMesh::computeDensityVolumeMassMatrix() -> spmat {}
+
+    auto TetMesh::computeDampingMatrix(const spmat &massMatrix, const spmat &stiffnessMatrix) -> spmat {
+        const vec lastDisplacement = displacement();
+
+        // New displacement starts at zero for this timestep
+        setDisplacement(vec::Zero(ndofs()));
+
+        // Compute the stiffness matrix
+        const spmat K = computeStiffnessMatrix();
+
+        // Resotre the old displacement
+        setDisplacement(lastDisplacement);
+
+        // Build the damping matrix
+        spmat C = rayleighAlpha_ * massMatrix;
+        C += rayleighBeta_ * stiffnessMatrix;
+
+        return C;
+    }
+
     /**
      * Implementation stolen from Ted Kim's HOBAK. Thans Ted!
      */
     void TetMesh::computeSurfaceTriangles() {
         std::map<vec3i, int, TriangleCompare> faceCounts;
         for (auto ii = 0; ii < tetrahedra_.rows(); ++ii) {
-
             const vec4i t = tetrahedra_.row(ii);
-            vec3i faces[4];
-            faces[0] << t[0], t[1], t[3];
-            faces[1] << t[0], t[2], t[1];
-            faces[2] << t[0], t[3], t[2];
-            faces[3] << t[1], t[2], t[3];
+            vec3i faces[4] = {
+                    {t(0), t(1), t(3)},
+                    {t(0), t(2), t(1)},
+                    {t(0), t(3), t(2)},
+                    {t(1), t(2), t(3)},
+            };
 
-            for (int jj = 0; jj < 4; ++jj) { std::sort(faces[jj].data(), faces[jj].data() + faces[jj].size()); }
-
-            for (int jj = 0; jj < 4; ++jj) { faceCounts[faces[jj]]++; }
+            for (auto &face : faces) { std::sort(face.data(), face.data() + face.size()); }
+            for (auto &face : faces) { ++faceCounts.at(face); }
         }
 
-        // go back through the tets, if any of its faces have a count less than
-        // 2, then it must be because it faces outside
+        // Go back through the tets, if any of its faces have a count less than
+        // 2, then it must be because it faces outside.
         surfaceTriangles_.clear();
         for (auto ii = 0; ii < tetrahedra_.size(); ii++) {
             const vec4i t = tetrahedra_.row(ii);
 
-            vec3i faces[4];
-
             // these are consistently ordered counter-clockwise
-            faces[0] << t[0], t[1], t[3];
-            faces[1] << t[0], t[2], t[1];
-            faces[2] << t[0], t[3], t[2];
-            faces[3] << t[1], t[2], t[3];
+            const vec3i faces[4] = {
+                    {t(0), t(1), t(3)},
+                    {t(0), t(2), t(1)},
+                    {t(0), t(3), t(2)},
+                    {t(1), t(2), t(3)},
+            };
 
             vec3i facesSorted[4];
 
@@ -128,9 +212,9 @@ namespace nm::geometry {
                 std::sort(facesSorted[jj].data(), facesSorted[jj].data() + facesSorted[jj].size());
             }
 
-            // see which faces don't have a dual
+            // See which faces don't have a dual
             for (int jj = 0; jj < 4; ++jj) {
-                if (faceCounts[facesSorted[jj]] < 2) { surfaceTriangles_.push_back(faces[jj]); }
+                if (faceCounts[facesSorted[jj]] < 2 /* min face count */) { surfaceTriangles_.push_back(faces[jj]); }
             }
         }
 
@@ -141,7 +225,10 @@ namespace nm::geometry {
      * Implementation stolen from Ted Kim's HOBAK. Thans Ted!
      */
     void TetMesh::computeSurfaceVertices() {
-        assert(!surfaceTriangles_.empty() && "NO SURFACE TRIANGLES FOUND!");
+        if (surfaceTriangles_.empty()) {
+            spdlog::error("No surface triangles found, generating");
+            computeSurfaceTriangles();
+        }
 
         // Map out all found vertices.
         std::map<int, bool> foundVertices;
@@ -163,6 +250,38 @@ namespace nm::geometry {
     /**
      * Implementation stolen from Ted Kim's HOBAK. Thans Ted!
      */
-    void TetMesh::computeSurfaceEdges() {}
+    void TetMesh::computeSurfaceEdges() {
+        if (surfaceTriangles_.empty()) {
+            spdlog::error("No surface triangles found, generating");
+            computeSurfaceTriangles();
+        }
+
+        // Hash the edges
+        std::map<std::pair<int, int>, bool> edges;
+        for (auto ii = 0; ii < surfaceTriangles_.size(); ++ii) {
+            for (auto jj = 0; jj < 3; ++jj) {
+                const auto v0 = surfaceTriangles_.at(ii)(jj);
+                const auto v1 = surfaceTriangles_.at(ii)(jj + 1 % 3);
+
+                // Store them in sorted order
+                std::pair<int, int> edge;
+                if (v0 > v1) {
+                    edge.first = v1;
+                    edge.second = v0;
+                } else {
+                    edge.first = v0;
+                    edge.second = v1;
+                }
+
+                edges.insert({edge, true});
+            }
+        }
+
+        // Store all the unique hashes
+        surfaceEdges_.clear();
+        for (const auto &[edge, _] : edges) { surfaceEdges_.emplace_back(edge.first, edge.second); }
+
+        spdlog::debug("Found {} edges on the surface", surfaceEdges_.size());
+    }
 
 }// namespace nm::geometry
