@@ -15,8 +15,8 @@ namespace nm::hyperelastic {
     auto pk1(const mat3 &F, real lambda, real mu) -> mat3 {
         const real J = F.determinant();
         const real logJ = std::log(J);
-        const mat3 gradJ = identities::gradientJ(F);
-        return mu * (F - (1.0 / J) * gradJ) + lambda * (logJ / J) * gradJ;
+        const mat3 pJpF = identities::partialJpartialF(F);
+        return mu * (F - (1.0 / J) * pJpF) + lambda * (logJ / J) * pJpF;
     }
 
     auto dpk1(const mat3 &F, real lambda, real mu) -> mat9 {
@@ -44,11 +44,9 @@ namespace nm::hyperelastic {
                 HJ(ii + 3, jj + 6) = -f0hat(ii, jj);
             }
         }
-        const vec9 gradJFlat = utils::vectorize(identities::gradientJ(F));
+        const vec9 gradJFlat = utils::vectorize(identities::partialJpartialF(F));
 
         return mu * I99 + ((mu + lambda * (1.0 - logJ)) / (J * J)) * gradJFlat * gradJFlat.transpose() *
                                   ((lambda * logJ - mu) / J) * HJ;
     }
-
-    auto clampedDpk1() -> mat9 { return mat9(); }
 }// namespace nm::hyperelastic

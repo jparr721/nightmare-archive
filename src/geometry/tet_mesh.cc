@@ -126,19 +126,38 @@ namespace nm::geometry {
     }
 
     auto TetMesh::computeTetrahedralVolumes() -> std::vector<real> {
-        std::vector<real> volumes;
-        volumes.reserve(tetrahedra_.rows());
+        std::vector<real> volumes(tetrahedra_.rows());
         for (int ii = 0; ii < tetrahedra_.rows(); ++ii) {
             const vec4i row = tetrahedra_.row(ii);
-            volumes.push_back(utils::tetVolume({
+            volumes.at(ii) = utils::tetVolume({
                     vertices_.row(row(0)),
                     vertices_.row(row(1)),
                     vertices_.row(row(2)),
                     vertices_.row(row(3)),
-            }));
+            });
         }
 
         return volumes;
+    }
+
+    auto TetMesh::computeTetrahedralRingVolumes() -> std::vector<real> {
+        const auto tetVolumes = computeTetrahedralVolumes();
+
+        // Start with zeros since we are accumulating
+        std::vector<real> oneRingVolumes(vertices_.rows(), 0.0);
+
+        for (int ii = 0; ii < tetrahedra_.rows(); ++ii) {
+            const real quarter = 0.25 * tetVolumes.at(ii);
+
+            // Increment each volume for the tet by a quarter of its volume
+            // Unrolled for perf.
+            oneRingVolumes.at(tetrahedra_(ii, 0)) += quarter;
+            oneRingVolumes.at(tetrahedra_(ii, 1)) += quarter;
+            oneRingVolumes.at(tetrahedra_(ii, 2)) += quarter;
+            oneRingVolumes.at(tetrahedra_(ii, 3)) += quarter;
+        }
+
+        return oneRingVolumes;
     }
 
     auto TetMesh::computeForces() -> vec {}
@@ -156,13 +175,13 @@ namespace nm::geometry {
     auto TetMesh::computeDampingMatrix(const spmat &massMatrix, const spmat &stiffnessMatrix) -> spmat {
         const vec lastDisplacement = displacement();
 
-        // New displacement starts at zero for this timestep
+        // Set the displacement to zero to get the rest state damping
         setDisplacement(vec::Zero(ndofs()));
 
         // Compute the stiffness matrix
         const spmat K = computeStiffnessMatrix();
 
-        // Resotre the old displacement
+        // Restore the old displacement back to what it was
         setDisplacement(lastDisplacement);
 
         // Build the damping matrix

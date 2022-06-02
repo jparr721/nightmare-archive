@@ -58,6 +58,7 @@ namespace nm::geometry {
         void computeDeformationGradients();
 
         auto computeTetrahedralVolumes() -> std::vector<real>;
+        auto computeTetrahedralRingVolumes() -> std::vector<real>;
         auto computeForces() -> vec;
         auto computeHessian() -> spmat;
         auto computeMassMatrix() -> spmat;

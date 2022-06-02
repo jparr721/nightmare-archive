@@ -17,9 +17,4 @@ namespace nm::hyperelastic {
      * Computes the derivative of the pk1
      */
     auto dpk1(const mat3 &F, real lambda, real mu) -> mat9;
-
-    /**
-     * Computes the derivative of pk1, but clamps it to semi-positive definite
-     */
-    auto clampedDpk1() -> mat9;
 }// namespace nm::hyperelastic

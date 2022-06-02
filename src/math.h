@@ -51,7 +51,7 @@ namespace identities {
     /**
      * Computes the matrix identity for the partial derivative of J wrt F
      */
-    inline auto gradientJ(const mat3 &F) -> mat3 {
+    inline auto partialJpartialF(const mat3 &F) -> mat3 {
         mat3 gradJ;
         gradJ.col(0) = F.col(1).cross(F.col(2));
         gradJ.col(1) = F.col(2).cross(F.col(0));
@@ -99,5 +99,14 @@ namespace utils {
         const auto d2 = tetVertices.at(2) - tetVertices.at(0);
         const auto d3 = tetVertices.at(3) - tetVertices.at(0);
         return d3.dot(d1.cross(d2)) / 6.0;
+    }
+
+    inline auto isSemiPositiveDefinite(const spmat &A) -> bool {
+        Eigen::SelfAdjointEigenSolver<spmat> eigenSolver(A);
+        const vec eigenvalues = eigenSolver.eigenvalues().real();
+        for (auto jj = 0u; jj < eigenvalues.rows(); ++jj) {
+            if (eigenvalues(jj) < 0) { return false; }
+        }
+        return true;
     }
 }// namespace utils
