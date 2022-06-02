@@ -36,6 +36,8 @@ add_library(${PROJECT_LIB}
 
     src/hyperelastic/neo_hookean.h
     src/hyperelastic/neo_hookean.cc
+    src/hyperelastic/stable_neo_hookean.h
+    src/hyperelastic/stable_neo_hookean.cc
 
     src/integrators/integrator.h
     src/integrators/integrator.cc
