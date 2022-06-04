@@ -23,7 +23,7 @@ namespace nm::hyperelastic {
         return mu * (1 - 1 / (Ic + 1)) * F + lambda * (J - alpha) * pJpF;
     }
 
-    auto dpk1(const mat3 &F, real lambda, real mu) -> mat9 {}
-
-    auto clampedDpk1(const mat3 &U, const vec3 &sigma, const mat3 &V) -> mat9 {}
+    auto dpk1(const mat3 &U, const vec3 &sigma, const mat3 &V) -> mat9 {
+        
+    }
 }// namespace nm::hyperelastic

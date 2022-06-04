@@ -109,4 +109,21 @@ namespace utils {
         }
         return true;
     }
+
+    inline auto fractalCrossProduct(const mat3 &f0hat, const mat3 &f1hat, const mat3 &f2hat) -> mat9 {
+        mat9 HJ = mat9::Zero();
+        for (int ii = 0; ii < 9; ++ii) {
+            for (int jj = 0; jj < 9; ++jj) {
+                HJ(ii + 3, jj) = f2hat(ii, jj);
+                HJ(ii, jj + 3) = -f2hat(ii, jj);
+
+                HJ(ii + 6, jj) = -f1hat(ii, jj);
+                HJ(ii, jj + 6) = f1hat(ii, jj);
+
+                HJ(ii + 6, jj + 3) = f0hat(ii, jj);
+                HJ(ii + 3, jj + 6) = -f0hat(ii, jj);
+            }
+        }
+        return HJ;
+    }
 }// namespace utils

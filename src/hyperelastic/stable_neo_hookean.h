@@ -18,11 +18,6 @@ namespace nm::hyperelastic {
     auto pk1(const mat3 &F, real lambda, real mu) -> mat3;
 
     /**
-     * Computes the derivative of the pk1
-     */
-    auto dpk1(const mat3 &F, real lambda, real mu) -> mat9;
-
-    /**
      * Description is stolen from "Dynamic Deformables" HOBAK Codebase:
      *
      * These are from Section 4.6 in "Stable Neo-Hookean Flesh Simulation"
@@ -36,6 +31,6 @@ namespace nm::hyperelastic {
      *
      * We prefer to use the simpler model that omits the term, and it is what
      * is used in production at Pixar.
-    **/
-    auto clampedDpk1(const mat3 &U, const vec3 &sigma, const mat3 &V) -> mat9;
+     **/
+    auto dpk1(const mat3 &U, const vec3 &sigma, const mat3 &V) -> mat9;
 }// namespace nm::hyperelastic

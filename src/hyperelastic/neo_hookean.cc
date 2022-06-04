@@ -31,19 +31,7 @@ namespace nm::hyperelastic {
         // values and spreading their indices over the matrix.
         // http://www.tkim.graphics/DYNAMIC_DEFORMABLES/DynamicDeformables.pdf
         // Section 4.2
-        mat9 HJ = mat9::Zero();
-        for (int ii = 0; ii < 9; ++ii) {
-            for (int jj = 0; jj < 9; ++jj) {
-                HJ(ii + 3, jj) = f2hat(ii, jj);
-                HJ(ii, jj + 3) = -f2hat(ii, jj);
-
-                HJ(ii + 6, jj) = -f1hat(ii, jj);
-                HJ(ii, jj + 6) = f1hat(ii, jj);
-
-                HJ(ii + 6, jj + 3) = f0hat(ii, jj);
-                HJ(ii + 3, jj + 6) = -f0hat(ii, jj);
-            }
-        }
+        const mat9 HJ = utils::fractalCrossProduct(f0hat, f1hat, f2hat);
         const vec9 gradJFlat = utils::vectorize(identities::partialJpartialF(F));
 
         return mu * I99 + ((mu + lambda * (1.0 - logJ)) / (J * J)) * gradJFlat * gradJFlat.transpose() *

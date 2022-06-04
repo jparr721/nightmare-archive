@@ -12,9 +12,4 @@ namespace nm::hyperelastic {
      * Computes the first Piola-Kirchoff stress
      */
     auto pk1(const mat3 &F, real lambda, real mu) -> mat3;
-
-    /**
-     * Computes the derivative of the pk1
-     */
-    auto dpk1(const mat3 &F, real lambda, real mu) -> mat9;
 }// namespace nm::hyperelastic
