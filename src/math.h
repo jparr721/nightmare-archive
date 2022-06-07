@@ -5,6 +5,9 @@
 #include <cstddef>
 #include <cstdint>
 
+constexpr int kForceSerialThreading = 1;
+constexpr int kForceMaxThreadSaturation = 10'000;
+
 using real = double;
 using u8 = uint8_t;
 using u16 = uint16_t;
@@ -57,6 +60,66 @@ namespace identities {
         gradJ.col(1) = F.col(2).cross(F.col(0));
         gradJ.col(2) = F.col(0).cross(F.col(1));
         return gradJ;
+    }
+
+    /**
+     * Computes the matrix identity for the partial derivative of the deformation gradient wrt x.
+     * Stolen from Ted Kim's HOBAK. Thanks Ted!
+     */
+    inline auto partialFpartialx(const mat3 &DmInv) -> mat9x12 {
+        const real m = DmInv(0, 0);
+        const real n = DmInv(0, 1);
+        const real o = DmInv(0, 2);
+        const real p = DmInv(1, 0);
+        const real q = DmInv(1, 1);
+        const real r = DmInv(1, 2);
+        const real s = DmInv(2, 0);
+        const real t = DmInv(2, 1);
+        const real u = DmInv(2, 2);
+
+        const real t1 = -m - p - s;
+        const real t2 = -n - q - t;
+        const real t3 = -o - r - u;
+
+        mat9x12 PFPu = mat9x12::Zero();
+        PFPu(0, 0) = t1;
+        PFPu(0, 3) = m;
+        PFPu(0, 6) = p;
+        PFPu(0, 9) = s;
+        PFPu(1, 1) = t1;
+        PFPu(1, 4) = m;
+        PFPu(1, 7) = p;
+        PFPu(1, 10) = s;
+        PFPu(2, 2) = t1;
+        PFPu(2, 5) = m;
+        PFPu(2, 8) = p;
+        PFPu(2, 11) = s;
+        PFPu(3, 0) = t2;
+        PFPu(3, 3) = n;
+        PFPu(3, 6) = q;
+        PFPu(3, 9) = t;
+        PFPu(4, 1) = t2;
+        PFPu(4, 4) = n;
+        PFPu(4, 7) = q;
+        PFPu(4, 10) = t;
+        PFPu(5, 2) = t2;
+        PFPu(5, 5) = n;
+        PFPu(5, 8) = q;
+        PFPu(5, 11) = t;
+        PFPu(6, 0) = t3;
+        PFPu(6, 3) = o;
+        PFPu(6, 6) = r;
+        PFPu(6, 9) = u;
+        PFPu(7, 1) = t3;
+        PFPu(7, 4) = o;
+        PFPu(7, 7) = r;
+        PFPu(7, 10) = u;
+        PFPu(8, 2) = t3;
+        PFPu(8, 5) = o;
+        PFPu(8, 8) = r;
+        PFPu(8, 11) = u;
+
+        return PFPu;
     }
 }// namespace identities
 
@@ -125,5 +188,65 @@ namespace utils {
             }
         }
         return HJ;
+    }
+
+    inline auto computeDMatrix(const vec3 &x0, const vec3 &x1, const vec3 &x2, const vec3 &x3) -> mat3 {
+        mat3 Ds;
+        Ds.col(0) = x1 - x0;
+        Ds.col(1) = x2 - x0;
+        Ds.col(2) = x3 - x0;
+        return Ds;
+    }
+
+    inline auto computeF(const mat &V, const mat3 &DmInverse, const vec4i &tet) -> mat3 {
+        const vec3 x0 = V.row(tet(0));
+        const vec3 x1 = V.row(tet(1));
+        const vec3 x2 = V.row(tet(2));
+        const vec3 x3 = V.row(tet(3));
+        const mat3 Ds = computeDMatrix(x0, x1, x2, x3);
+        return Ds * DmInverse;
+    }
+
+    inline void buildTwistAndFlipEigenvectors(const mat3 &U, const mat3 &V, mat9 &Q) {
+        // create the twist matrices
+        mat3 T0, T1, T2;
+        T0 << 0, 0, 0, 0, 0, -1, 0, 1, 0;// x-twist
+        T1 << 0, 0, 1, 0, 0, 0, -1, 0, 0;// y-twist
+        T2 << 0, 1, 0, -1, 0, 0, 0, 0, 0;// z-twist
+
+        const mat3 Q0 = (1.0 / sqrt(2.0)) * (U * T0 * V.transpose());
+        const mat3 Q1 = (1.0 / sqrt(2.0)) * (U * T1 * V.transpose());
+        const mat3 Q2 = (1.0 / sqrt(2.0)) * (U * T2 * V.transpose());
+
+        // create the flip matrices
+        mat3 L0, L1, L2;
+        L0 << 0, 0, 0, 0, 0, 1, 0, 1, 0;// x-flip
+        L1 << 0, 0, 1, 0, 0, 0, 1, 0, 0;// y-flip
+        L2 << 0, 1, 0, 1, 0, 0, 0, 0, 0;// z-flip
+
+        const mat3 Q3 = (1.0 / sqrt(2.0)) * (U * L0 * V.transpose());
+        const mat3 Q4 = (1.0 / sqrt(2.0)) * (U * L1 * V.transpose());
+        const mat3 Q5 = (1.0 / sqrt(2.0)) * (U * L2 * V.transpose());
+
+        Q.col(0) = vectorize(Q0);
+        Q.col(1) = vectorize(Q1);
+        Q.col(2) = vectorize(Q2);
+        Q.col(3) = vectorize(Q3);
+        Q.col(4) = vectorize(Q4);
+        Q.col(5) = vectorize(Q5);
+    }
+
+    inline void buildScalingEigenvectors(const mat3 &U, const mat3 &Q, const mat3 &V, mat9 &Q9) {
+        const vec3 q0 = Q.col(0);
+        const vec3 q1 = Q.col(1);
+        const vec3 q2 = Q.col(2);
+
+        const mat3 Q0 = U * q0.asDiagonal() * V.transpose();
+        const mat3 Q1 = U * q1.asDiagonal() * V.transpose();
+        const mat3 Q2 = U * q2.asDiagonal() * V.transpose();
+
+        Q9.col(6) = vectorize(Q0);
+        Q9.col(7) = vectorize(Q1);
+        Q9.col(8) = vectorize(Q2);
     }
 }// namespace utils

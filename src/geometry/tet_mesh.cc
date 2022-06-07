@@ -1,5 +1,6 @@
 #include "tet_mesh.h"
 #include <igl/copyleft/tetgen/tetrahedralize.h>
+#include <igl/parallel_for.h>
 #include <igl/read_triangle_mesh.h>
 #include <spdlog/spdlog.h>
 
@@ -30,11 +31,23 @@ namespace nm::geometry {
     TetMesh::TetMesh(const mat &vertices, const mati &tetrahedra, const mati &faces)
         : vertices_(vertices), tetrahedra_(tetrahedra), faces_(faces) {}
 
+    auto TetMesh::initialize() -> bool {
+        // Compute dm inverses. Fail if not present
+        computeDmInverses();
+        if (dmInverses_.empty()) { return false; }
+
+// Assertions if any of these fail
+#ifndef NDEBUG
+        assert(dmInverses_.size() > 0 && "INVERSES FAILED TO COMPUTE");
+#endif
+        return true;
+    }
+
     auto TetMesh::displacement() const -> vec {
         vec delta(ndofs());
         delta.setZero();
 
-        for (auto ii = 0; ii < vertices_.rows(); ++ii) {
+        for (int ii = 0; ii < vertices_.rows(); ++ii) {
             const vec3 diff = vertices_.row(ii) - restVertices_.row(ii);
             delta.segment(ii * 3, 3) = diff;
         }
@@ -52,19 +65,19 @@ namespace nm::geometry {
 
     void TetMesh::setVerticesFromPositions(const vec &positions) {
         assert(positions.rows() == ndofs() && "POSITIONS TOO SMALL");
-        for (auto ii = 0; ii < vertices_.rows(); ++ii) { vertices_.row(ii) = positions.segment(ii * 3, 3); }
+        for (int ii = 0; ii < vertices_.rows(); ++ii) { vertices_.row(ii) = positions.segment(ii * 3, 3); }
     }
 
     void TetMesh::setDisplacement(const vec &delta) {
         assert(delta.rows() == ndofs() && "DELTA TOO SMALL");
-        for (auto ii = 0; ii < vertices_.rows(); ++ii) {
+        for (int ii = 0; ii < vertices_.rows(); ++ii) {
             vertices_.row(ii) = restVertices_.row(ii) + delta.segment(ii * 3, 3);
         }
     }
 
     void TetMesh::addDisplacement(const vec &delta) {
         assert(delta.rows() == ndofs() && "DELTA TOO SMALL");
-        for (auto ii = 0; ii < vertices_.rows(); ++ii) { vertices_.row(ii) += delta.segment(ii * 3, 3); }
+        for (int ii = 0; ii < vertices_.rows(); ++ii) { vertices_.row(ii) += delta.segment(ii * 3, 3); }
     }
 
     void TetMesh::setTetrahedra(const mati &tetrahedra) { tetrahedra_ = tetrahedra; }
@@ -125,17 +138,31 @@ namespace nm::geometry {
         }
     }
 
+    void TetMesh::computeDeformationGradients() {
+        deformationGradients_ = std::vector<mat3>(tetrahedra_.rows());
+        igl::parallel_for(
+                tetrahedra_.rows(),
+                [this](const int index) {
+                    deformationGradients_.at(index) =
+                            utils::computeF(vertices_, dmInverses_.at(index), tetrahedra_.row(index));
+                },
+                kForceMaxThreadSaturation);
+    }
+
     auto TetMesh::computeTetrahedralVolumes() -> std::vector<real> {
         std::vector<real> volumes(tetrahedra_.rows());
-        for (int ii = 0; ii < tetrahedra_.rows(); ++ii) {
-            const vec4i row = tetrahedra_.row(ii);
-            volumes.at(ii) = utils::tetVolume({
-                    vertices_.row(row(0)),
-                    vertices_.row(row(1)),
-                    vertices_.row(row(2)),
-                    vertices_.row(row(3)),
-            });
-        }
+        igl::parallel_for(
+                tetrahedra_.rows(),
+                [this, &volumes](const int index) {
+                    const vec4i row = tetrahedra_.row(index);
+                    volumes.at(index) = utils::tetVolume({
+                            vertices_.row(row(0)),
+                            vertices_.row(row(1)),
+                            vertices_.row(row(2)),
+                            vertices_.row(row(3)),
+                    });
+                },
+                kForceMaxThreadSaturation);
 
         return volumes;
     }
@@ -196,7 +223,7 @@ namespace nm::geometry {
      */
     void TetMesh::computeSurfaceTriangles() {
         std::map<vec3i, int, TriangleCompare> faceCounts;
-        for (auto ii = 0; ii < tetrahedra_.rows(); ++ii) {
+        for (int ii = 0; ii < tetrahedra_.rows(); ++ii) {
             const vec4i t = tetrahedra_.row(ii);
             vec3i faces[4] = {
                     {t(0), t(1), t(3)},
@@ -212,7 +239,7 @@ namespace nm::geometry {
         // Go back through the tets, if any of its faces have a count less than
         // 2, then it must be because it faces outside.
         surfaceTriangles_.clear();
-        for (auto ii = 0; ii < tetrahedra_.size(); ii++) {
+        for (int ii = 0; ii < tetrahedra_.rows(); ii++) {
             const vec4i t = tetrahedra_.row(ii);
 
             // these are consistently ordered counter-clockwise
@@ -251,7 +278,7 @@ namespace nm::geometry {
 
         // Map out all found vertices.
         std::map<int, bool> foundVertices;
-        for (auto ii = 0; ii < surfaceTriangles_.size(); ++ii) {
+        for (int ii = 0; ii < surfaceTriangles_.size(); ++ii) {
             for (int jj = 0; jj < 3; ++jj) { foundVertices.at(surfaceTriangles_.at(ii)(jj)) = true; }
         }
 
@@ -259,7 +286,7 @@ namespace nm::geometry {
         for (const auto &[vertex, _wasFound] : foundVertices) { surfaceVertices_.push_back(vertex); }
 
         // Compute the reverse lookup table
-        for (auto ii = 0; ii < surfaceVertices_.size(); ++ii) {
+        for (int ii = 0; ii < surfaceVertices_.size(); ++ii) {
             volumeToSurfaceID_.insert({surfaceVertices_.at(ii), ii});
         }
 
@@ -277,7 +304,7 @@ namespace nm::geometry {
 
         // Hash the edges
         std::map<std::pair<int, int>, bool> edges;
-        for (auto ii = 0; ii < surfaceTriangles_.size(); ++ii) {
+        for (int ii = 0; ii < surfaceTriangles_.size(); ++ii) {
             for (auto jj = 0; jj < 3; ++jj) {
                 const auto v0 = surfaceTriangles_.at(ii)(jj);
                 const auto v1 = surfaceTriangles_.at(ii)(jj + 1 % 3);
@@ -301,6 +328,22 @@ namespace nm::geometry {
         for (const auto &[edge, _] : edges) { surfaceEdges_.emplace_back(edge.first, edge.second); }
 
         spdlog::debug("Found {} edges on the surface", surfaceEdges_.size());
+    }
+
+    void TetMesh::computeDmInverses() {
+        // Clear the vector
+        dmInverses_ = std::vector<mat3>(tetrahedra_.rows());
+        igl::parallel_for(
+                tetrahedra_.rows(),
+                [this](const int index) {
+                    const vec4i tet = tetrahedra_.row(index);
+                    const vec3 x0 = vertices_.row(tet(0));
+                    const vec3 x1 = vertices_.row(tet(1));
+                    const vec3 x2 = vertices_.row(tet(2));
+                    const vec3 x3 = vertices_.row(tet(3));
+                    dmInverses_.at(index) = utils::computeDMatrix(x0, x1, x2, x3).inverse();
+                },
+                kForceMaxThreadSaturation);
     }
 
 }// namespace nm::geometry

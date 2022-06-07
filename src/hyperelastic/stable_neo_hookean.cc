@@ -23,7 +23,50 @@ namespace nm::hyperelastic {
         return mu * (1 - 1 / (Ic + 1)) * F + lambda * (J - alpha) * pJpF;
     }
 
-    auto dpk1(const mat3 &U, const vec3 &sigma, const mat3 &V) -> mat9 {
-        
+    auto dpk1(const mat3 &U, const vec3 &sigma, const mat3 &V, real lambda, real mu) -> mat9 {
+        vec9 eigenvalues;
+        mat9 eigenvectors;
+        const real J = sigma(0) * sigma(1) * sigma(2);
+        const real front = lambda * (J - 1.0) - mu;
+        eigenvalues(0) = front * sigma(0) + mu;
+        eigenvalues(1) = front * sigma(1) + mu;
+        eigenvalues(2) = front * sigma(2) + mu;
+        eigenvalues(3) = -front * sigma(0) + mu;
+        eigenvalues(4) = -front * sigma(1) + mu;
+        eigenvalues(5) = -front * sigma(2) + mu;
+
+        // Populate the matrix for scaling the eigenvalues.
+        mat3 A;
+        const real s0s0 = sigma(0) * sigma(0);
+        const real s1s1 = sigma(1) * sigma(1);
+        const real s2s2 = sigma(2) * sigma(2);
+        A(0, 0) = mu + lambda * s1s1 * s2s2;
+        A(1, 1) = mu + lambda * s0s0 * s2s2;
+        A(2, 2) = mu + lambda * s0s0 * s1s1;
+
+        const real frontOfDiag = lambda * (2.0 * J - 1.0) - mu;
+        A(0, 1) = frontOfDiag * sigma(2);
+        A(0, 2) = frontOfDiag * sigma(1);
+        A(1, 2) = frontOfDiag * sigma(0);
+        A(1, 0) = A(0, 1);
+        A(2, 0) = A(0, 2);
+        A(2, 1) = A(1, 2);
+
+        // Get the scaling eigenvalues
+        const Eigen::SelfAdjointEigenSolver<mat3> aegis(A);
+        eigenvalues(6) = aegis.eigenvalues()(0);
+        eigenvalues(7) = aegis.eigenvalues()(1);
+        eigenvalues(8) = aegis.eigenvalues()(2);
+
+        // Compute the eigenvectors
+        utils::buildTwistAndFlipEigenvectors(U, V, eigenvectors);
+        utils::buildScalingEigenvectors(U, aegis.eigenvectors(), V, eigenvectors);
+
+        // Clamp the eigenvalues
+        for (int ii = 0; ii < 9; ++ii) {
+            if (eigenvalues(ii) < 0.0) { eigenvalues(ii) = 0.0; }
+        }
+
+        return eigenvectors * eigenvalues.asDiagonal() * eigenvectors.transpose();
     }
 }// namespace nm::hyperelastic

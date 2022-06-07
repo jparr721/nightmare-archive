@@ -5,8 +5,9 @@
 #include <vector>
 
 namespace nm::integrators {
-    struct Integrator {
-        real dt;
+    class Integrator {
+    public:
+        real dt = 1.0 / 60.0;
 
         vec position;
         vec positionOld;
@@ -24,8 +25,13 @@ namespace nm::integrators {
         void solve();
 
     private:
-        void buildDampingMatrix();
-        void buildMassMatrix();
-        void buildStiffnessMatrix();
+        int currentTimestep_;
+
+        real time_;
+
+        real rayleighAlpha_ = 0.01;
+        real rayleighBeta_ = 0.01;
+
+        vec vDelta_;
     };
 }// namespace nm::integrators

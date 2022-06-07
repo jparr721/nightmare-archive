@@ -27,6 +27,8 @@ namespace nm::geometry {
         TetMesh(const mat &vertices, const mati &faces);
         TetMesh(const mat &vertices, const mati &tetrahedra, const mati &faces);
 
+        auto initialize() -> bool;
+
         auto vertices() -> mat & { return vertices_; }
         auto vertices() const -> const mat & { return vertices_; }
         auto tetrahedra() -> mati & { return tetrahedra_; }
@@ -81,6 +83,9 @@ namespace nm::geometry {
         std::vector<u32> surfaceTetrahedra_;
         std::vector<vec2i> surfaceEdges_;
 
+        // Static memory allocation for the inverses of the Dm matrix for computing deformation gradient.
+        std::vector<mat3> dmInverses_;
+
         // All deformation gradients for each tet
         std::vector<mat3> deformationGradients_;
 
@@ -92,5 +97,6 @@ namespace nm::geometry {
         void computeSurfaceTriangles();
         void computeSurfaceVertices();
         void computeSurfaceEdges();
+        void computeDmInverses();
     };
 }// namespace nm::geometry
