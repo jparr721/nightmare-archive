@@ -29,4 +29,4 @@ then
   exit 1;
 fi
 
-cmake --build $(pwd)/build --target nightmare
+cmake --build $(pwd)/build

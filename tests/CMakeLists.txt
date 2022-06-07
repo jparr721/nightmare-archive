@@ -28,7 +28,3 @@ macro(package_add_test TESTNAME)
     )
     set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
 endmacro()
-
-package_add_test(renderer_utils_test renderer_utils_test.cc)
-package_add_test(math_test math_test.cc)
-package_add_test(geometry_test geometry_test.cc)
