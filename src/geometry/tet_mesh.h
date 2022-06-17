@@ -37,6 +37,9 @@ namespace nm::geometry {
         auto tetrahedra() const -> const mati & { return tetrahedra_; }
         auto faces() -> mati & { return faces_; }
         auto faces() const -> const mati & { return faces_; }
+        /**
+         * Computes the number of degrees of freedom (n vertices * 3)
+         */
         auto ndofs() const -> int { return vertices_.rows() * 3; }
 
         auto displacement() const -> vec;
@@ -64,8 +67,8 @@ namespace nm::geometry {
 
         auto computeTetrahedralVolumes() -> std::vector<real>;
         auto computeTetrahedralRingVolumes() -> std::vector<real>;
-        auto computeForces() -> vec;
-        auto computeHessian() -> spmat;
+        auto computeForces(real lambda, real mu) -> vec;
+        auto computeHessian(real lambda, real mu) -> spmat;
         auto computeMassMatrix() -> spmat;
         auto computeStiffnessMatrix() -> spmat;
         auto computeVolumetricMassMatrix() -> spmat;
@@ -80,6 +83,9 @@ namespace nm::geometry {
         mat restVertices_;
         mati tetrahedra_;
         mati faces_;
+
+        std::vector<real> restTetVolumes_;
+        std::vector<real> restOneRingTetVolumes_;
 
         std::vector<vec3i> surfaceTriangles_;
         std::vector<u32> surfaceVertices_;

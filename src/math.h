@@ -249,4 +249,33 @@ namespace utils {
         Q9.col(7) = vectorize(Q1);
         Q9.col(8) = vectorize(Q2);
     }
+
+    /**
+     * Computes the rotation invariant SVD. Traditional SVD needs to only be unitary. In this case
+     * we also want the rotation component of SVD to be a pure rotation. This is because we want
+     * to use this to compute the SVD of F when calculating strain energy density. If we do not
+     * have a rotation-invariant form, we lose the ability to remove the rotation from F when
+     * computing our strain energy density derivatives.
+     *
+     * We exploit the properties of U and V to build a unitary matrix L which allows us to
+     * get what we want.
+     */
+    inline void computeRotationInvariantSVD(const mat3 &F, mat3 &U, vec3 &sigma, mat3 &V) {
+        // First, compute the SVD of F
+        const Eigen::JacobiSVD<mat3, Eigen::NoQRPreconditioner> svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
+        U = svd.matrixU();
+        V = svd.matrixV();
+        sigma = svd.singularValues();
+
+        // Reflection matrix, set 0 0 and 1 1 to 1 and 2 2 to det(UV^T)
+        mat3 L = mat3::Identity();
+        L(2, 2) = (U * V.transpose()).determinant();
+
+        const real detU = U.determinant();
+        const real detV = V.determinant();
+
+        if (detU < 0 && detV > 0) { U *= L; }
+        if (detU > 0 && detV < 0) { V *= L; }
+        sigma(2) *= sigma(2) * L(2, 2);
+    }
 }// namespace utils

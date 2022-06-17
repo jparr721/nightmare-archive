@@ -1,4 +1,5 @@
 #include "tet_mesh.h"
+#include "../hyperelastic/stable_neo_hookean.h"
 #include <igl/copyleft/tetgen/tetrahedralize.h>
 #include <igl/parallel_for.h>
 #include <igl/read_triangle_mesh.h>
@@ -37,14 +38,22 @@ namespace nm::geometry {
     }
 
     void TetMesh::initialize() {
+        // Compute tetrahedral volumes for the rest vertices.
+        assert(restVertices_.rows() > 0 && "NO REST VERTICES FOUND");
+        restTetVolumes_ = computeTetrahedralVolumes();
+        restOneRingTetVolumes_ = computeTetrahedralRingVolumes();
+
+        if (restTetVolumes_.empty() || restOneRingTetVolumes_.empty()) {
+            spdlog::error("Failed to compute rest tetrahedral volumes");
+            isInit = false;
+            return;
+        }
+
         // Compute dm inverses. Fail if not present
         computeDmInverses();
         if (dmInverses_.empty()) {
             spdlog::error("Failed to compute inversion of Dm");
-
-            // Just in case
             isInit = false;
-
             return;
         }
 
@@ -52,10 +61,7 @@ namespace nm::geometry {
         computeDeformationGradients();
         if (deformationGradients_.empty()) {
             spdlog::error("Failed to compute deformation gradients!");
-
-            // Just in case
             isInit = false;
-
             return;
         }
 
@@ -63,10 +69,7 @@ namespace nm::geometry {
         computePartialFPartialxs();
         if (pFpxs_.empty()) {
             spdlog::error("Failed to compute pFpx matrices!");
-
-            // Just in case
             isInit = false;
-
             return;
         }
 
@@ -217,23 +220,95 @@ namespace nm::geometry {
         // Start with zeros since we are accumulating
         std::vector<real> oneRingVolumes(vertices_.rows(), 0.0);
 
-        for (int ii = 0; ii < tetrahedra_.rows(); ++ii) {
-            const real quarter = 0.25 * tetVolumes.at(ii);
-
-            // Increment each volume for the tet by a quarter of its volume
-            // Unrolled for perf.
-            oneRingVolumes.at(tetrahedra_(ii, 0)) += quarter;
-            oneRingVolumes.at(tetrahedra_(ii, 1)) += quarter;
-            oneRingVolumes.at(tetrahedra_(ii, 2)) += quarter;
-            oneRingVolumes.at(tetrahedra_(ii, 3)) += quarter;
-        }
+        igl::parallel_for(
+                tetrahedra_.rows(),
+                [this, &tetVolumes, &oneRingVolumes](const int index) {
+                    const real quarter = 0.25 * tetVolumes.at(index);
+                    // Increment each volume for the tet by a quarter of its volume
+                    // Unrolled for perf.
+                    oneRingVolumes.at(tetrahedra_(index, 0)) += quarter;
+                    oneRingVolumes.at(tetrahedra_(index, 1)) += quarter;
+                    oneRingVolumes.at(tetrahedra_(index, 2)) += quarter;
+                    oneRingVolumes.at(tetrahedra_(index, 3)) += quarter;
+                },
+                kForceMaxThreadSaturation);
 
         return oneRingVolumes;
     }
 
-    auto TetMesh::computeForces() -> vec {}
+    auto TetMesh::computeForces(real lambda, real mu) -> vec {
+        std::vector<vec12> perElementForces(tetrahedra_.rows());
 
-    auto TetMesh::computeHessian() -> spmat {}
+        igl::parallel_for(
+                tetrahedra_.rows(),
+                [this, &perElementForces, &lambda, &mu](const int index) {
+                    const mat3 &F = deformationGradients_.at(index);
+                    const mat3 pk1 = hyperelastic::pk1(F, lambda, mu);
+                    const vec12 forceDensity = pFpxs_.at(index).transpose() * utils::vectorize(pk1);
+                    const vec12 force = -restTetVolumes_.at(index) * forceDensity;
+                    perElementForces.at(index) = force;
+                },
+                kForceMaxThreadSaturation);
+
+        // Scatter the forces into a sparse vector
+        vec forces = vec::Zero(ndofs());
+        igl::parallel_for(
+                tetrahedra_.rows(),
+                [this, &forces, &perElementForces](const int index) {
+                    const vec4i tet = tetrahedra_.row(index);
+                    const vec12 tetForce = perElementForces.at(index);
+                    for (int jj = 0; jj < 4; ++jj) {
+                        int index = 3 * tet(jj);
+                        forces(index) += tetForce(3 * jj);
+                        forces(index + 1) += tetForce(3 * jj + 1);
+                        forces(index + 2) += tetForce(3 * jj + 2);
+                    }
+                },
+                kForceMaxThreadSaturation);
+
+        return forces;
+    }
+
+    auto TetMesh::computeHessian(real lambda, real mu) -> spmat {
+        std::vector<mat12> perElementHessians(tetrahedra_.rows());
+        igl::parallel_for(
+                tetrahedra_.rows(),
+                [this, &perElementHessians, &lambda, &mu](const int index) {
+                    const mat3 &F = deformationGradients_.at(index);
+                    mat3 U, V;
+                    vec3 sigma;
+                    utils::computeRotationInvariantSVD(F, U, sigma, V);
+                    const mat9x12 &pFpx = pFpxs_.at(index);
+                    const mat9 hessian = -restTetVolumes_.at(index) * hyperelastic::dpk1(U, sigma, V, lambda, mu);
+                    perElementHessians.at(index) = (pFpx.transpose() * hessian) * pFpx;
+                },
+                kForceMaxThreadSaturation);
+
+        // Build out the sparse matrix from triplets
+        std::vector<triplet> triplets;
+        igl::parallel_for(
+                tetrahedra_.rows(),
+                [this, &triplets, &perElementHessians](const int index) {
+                    const vec4i &tet = tetrahedra_.row(index);
+                    const mat12 &H = perElementHessians.at(index);
+                    for (int ii = 0; ii < 4; ++ii) {
+                        for (int jj = 0; jj < 4; ++jj) {
+                            for (int a = 0; a < 3; ++a) {
+                                for (int b = 0; b < 3; ++b) {
+                                    const real entry = H(3 * ii + a, 3 * jj + b);
+                                    triplet t(3 * tet(ii) + a, 3 * tet(jj) + b, entry);
+                                    triplets.push_back(t);
+                                }
+                            }
+                        }
+                    }
+                },
+                kForceMaxThreadSaturation);
+
+        spmat hessian(ndofs(), ndofs());
+        hessian.setFromTriplets(triplets.begin(), triplets.end());
+        return hessian;
+    }
 
     auto TetMesh::computeStiffnessMatrix() -> spmat {
         std::vector<mat12> perElementHessians(tetrahedra_.rows());
