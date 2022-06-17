@@ -2,20 +2,24 @@
 #include <memory>
 
 namespace nm::testing::scenes {
-    std::unique_ptr<geometry::TetMesh> squareOne = std::make_unique<geometry::TetMesh>();
-    std::unique_ptr<geometry::TetMesh> squareTwo = std::make_unique<geometry::TetMesh>();
-    std::unique_ptr<geometry::TetMesh> squareThree = std::make_unique<geometry::TetMesh>();
-    std::unique_ptr<geometry::TetMesh> squareFour = std::make_unique<geometry::TetMesh>();
+    std::unique_ptr<geometry::TetMesh> squareOne;
+    std::unique_ptr<geometry::TetMesh> squareTwo;
+    std::unique_ptr<geometry::TetMesh> squareThree;
+    std::unique_ptr<geometry::TetMesh> squareFour;
     std::unique_ptr<geometry::TetMesh> bunny;
 
     void initializeDropTest(Scene &scene) {
         scene.addGrid(0.0, 10.0, 1000);
+        mat V;
+        mati F;
+        // Load square geometry
+        geometry::primitives::cube_loadGeometry(V, F);
 
-        // Load Squares
-        geometry::primitives::loadSquareGeometry(squareOne.get());
-        geometry::primitives::loadSquareGeometry(squareTwo.get());
-        geometry::primitives::loadSquareGeometry(squareThree.get());
-        geometry::primitives::loadSquareGeometry(squareFour.get());
+        // Add the square to each mesh
+        squareOne = std::make_unique<geometry::TetMesh>(V, F);
+        squareTwo = std::make_unique<geometry::TetMesh>(V, F);
+        squareThree = std::make_unique<geometry::TetMesh>(V, F);
+        squareFour = std::make_unique<geometry::TetMesh>(V, F);
 
         // Position Squares
         // TODO(@jparr721) Add rotation

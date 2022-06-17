@@ -19,7 +19,6 @@ using i32 = int32_t;
 using i64 = int64_t;
 using usize = std::size_t;
 
-
 // Dense vector types
 using vec2 = Eigen::Vector2d;
 using vec3 = Eigen::Vector3d;
@@ -44,6 +43,7 @@ using mati = Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>;
 
 // Sparse matrix types
 using spmat = Eigen::SparseMatrix<real>;
+using triplet = Eigen::Triplet<real>;
 
 inline auto doubleContraction(const mat3 &A, const mat3 &B) -> real {
     return A(0, 0) * B(0, 0) + A(1, 1) * B(1, 1) + A(2, 2) * B(2, 2) + A(3, 3) * B(3, 3) + A(4, 4) * B(4, 4) +

@@ -31,6 +31,9 @@ add_library(${PROJECT_LIB}
     src/geometry/primitives/cube.h
     src/geometry/primitives/cube.cc
 
+    src/geometry/constraints.h
+    src/geometry/kinematic_object.h
+    src/geometry/kinematic_object.cc
     src/geometry/tet_mesh.h
     src/geometry/tet_mesh.cc
 
@@ -40,7 +43,6 @@ add_library(${PROJECT_LIB}
     src/hyperelastic/stable_neo_hookean.cc
 
     src/integrators/integrator.h
-    src/integrators/integrator.cc
     src/integrators/backward_euler.h
     src/integrators/backward_euler.cc
 

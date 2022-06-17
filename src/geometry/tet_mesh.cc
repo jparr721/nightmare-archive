@@ -21,26 +21,60 @@ namespace nm::geometry {
         igl::read_triangle_mesh(meshPath, restVertices_, faces_);
         vertices_ = restVertices_;
         tetrahedralizeMesh();
+        initialize();
     }
 
     TetMesh::TetMesh(const mat &vertices, const mati &faces)
         : vertices_(vertices), restVertices_(vertices_), faces_(faces) {
         tetrahedralizeMesh();
+        initialize();
     }
 
     TetMesh::TetMesh(const mat &vertices, const mati &tetrahedra, const mati &faces)
-        : vertices_(vertices), tetrahedra_(tetrahedra), faces_(faces) {}
+        : vertices_(vertices), tetrahedra_(tetrahedra), faces_(faces) {
+        assert(vertices.rows() > 0 && "NO VERTICES PROVIDED");
+        initialize();
+    }
 
-    auto TetMesh::initialize() -> bool {
+    void TetMesh::initialize() {
         // Compute dm inverses. Fail if not present
         computeDmInverses();
-        if (dmInverses_.empty()) { return false; }
+        if (dmInverses_.empty()) {
+            spdlog::error("Failed to compute inversion of Dm");
 
-// Assertions if any of these fail
-#ifndef NDEBUG
+            // Just in case
+            isInit = false;
+
+            return;
+        }
+
+        // Compute the deformation gradients
+        computeDeformationGradients();
+        if (deformationGradients_.empty()) {
+            spdlog::error("Failed to compute deformation gradients!");
+
+            // Just in case
+            isInit = false;
+
+            return;
+        }
+
+        // Compute the pF px matrices
+        computePartialFPartialxs();
+        if (pFpxs_.empty()) {
+            spdlog::error("Failed to compute pFpx matrices!");
+
+            // Just in case
+            isInit = false;
+
+            return;
+        }
+
+        // Crash if any conditions fail (only on debug mode).
         assert(dmInverses_.size() > 0 && "INVERSES FAILED TO COMPUTE");
-#endif
-        return true;
+
+        // If we make it to the end, we have initialized successfully.
+        isInit = true;
     }
 
     auto TetMesh::displacement() const -> vec {
@@ -139,6 +173,7 @@ namespace nm::geometry {
     }
 
     void TetMesh::computeDeformationGradients() {
+        assert(!dmInverses_.empty() && "NO INVERSES FOUND");
         deformationGradients_ = std::vector<mat3>(tetrahedra_.rows());
         igl::parallel_for(
                 tetrahedra_.rows(),
@@ -146,6 +181,15 @@ namespace nm::geometry {
                     deformationGradients_.at(index) =
                             utils::computeF(vertices_, dmInverses_.at(index), tetrahedra_.row(index));
                 },
+                kForceMaxThreadSaturation);
+    }
+
+    void TetMesh::computePartialFPartialxs() {
+        assert(!dmInverses_.empty() && "NO INVERSES FOUND");
+        pFpxs_ = std::vector<mat9x12>(tetrahedra_.rows());
+        igl::parallel_for(
+                tetrahedra_.rows(),
+                [this](const int index) { pFpxs_.at(index) = identities::partialFpartialx(dmInverses_.at(index)); },
                 kForceMaxThreadSaturation);
     }
 
@@ -191,13 +235,35 @@ namespace nm::geometry {
 
     auto TetMesh::computeHessian() -> spmat {}
 
-    auto TetMesh::computeMassMatrix() -> spmat {}
+    auto TetMesh::computeStiffnessMatrix() -> spmat {
+        std::vector<mat12> perElementHessians(tetrahedra_.rows());
+        for (int ii = 0; ii < tetrahedra_.rows(); ++ii) {
+            const mat3 &F = deformationGradients_.at(ii);
+            const mat9x12 &pFpx = pFpxs_.at(ii);
+        }
+    }
 
-    auto TetMesh::computeStiffnessMatrix() -> spmat {}
+    auto TetMesh::computeVolumetricMassMatrix() -> spmat {
+        std::vector<triplet> triplets;
+        const std::vector<real> volumes = computeTetrahedralRingVolumes();
+        // Set the diagonal one-ring voulmes
+        for (int ii = 0; ii < vertices_.rows(); ++ii) {
+            const auto volume = volumes.at(ii);
 
-    auto TetMesh::computeVolumetricMassMatrix() -> spmat {}
+            // Assign triplet for this matrix entry and set the uniform volume
+            triplets.emplace_back(3 * ii, 3 * ii, volume);
+            triplets.emplace_back(3 * ii + 1, 3 * ii + 1, volume);
+            triplets.emplace_back(3 * ii + 2, 3 * ii + 2, volume);
+        }
+        spmat M(ndofs(), ndofs());
+        M.setFromTriplets(triplets.begin(), triplets.end());
+        return M;
+    }
 
-    auto TetMesh::computeDensityVolumeMassMatrix() -> spmat {}
+    auto TetMesh::computeDensityVolumeMassMatrix() -> spmat {
+        spdlog::error("{} Not implemented! Need to debug it some more", __FUNCTION__);
+        assert(false);
+    }
 
     auto TetMesh::computeDampingMatrix(const spmat &massMatrix, const spmat &stiffnessMatrix) -> spmat {
         const vec lastDisplacement = displacement();

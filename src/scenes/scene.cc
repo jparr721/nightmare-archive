@@ -13,7 +13,7 @@ namespace nm::testing::scenes {
     void Scene::addGrid(real startingy, real spacingScale, int size) {
         mat points;
         mati edges;
-        geometry::primitives::loadGridGeometry(spacingScale, startingy, size, points, edges);
+        geometry::primitives::grid_loadGeometry(spacingScale, startingy, size, points, edges);
         viewer.data().set_edges(points, edges, Eigen::RowVector3d(1.0, 1.0, 1.0));
     }
 

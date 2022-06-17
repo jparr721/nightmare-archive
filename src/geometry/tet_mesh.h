@@ -22,12 +22,14 @@ namespace nm::geometry {
         };
 
     public:
-        TetMesh() = default;
+        bool isInit = false;
+
         explicit TetMesh(const std::string &meshPath);
         TetMesh(const mat &vertices, const mati &faces);
         TetMesh(const mat &vertices, const mati &tetrahedra, const mati &faces);
 
-        auto initialize() -> bool;
+        void initialize();
+        void initializeKinematic();
 
         auto vertices() -> mat & { return vertices_; }
         auto vertices() const -> const mat & { return vertices_; }
@@ -58,6 +60,7 @@ namespace nm::geometry {
 
         // Internal computation for functionality
         void computeDeformationGradients();
+        void computePartialFPartialxs();
 
         auto computeTetrahedralVolumes() -> std::vector<real>;
         auto computeTetrahedralRingVolumes() -> std::vector<real>;
@@ -89,8 +92,8 @@ namespace nm::geometry {
         // All deformation gradients for each tet
         std::vector<mat3> deformationGradients_;
 
-        // All velocity gradients for each tet
-        std::vector<mat3> velocityGradients_;
+        // All of the change-of-basis calculations for F to x
+        std::vector<mat9x12> pFpxs_;
 
         std::map<int, int> volumeToSurfaceID_;
 
