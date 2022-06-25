@@ -175,8 +175,8 @@ namespace utils {
 
     inline auto fractalCrossProduct(const mat3 &f0hat, const mat3 &f1hat, const mat3 &f2hat) -> mat9 {
         mat9 HJ = mat9::Zero();
-        for (int ii = 0; ii < 9; ++ii) {
-            for (int jj = 0; jj < 9; ++jj) {
+        for (int ii = 0; ii < 3; ++ii) {
+            for (int jj = 0; jj < 3; ++jj) {
                 HJ(ii + 3, jj) = f2hat(ii, jj);
                 HJ(ii, jj + 3) = -f2hat(ii, jj);
 
@@ -277,5 +277,10 @@ namespace utils {
         if (detU < 0 && detV > 0) { U *= L; }
         if (detU > 0 && detV < 0) { V *= L; }
         sigma(2) *= sigma(2) * L(2, 2);
+    }
+
+    inline void computeLameParametersFromEandv(real E, real v, real &lambda, real &mu) {
+        lambda = E * v / ((1 * v) * (1 - 2 * v));
+        mu = E / (2 * (1 + v));
     }
 }// namespace utils

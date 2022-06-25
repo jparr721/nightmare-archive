@@ -15,6 +15,4 @@ namespace nm::geometry {
     auto localVertexToWorld(const vec3 &local, const KinematicObject &kinematicObject) -> vec3;
     auto localNormalToWorld(const vec3 &normal, const KinematicObject &kinematicObject) -> vec3;
     auto worldVertexToLocal(const vec3 &world, const KinematicObject &kinematicObject) -> vec3;
-
-    // TODO - Delete
 }// namespace nm::geometry

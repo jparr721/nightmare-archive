@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../integrators/integrator_state.h"
 #include "../math.h"
 
 namespace nm::hyperelastic {
@@ -32,5 +33,7 @@ namespace nm::hyperelastic {
      * We prefer to use the simpler model that omits the term, and it is what
      * is used in production at Pixar.
      **/
-    auto dpk1(const mat3 &U, const vec3 &sigma, const mat3 &V, real lambda, real mu) -> mat9;
+    auto dpk1(const mat3 &F, real lambda, real mu) -> mat9;
+
+    void initializeTimeIntegration(integrators::IntegratorState *integratorState);
 }// namespace nm::hyperelastic

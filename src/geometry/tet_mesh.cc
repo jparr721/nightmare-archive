@@ -32,7 +32,7 @@ namespace nm::geometry {
     }
 
     TetMesh::TetMesh(const mat &vertices, const mati &tetrahedra, const mati &faces)
-        : vertices_(vertices), tetrahedra_(tetrahedra), faces_(faces) {
+        : vertices_(vertices), restVertices_(vertices), tetrahedra_(tetrahedra), faces_(faces) {
         assert(vertices.rows() > 0 && "NO VERTICES PROVIDED");
         initialize();
     }
@@ -102,19 +102,21 @@ namespace nm::geometry {
 
     void TetMesh::setVerticesFromPositions(const vec &positions) {
         assert(positions.rows() == ndofs() && "POSITIONS TOO SMALL");
-        for (int ii = 0; ii < vertices_.rows(); ++ii) { vertices_.row(ii) = positions.segment(ii * 3, 3); }
+        for (int ii = 0; ii < vertices_.rows(); ++ii) { vertices_.row(ii) = positions.segment<3>(ii * 3); }
     }
 
     void TetMesh::setDisplacement(const vec &delta) {
         assert(delta.rows() == ndofs() && "DELTA TOO SMALL");
         for (int ii = 0; ii < vertices_.rows(); ++ii) {
-            vertices_.row(ii) = restVertices_.row(ii) + delta.segment(ii * 3, 3);
+            const vec3 restVertexRow = restVertices_.row(ii);
+            const vec3 deltaSegment = delta.segment<3>(ii * 3);
+            vertices_.row(ii) = restVertexRow + deltaSegment;
         }
     }
 
     void TetMesh::addDisplacement(const vec &delta) {
         assert(delta.rows() == ndofs() && "DELTA TOO SMALL");
-        for (int ii = 0; ii < vertices_.rows(); ++ii) { vertices_.row(ii) += delta.segment(ii * 3, 3); }
+        for (int ii = 0; ii < vertices_.rows(); ++ii) { vertices_.row(ii) += delta.segment<3>(ii * 3); }
     }
 
     void TetMesh::setTetrahedra(const mati &tetrahedra) { tetrahedra_ = tetrahedra; }
@@ -164,6 +166,7 @@ namespace nm::geometry {
 #endif
             // Copy the memory into the vertices so the temporary can go out of scope
             vertices_ = TV;
+            restVertices_ = vertices_;
 
             // Reverse the faces for the render so that way the normals are correct
             faces_ = TF.rowwise().reverse().eval();
@@ -269,17 +272,14 @@ namespace nm::geometry {
         return forces;
     }
 
-    auto TetMesh::computeHessian(real lambda, real mu) -> spmat {
+    auto TetMesh::computeStiffnessMatrix(real lambda, real mu) -> spmat {
         std::vector<mat12> perElementHessians(tetrahedra_.rows());
         igl::parallel_for(
                 tetrahedra_.rows(),
                 [this, &perElementHessians, &lambda, &mu](const int index) {
                     const mat3 &F = deformationGradients_.at(index);
-                    mat3 U, V;
-                    vec3 sigma;
-                    utils::computeRotationInvariantSVD(F, U, sigma, V);
                     const mat9x12 &pFpx = pFpxs_.at(index);
-                    const mat9 hessian = -restTetVolumes_.at(index) * hyperelastic::dpk1(U, sigma, V, lambda, mu);
+                    const mat9 hessian = -restTetVolumes_.at(index) * hyperelastic::dpk1(F, lambda, mu);
                     perElementHessians.at(index) = (pFpx.transpose() * hessian) * pFpx;
                 },
                 kForceMaxThreadSaturation);
@@ -310,14 +310,6 @@ namespace nm::geometry {
         return hessian;
     }
 
-    auto TetMesh::computeStiffnessMatrix() -> spmat {
-        std::vector<mat12> perElementHessians(tetrahedra_.rows());
-        for (int ii = 0; ii < tetrahedra_.rows(); ++ii) {
-            const mat3 &F = deformationGradients_.at(ii);
-            const mat9x12 &pFpx = pFpxs_.at(ii);
-        }
-    }
-
     auto TetMesh::computeVolumetricMassMatrix() -> spmat {
         std::vector<triplet> triplets;
         const std::vector<real> volumes = computeTetrahedralRingVolumes();
@@ -340,14 +332,17 @@ namespace nm::geometry {
         assert(false);
     }
 
-    auto TetMesh::computeDampingMatrix(const spmat &massMatrix, const spmat &stiffnessMatrix) -> spmat {
+    auto TetMesh::computeMassMatrix() -> spmat { return computeVolumetricMassMatrix(); }
+
+    auto TetMesh::computeDampingMatrix(const spmat &massMatrix, const spmat &stiffnessMatrix, real lambda, real mu)
+            -> spmat {
         const vec lastDisplacement = displacement();
 
         // Set the displacement to zero to get the rest state damping
         setDisplacement(vec::Zero(ndofs()));
 
         // Compute the stiffness matrix
-        const spmat K = computeStiffnessMatrix();
+        const spmat K = computeStiffnessMatrix(lambda, mu);
 
         // Restore the old displacement back to what it was
         setDisplacement(lastDisplacement);
@@ -487,4 +482,13 @@ namespace nm::geometry {
                 kForceMaxThreadSaturation);
     }
 
+    void TetMesh::computeInvertedVertices() {
+        // Start all false.
+        invertedVertices_ = std::vector<bool>(vertices_.rows(), false);
+        for (int ii = 0; ii < vertices_.rows(); ++ii) {
+            if (deformationGradients_.at(ii).determinant() > 0.0) { continue; }
+            // If it's inverted, we need to tag all of the vertices
+            for (int jj = 0; jj < 4; ++jj) { invertedVertices_.at(tetrahedra_(ii, jj)) = true; }
+        }
+    }
 }// namespace nm::geometry

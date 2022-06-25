@@ -17,7 +17,7 @@ namespace nm::testing::scenes {
         viewer.data().set_edges(points, edges, Eigen::RowVector3d(1.0, 1.0, 1.0));
     }
 
-    void Scene::addShape(const geometry::TetMesh *tetMesh) {
+    void Scene::addShape(const std::shared_ptr<geometry::TetMesh> tetMesh) {
         // Add a new space for the mesh
         viewer.append_mesh();
 
@@ -31,10 +31,19 @@ namespace nm::testing::scenes {
         viewer.data_list.push_back(data);
     }
 
-    auto Scene::addShapeFromFile(const std::string &filename) -> geometry::TetMesh * {
+    auto Scene::addShapeFromFile(const std::string &filename) -> std::shared_ptr<geometry::TetMesh> {
         const auto filepath = kAssetsPath / filename;
-        geometry::TetMesh *tetMesh = new geometry::TetMesh(filepath.string());
+        const auto tetMesh = std::make_shared<geometry::TetMesh>(filepath.string());
         addShape(tetMesh);
         return tetMesh;
+    }
+
+    void Scene::updateVertexPositions(const vec &V) {
+        mat newVertices(V.rows() / 3, 3);
+        for (int ii = 0; ii < V.rows() / 3; ++ii) { newVertices.row(ii) = V.segment<3>(3 * ii).transpose(); }
+        viewer.data_list[0].V = newVertices;
+
+        // Tell the viewer to update
+        viewer.data_list[0].dirty |= igl::opengl::MeshGL::DIRTY_POSITION;
     }
 }// namespace nm::testing::scenes

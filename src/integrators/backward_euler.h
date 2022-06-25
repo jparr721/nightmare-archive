@@ -1,8 +1,7 @@
 #pragma once
 
-#include "integrator.h"
+#include "integrator_state.h"
 
 namespace nm::integrators {
-    void initialize(IntegratorState *integratorState);
-    void solveOneTimestep(IntegratorState *integratorState);
+    void backwardEuler_solve(IntegratorState *integratorState);
 }// namespace nm::integrators

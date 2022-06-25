@@ -16,10 +16,8 @@ namespace nm::testing::scenes {
 
         Scene();
         void addGrid(real startingy, real spacingScale, int size);
-        void addShape(const geometry::TetMesh *tetMesh);
-
-        void updateVertexPositions(const mat &V);
-
-        auto addShapeFromFile(const std::string &filename) -> geometry::TetMesh *;
+        void addShape(const std::shared_ptr<geometry::TetMesh> tetMesh);
+        auto addShapeFromFile(const std::string &filename) -> std::shared_ptr<geometry::TetMesh>;
+        void updateVertexPositions(const vec &V);
     };
 }// namespace nm::testing::scenes

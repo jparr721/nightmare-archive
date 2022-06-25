@@ -42,7 +42,7 @@ add_library(${PROJECT_LIB}
     src/hyperelastic/stable_neo_hookean.h
     src/hyperelastic/stable_neo_hookean.cc
 
-    src/integrators/integrator.h
+    src/integrators/integrator_state.h
     src/integrators/backward_euler.h
     src/integrators/backward_euler.cc
 

@@ -1,14 +1,26 @@
 #include "drop.h"
+#include "../integrators/backward_euler.h"
+#include "../integrators/integrator_state.h"
 #include <memory>
 
+static nm::testing::scenes::Scene scene;
+
 namespace nm::testing::scenes {
-    std::unique_ptr<geometry::TetMesh> squareOne;
-    std::unique_ptr<geometry::TetMesh> squareTwo;
-    std::unique_ptr<geometry::TetMesh> squareThree;
-    std::unique_ptr<geometry::TetMesh> squareFour;
-    std::unique_ptr<geometry::TetMesh> bunny;
+    bool simulating = true;
+    std::shared_ptr<geometry::TetMesh> squareOne;
+    std::shared_ptr<geometry::TetMesh> squareTwo;
+    std::shared_ptr<geometry::TetMesh> squareThree;
+    std::shared_ptr<geometry::TetMesh> squareFour;
+    std::shared_ptr<geometry::TetMesh> bunny;
+    std::unique_ptr<integrators::IntegratorState> integratorState;
+
+    constexpr real E = 1'000;
+    constexpr real v = 0.3;
 
     void initializeDropTest(Scene &scene) {
+        real lambda, mu;
+        utils::computeLameParametersFromEandv(E, v, lambda, mu);
+
         scene.addGrid(0.0, 10.0, 1000);
         mat V;
         mati F;
@@ -16,10 +28,10 @@ namespace nm::testing::scenes {
         geometry::primitives::cube_loadGeometry(V, F);
 
         // Add the square to each mesh
-        squareOne = std::make_unique<geometry::TetMesh>(V, F);
-        squareTwo = std::make_unique<geometry::TetMesh>(V, F);
-        squareThree = std::make_unique<geometry::TetMesh>(V, F);
-        squareFour = std::make_unique<geometry::TetMesh>(V, F);
+        squareOne = std::make_shared<geometry::TetMesh>(V, F);
+        squareTwo = std::make_shared<geometry::TetMesh>(V, F);
+        squareThree = std::make_shared<geometry::TetMesh>(V, F);
+        squareFour = std::make_shared<geometry::TetMesh>(V, F);
 
         // Position Squares
         // TODO(@jparr721) Add rotation
@@ -35,25 +47,52 @@ namespace nm::testing::scenes {
         squareFour->rotate(utils::rad(10), vec3::UnitZ());
 
         // Add Squares To Scene
-        scene.addShape(squareOne.get());
-        scene.addShape(squareTwo.get());
-        scene.addShape(squareThree.get());
-        scene.addShape(squareFour.get());
+        scene.addShape(squareOne);
+        scene.addShape(squareTwo);
+        scene.addShape(squareThree);
+        scene.addShape(squareFour);
 
         // Add main piece of geometry to drop.
-        // bunny = std::unique_ptr<geometry::TetMesh>(scene.addShapeFromFile("bunny.obj"));
+        // Bunny is too big TODO
+        // bunny = std::shared_ptr<geometry::TetMesh>(scene.addShapeFromFile("bunny.obj"));
+        bunny = std::make_shared<geometry::TetMesh>(V, F);
+        bunny->translate(vec3(2, 4, 0));
+
+        scene.addShape(bunny);
+
+        // Make the integrator state with the active tet mesh
+        integratorState = std::make_unique<integrators::IntegratorState>(bunny);
+        integratorState->kinematicsCollisionObjects.push_back(squareOne);
+        integratorState->kinematicsCollisionObjects.push_back(squareTwo);
+        integratorState->kinematicsCollisionObjects.push_back(squareThree);
+        integratorState->kinematicsCollisionObjects.push_back(squareFour);
+        integratorState->lambda = lambda;
+        integratorState->mu = mu;
+    }
+
+    auto simulate() -> bool {
+        while (simulating) { integrators::backwardEuler_solve(integratorState.get()); }
+        return false;
+    }
+
+    static auto drawCallback(igl::opengl::glfw::Viewer &viewer) -> bool {
+        scene.updateVertexPositions(integratorState->position);
+        return false;
     }
 
     void startDropTest(Scene &scene) {
         // Start simulation background thread
+        auto simThread = std::thread(simulate);
+        simThread.detach();
 
         // Update geometry.
+        scene.viewer.callback_post_draw = &drawCallback;
 
-        scene.viewer.launch();
+        // Open up the viewer
+        scene.viewer.launch(false /* resizable */, false /* fullscreen */, "Bunny Drop");
     }
 }// namespace nm::testing::scenes
 
-static nm::testing::scenes::Scene scene;
 
 auto main() -> int {
     using namespace nm::testing::scenes;

@@ -68,12 +68,23 @@ namespace nm::geometry {
         auto computeTetrahedralVolumes() -> std::vector<real>;
         auto computeTetrahedralRingVolumes() -> std::vector<real>;
         auto computeForces(real lambda, real mu) -> vec;
-        auto computeHessian(real lambda, real mu) -> spmat;
+        /**
+         * Computes the stiffness matrix from the per-element hessians
+         */
+        auto computeStiffnessMatrix(real lambda, real mu) -> spmat;
+        /**
+         * Computes the mass matrix from the per-element masses
+         */
         auto computeMassMatrix() -> spmat;
-        auto computeStiffnessMatrix() -> spmat;
+        /**
+         * Computes the mass matrix from the one-ring volumes (assumes constant density)
+         */
         auto computeVolumetricMassMatrix() -> spmat;
         auto computeDensityVolumeMassMatrix() -> spmat;
-        auto computeDampingMatrix(const spmat &massMatrix, const spmat &stiffnessMatrix) -> spmat;
+        /**
+         * Computes the rayleigh damping matrix
+         */
+        auto computeDampingMatrix(const spmat &massMatrix, const spmat &stiffnessMatrix, real lambda, real mu) -> spmat;
 
     private:
         real rayleighAlpha_ = 0.01;
@@ -91,6 +102,7 @@ namespace nm::geometry {
         std::vector<u32> surfaceVertices_;
         std::vector<u32> surfaceTetrahedra_;
         std::vector<vec2i> surfaceEdges_;
+        std::vector<bool> invertedVertices_;
 
         // Static memory allocation for the inverses of the Dm matrix for computing deformation gradient.
         std::vector<mat3> dmInverses_;
@@ -107,5 +119,6 @@ namespace nm::geometry {
         void computeSurfaceVertices();
         void computeSurfaceEdges();
         void computeDmInverses();
+        void computeInvertedVertices();
     };
 }// namespace nm::geometry

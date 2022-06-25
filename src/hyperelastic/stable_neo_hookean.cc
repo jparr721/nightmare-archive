@@ -23,9 +23,14 @@ namespace nm::hyperelastic {
         return mu * (1 - 1 / (Ic + 1)) * F + lambda * (J - alpha) * pJpF;
     }
 
-    auto dpk1(const mat3 &U, const vec3 &sigma, const mat3 &V, real lambda, real mu) -> mat9 {
+    auto dpk1(const mat3 &F, real lambda, real mu) -> mat9 {
+        mat3 U, V;
+        vec3 sigma;
+        utils::computeRotationInvariantSVD(F, U, sigma, V);
+
         vec9 eigenvalues;
         mat9 eigenvectors;
+
         const real J = sigma(0) * sigma(1) * sigma(2);
         const real front = lambda * (J - 1.0) - mu;
         eigenvalues(0) = front * sigma(0) + mu;
@@ -69,4 +74,5 @@ namespace nm::hyperelastic {
 
         return eigenvectors * eigenvalues.asDiagonal() * eigenvectors.transpose();
     }
+
 }// namespace nm::hyperelastic
